@@ -4,6 +4,7 @@ import {
   getScoreHistory,
   getStreakData,
 } from '@/lib/services/dashboard-service';
+import { getInsights } from '@/lib/services/insights-service';
 import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension } from '@life-design/core';
 import DashboardClient from './dashboard-client';
 
@@ -19,10 +20,11 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [latestResult, historyResult, streakResult] = await Promise.all([
+  const [latestResult, historyResult, streakResult, insightsResult] = await Promise.all([
     getLatestScores(user.id),
     getScoreHistory(user.id, 30),
     getStreakData(user.id),
+    getInsights(user.id, 3),
   ]);
 
   const latestScores = latestResult.data ?? [];
@@ -49,12 +51,21 @@ export default async function DashboardPage() {
     }
   }
 
+  const recentInsights = (insightsResult.data ?? []) as {
+    id: string;
+    type: 'trend' | 'correlation' | 'suggestion';
+    title: string;
+    body: string;
+    dimension: string | null;
+  }[];
+
   return (
     <DashboardClient
       latestScores={latestScores as { dimension: string; score: number }[]}
       overallScore={overallScore}
       streak={streak}
       dimensionTrends={dimensionTrends}
+      recentInsights={recentInsights}
     />
   );
 }
