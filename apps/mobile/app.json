@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Life Design",
+    "slug": "life-design",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "life-design",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lifedesign.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.lifedesign.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}
