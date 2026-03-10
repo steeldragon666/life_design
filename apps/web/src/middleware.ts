@@ -28,6 +28,7 @@ export async function middleware(request: NextRequest) {
   // Refresh the session — important for Server Components
   await supabase.auth.getUser();
 
+  supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname);
   return supabaseResponse;
 }
 

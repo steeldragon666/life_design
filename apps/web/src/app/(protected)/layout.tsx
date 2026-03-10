@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { signOut } from '../(auth)/actions';
@@ -15,6 +16,21 @@ export default async function ProtectedLayout({
 
   if (!user) {
     redirect('/login');
+  }
+
+  // Redirect un-onboarded users to onboarding (skip if already there)
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') ?? '';
+  if (!pathname.startsWith('/onboarding')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarded')
+      .eq('id', user.id)
+      .single();
+
+    if (profile && !profile.onboarded) {
+      redirect('/onboarding');
+    }
   }
 
   return (
