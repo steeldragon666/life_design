@@ -36,6 +36,9 @@ export default async function ProtectedLayout({
           <Link href="/insights" className="text-sm hover:underline">
             Insights
           </Link>
+          <Link href="/settings" className="text-sm hover:underline">
+            Settings
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600">{user.email}</span>
