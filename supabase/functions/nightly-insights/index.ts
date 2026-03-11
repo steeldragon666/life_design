@@ -1,10 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.39.0';
 
-const ANALYSIS_PROMPT = `You are a wellness data analyst. Analyze the user's check-in data and generate actionable insights.
+const ANALYSIS_PROMPT = `You are a wellness data analyst. Analyze the user's check-in data and goals to generate actionable insights.
 
 Return a JSON array of insights. Each insight has:
-- type: "trend" | "correlation" | "suggestion"
+- type: "trend" | "correlation" | "suggestion" | "goal_progress" | "goal_risk"
 - title: short headline (under 60 chars)
 - body: 1-2 sentence explanation
 - dimension: the relevant dimension name or null
@@ -13,6 +13,8 @@ Focus on:
 - Trends: improving or declining dimensions
 - Correlations: dimensions that move together
 - Suggestions: actionable advice based on patterns
+- Goal progress: how the user's active goals are tracking (are they on pace?)
+- Goal risks: if dimension scores are declining in areas that affect active goals
 
 Return ONLY valid JSON array, no other text.`;
 
@@ -70,6 +72,28 @@ Deno.serve(async (req) => {
         })),
       );
 
+      // Fetch active goals for this user
+      const { data: activeGoals } = await supabase
+        .from('goals')
+        .select('title, horizon, status, tracking_type, target_date, metric_target, metric_current, goal_dimensions(dimension), goal_milestones(id, completed)')
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      let goalsContext = '';
+      if (activeGoals && activeGoals.length > 0) {
+        goalsContext = '\n\nActive goals:\n' + activeGoals.map((g: Record<string, unknown>) => {
+          const milestones = (g.goal_milestones ?? []) as Array<{ id: string; completed: boolean }>;
+          const total = milestones.length;
+          const done = milestones.filter((m) => m.completed).length;
+          const progress = total > 0 ? Math.round((done / total) * 100) :
+            (g.tracking_type === 'metric' && g.metric_target)
+              ? Math.round(((g.metric_current as number ?? 0) / (g.metric_target as number)) * 100) : 0;
+          const dims = ((g.goal_dimensions ?? []) as Array<{ dimension: string }>).map((d) => d.dimension).join(', ');
+          const daysLeft = Math.ceil((new Date(g.target_date as string).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+          return `- "${g.title}" (${g.horizon}-term, ${progress}% complete, ${daysLeft} days remaining, dimensions: ${dims})`;
+        }).join('\n');
+      }
+
       try {
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
@@ -78,7 +102,7 @@ Deno.serve(async (req) => {
           messages: [
             {
               role: 'user',
-              content: `Here is my check-in data from the past ${checkIns.length} days:\n${dataStr}`,
+              content: `Here is my check-in data from the past ${checkIns.length} days:\n${dataStr}${goalsContext}`,
             },
           ],
         });

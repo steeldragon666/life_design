@@ -20,11 +20,28 @@ export const PERSONA_CONFIGS: Record<MentorType, PersonaConfig> = {
   },
 };
 
+export interface ActiveGoalContext {
+  title: string;
+  horizon: string;
+  status: string;
+  trackingType: string;
+  progressPercent: number;
+  daysRemaining: number;
+  dimensions: string[];
+}
+
 export interface UserContext {
   recentMood?: number;
   topDimension?: string;
   lowDimension?: string;
   streak?: number;
+  // Goal-aware context
+  activeGoals?: ActiveGoalContext[];
+  // Profession-aware context
+  profession?: string;
+  postcode?: string;
+  interests?: string[];
+  hobbies?: string[];
 }
 
 export function buildSystemPrompt(
@@ -33,6 +50,18 @@ export function buildSystemPrompt(
 ): string {
   const config = PERSONA_CONFIGS[mentorType];
   let prompt = config.basePrompt;
+
+  // Add profession-aware instructions
+  prompt += `\n\nIMPORTANT CONTEXTUAL AWARENESS:
+- If the user has a profession, be aware of industry-specific stressors and events.
+  - For commodities/finance professionals: track market volatility, ask how major market events affected them today.
+  - For retail workers: be aware of peak seasons (Black Friday, Christmas, sales periods), ask about stress from increased customer volume.
+  - For healthcare workers: be mindful of shift patterns and emotional toll.
+  - For teachers: consider term times, exam seasons, parent meetings.
+  - Adapt your awareness to ANY profession — think about what external pressures affect them.
+- If the user has a postcode and hobbies/interests, consider weather and local events when making suggestions.
+- Reference active goals naturally in conversation — encourage progress, suggest strategies, warn about at-risk dimensions.
+- If a goal is falling behind (low progress % with few days remaining), gently bring it up.`;
 
   if (context) {
     const contextLines: string[] = [
@@ -50,6 +79,27 @@ export function buildSystemPrompt(
     if (context.streak !== undefined) {
       contextLines.push(`- Current check-in streak: ${context.streak} days`);
     }
+    if (context.profession) {
+      contextLines.push(`- Profession: ${context.profession}`);
+    }
+    if (context.postcode) {
+      contextLines.push(`- Location (postcode): ${context.postcode}`);
+    }
+    if (context.interests && context.interests.length > 0) {
+      contextLines.push(`- Interests: ${context.interests.join(', ')}`);
+    }
+    if (context.hobbies && context.hobbies.length > 0) {
+      contextLines.push(`- Hobbies: ${context.hobbies.join(', ')}`);
+    }
+
+    if (context.activeGoals && context.activeGoals.length > 0) {
+      contextLines.push('\nActive goals:');
+      for (const goal of context.activeGoals) {
+        const urgency = goal.daysRemaining < 14 ? ' [URGENT]' : goal.daysRemaining < 30 ? ' [approaching deadline]' : '';
+        contextLines.push(`- "${goal.title}" (${goal.horizon}-term, ${goal.trackingType} tracking, ${goal.progressPercent}% complete, ${goal.daysRemaining} days remaining${urgency}) — dimensions: ${goal.dimensions.join(', ')}`);
+      }
+    }
+
     prompt += contextLines.join('\n');
   }
 

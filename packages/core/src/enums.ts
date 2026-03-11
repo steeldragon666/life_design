@@ -37,6 +37,8 @@ export enum InsightType {
   Trend = 'trend',
   Correlation = 'correlation',
   Suggestion = 'suggestion',
+  GoalProgress = 'goal_progress',
+  GoalRisk = 'goal_risk',
 }
 
 export enum GoalHorizon {
