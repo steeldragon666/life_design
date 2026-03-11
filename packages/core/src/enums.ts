@@ -39,8 +39,37 @@ export enum InsightType {
   Suggestion = 'suggestion',
 }
 
+export enum GoalHorizon {
+  Short = 'short',    // 1-6 months
+  Medium = 'medium',  // 6 months - 1.5 years
+  Long = 'long',      // 1.5 - 5 years
+}
+
+export const GOAL_HORIZON_LABELS: Record<GoalHorizon, string> = {
+  [GoalHorizon.Short]: 'Short-term (1-6 months)',
+  [GoalHorizon.Medium]: 'Medium-term (6 months - 1.5 years)',
+  [GoalHorizon.Long]: 'Long-term (1.5 - 5 years)',
+};
+
+export enum GoalStatus {
+  Active = 'active',
+  Completed = 'completed',
+  Paused = 'paused',
+  Abandoned = 'abandoned',
+}
+
+export enum GoalTrackingType {
+  Milestone = 'milestone',
+  Metric = 'metric',
+}
+
 export enum IntegrationProvider {
   Strava = 'strava',
+  GoogleCalendar = 'google_calendar',
+  Gmail = 'gmail',
+  Slack = 'slack',
+  Instagram = 'instagram',
+  Weather = 'weather',
 }
 
 export enum IntegrationStatus {

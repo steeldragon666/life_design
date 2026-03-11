@@ -1,5 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { Dimension, MentorType, DurationType, InsightType, IntegrationProvider, IntegrationStatus } from '../enums';
+import {
+  Dimension,
+  MentorType,
+  DurationType,
+  InsightType,
+  IntegrationProvider,
+  IntegrationStatus,
+  GoalHorizon,
+  GoalStatus,
+  GoalTrackingType,
+} from '../enums';
 import type {
   User,
   CheckIn,
@@ -10,6 +20,13 @@ import type {
   Insight,
   Integration,
   IntegrationMetric,
+  UserProfile,
+  Goal,
+  GoalMilestone,
+  GoalProgress,
+  Pathway,
+  PathwayStep,
+  DimensionImpact,
 } from '../types';
 
 describe('Type contracts', () => {
@@ -143,5 +160,148 @@ describe('Type contracts', () => {
     };
     expect(metric.dimension).toBe(Dimension.Fitness);
     expect(metric.metric_value).toBe(42.5);
+  });
+});
+
+describe('Goal Setting type contracts', () => {
+  it('UserProfile has required fields', () => {
+    const profile: UserProfile = {
+      userId: 'uuid-123',
+      profession: 'Software Engineer',
+      interests: ['AI', 'music'],
+      projects: ['Life Design App'],
+      hobbies: ['guitar', 'hiking'],
+      skills: ['TypeScript', 'React'],
+      postcode: 'SW1A 1AA',
+    };
+    expect(profile.userId).toBe('uuid-123');
+    expect(profile.profession).toBe('Software Engineer');
+    expect(profile.interests).toHaveLength(2);
+    expect(profile.postcode).toBe('SW1A 1AA');
+  });
+
+  it('UserProfile allows null profession and postcode', () => {
+    const profile: UserProfile = {
+      userId: 'uuid-123',
+      profession: null,
+      interests: [],
+      projects: [],
+      hobbies: [],
+      skills: [],
+      postcode: null,
+    };
+    expect(profile.profession).toBeNull();
+    expect(profile.postcode).toBeNull();
+  });
+
+  it('Goal has required fields', () => {
+    const goal: Goal = {
+      id: 'goal-1',
+      userId: 'uuid-123',
+      title: 'Learn Spanish',
+      description: 'Become conversational in Spanish',
+      horizon: GoalHorizon.Medium,
+      status: GoalStatus.Active,
+      trackingType: GoalTrackingType.Milestone,
+      targetDate: '2027-06-01',
+      metricTarget: null,
+      metricCurrent: null,
+      metricUnit: null,
+      dimensions: ['growth', 'social'],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    expect(goal.horizon).toBe(GoalHorizon.Medium);
+    expect(goal.status).toBe(GoalStatus.Active);
+    expect(goal.trackingType).toBe(GoalTrackingType.Milestone);
+    expect(goal.dimensions).toHaveLength(2);
+  });
+
+  it('Goal supports metric tracking', () => {
+    const goal: Goal = {
+      id: 'goal-2',
+      userId: 'uuid-123',
+      title: 'Save £10,000',
+      description: 'Emergency fund',
+      horizon: GoalHorizon.Short,
+      status: GoalStatus.Active,
+      trackingType: GoalTrackingType.Metric,
+      targetDate: '2026-12-31',
+      metricTarget: 10000,
+      metricCurrent: 2500,
+      metricUnit: 'GBP',
+      dimensions: ['finance'],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-03-01T00:00:00Z',
+    };
+    expect(goal.metricTarget).toBe(10000);
+    expect(goal.metricCurrent).toBe(2500);
+    expect(goal.metricUnit).toBe('GBP');
+  });
+
+  it('GoalMilestone has required fields', () => {
+    const milestone: GoalMilestone = {
+      id: 'ms-1',
+      goalId: 'goal-1',
+      title: 'Complete A1 level',
+      position: 0,
+      completed: false,
+      completedAt: null,
+    };
+    expect(milestone.goalId).toBe('goal-1');
+    expect(milestone.completed).toBe(false);
+    expect(milestone.completedAt).toBeNull();
+  });
+
+  it('GoalProgress tracks metric over time', () => {
+    const progress: GoalProgress = {
+      id: 'prog-1',
+      goalId: 'goal-2',
+      metricValue: 3000,
+      note: 'Tax refund deposited',
+      recordedAt: '2026-03-15T00:00:00Z',
+    };
+    expect(progress.metricValue).toBe(3000);
+    expect(progress.note).toBe('Tax refund deposited');
+  });
+
+  it('Pathway has steps and dimension impacts', () => {
+    const step: PathwayStep = {
+      id: 'step-1',
+      pathwayId: 'pw-1',
+      title: 'Enroll in online course',
+      description: 'Find a structured Spanish course',
+      position: 0,
+      completed: false,
+    };
+
+    const impact: DimensionImpact = {
+      dimension: 'growth',
+      impact: 4,
+      explanation: 'Learning a new language directly boosts personal growth',
+    };
+
+    const pathway: Pathway = {
+      id: 'pw-1',
+      goalId: 'goal-1',
+      title: 'Structured Learning Path',
+      description: 'A step-by-step approach to learning Spanish',
+      steps: [step],
+      dimensionImpacts: [impact],
+      aiGenerated: true,
+      createdAt: '2026-01-01T00:00:00Z',
+    };
+    expect(pathway.steps).toHaveLength(1);
+    expect(pathway.dimensionImpacts).toHaveLength(1);
+    expect(pathway.aiGenerated).toBe(true);
+  });
+
+  it('DimensionImpact supports negative impacts', () => {
+    const impact: DimensionImpact = {
+      dimension: 'social',
+      impact: -2,
+      explanation: 'Study time may reduce social activities',
+    };
+    expect(impact.impact).toBe(-2);
   });
 });

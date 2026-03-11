@@ -5,8 +5,12 @@ import {
   validateDate,
   validateCheckIn,
   validateDimensionScores,
+  validateGoal,
+  validateMilestone,
+  validateProgress,
+  validateUserProfile,
 } from '../validation';
-import { Dimension, DurationType, ALL_DIMENSIONS } from '../enums';
+import { Dimension, DurationType, GoalHorizon, GoalTrackingType, ALL_DIMENSIONS } from '../enums';
 
 describe('validateScore', () => {
   it('accepts scores 1 through 10', () => {
@@ -153,5 +157,114 @@ describe('validateDimensionScores', () => {
   it('rejects empty array', () => {
     const result = validateDimensionScores([]);
     expect(result.valid).toBe(false);
+  });
+});
+
+describe('validateGoal', () => {
+  const validGoal = {
+    title: 'Learn Spanish',
+    horizon: GoalHorizon.Medium,
+    trackingType: GoalTrackingType.Milestone,
+    targetDate: '2027-06-01',
+    dimensions: ['growth', 'social'],
+  };
+
+  it('accepts a valid goal', () => {
+    expect(validateGoal(validGoal).valid).toBe(true);
+  });
+
+  it('rejects empty title', () => {
+    expect(validateGoal({ ...validGoal, title: '' }).valid).toBe(false);
+  });
+
+  it('rejects title over 200 chars', () => {
+    expect(validateGoal({ ...validGoal, title: 'x'.repeat(201) }).valid).toBe(false);
+  });
+
+  it('rejects invalid horizon', () => {
+    expect(validateGoal({ ...validGoal, horizon: 'forever' as GoalHorizon }).valid).toBe(false);
+  });
+
+  it('rejects invalid tracking type', () => {
+    expect(validateGoal({ ...validGoal, trackingType: 'magic' as GoalTrackingType }).valid).toBe(false);
+  });
+
+  it('rejects invalid target date', () => {
+    expect(validateGoal({ ...validGoal, targetDate: 'not-a-date' }).valid).toBe(false);
+  });
+
+  it('rejects empty dimensions', () => {
+    expect(validateGoal({ ...validGoal, dimensions: [] }).valid).toBe(false);
+  });
+
+  it('rejects more than 3 dimensions', () => {
+    expect(validateGoal({ ...validGoal, dimensions: ['a', 'b', 'c', 'd'] }).valid).toBe(false);
+  });
+
+  it('accepts 1-3 dimensions', () => {
+    expect(validateGoal({ ...validGoal, dimensions: ['career'] }).valid).toBe(true);
+    expect(validateGoal({ ...validGoal, dimensions: ['career', 'finance', 'growth'] }).valid).toBe(true);
+  });
+});
+
+describe('validateMilestone', () => {
+  it('accepts a valid milestone', () => {
+    expect(validateMilestone({ title: 'Complete A1 level' }).valid).toBe(true);
+  });
+
+  it('rejects empty title', () => {
+    expect(validateMilestone({ title: '' }).valid).toBe(false);
+  });
+
+  it('rejects title over 200 chars', () => {
+    expect(validateMilestone({ title: 'x'.repeat(201) }).valid).toBe(false);
+  });
+});
+
+describe('validateProgress', () => {
+  it('accepts valid metric value', () => {
+    expect(validateProgress({ metricValue: 100 }).valid).toBe(true);
+  });
+
+  it('accepts zero', () => {
+    expect(validateProgress({ metricValue: 0 }).valid).toBe(true);
+  });
+
+  it('accepts null/undefined', () => {
+    expect(validateProgress({ metricValue: null }).valid).toBe(true);
+    expect(validateProgress({}).valid).toBe(true);
+  });
+
+  it('rejects negative metric value', () => {
+    expect(validateProgress({ metricValue: -1 }).valid).toBe(false);
+  });
+});
+
+describe('validateUserProfile', () => {
+  it('accepts valid profile', () => {
+    expect(validateUserProfile({
+      profession: 'Engineer',
+      interests: ['AI'],
+      projects: ['App'],
+      hobbies: ['Guitar'],
+      skills: ['TypeScript'],
+    }).valid).toBe(true);
+  });
+
+  it('accepts empty/null fields', () => {
+    expect(validateUserProfile({}).valid).toBe(true);
+    expect(validateUserProfile({ profession: null }).valid).toBe(true);
+  });
+
+  it('rejects profession over 200 chars', () => {
+    expect(validateUserProfile({ profession: 'x'.repeat(201) }).valid).toBe(false);
+  });
+
+  it('rejects more than 20 items in any array', () => {
+    const tooMany = Array.from({ length: 21 }, (_, i) => `item-${i}`);
+    expect(validateUserProfile({ interests: tooMany }).valid).toBe(false);
+    expect(validateUserProfile({ projects: tooMany }).valid).toBe(false);
+    expect(validateUserProfile({ hobbies: tooMany }).valid).toBe(false);
+    expect(validateUserProfile({ skills: tooMany }).valid).toBe(false);
   });
 });

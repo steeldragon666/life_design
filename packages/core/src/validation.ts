@@ -1,4 +1,4 @@
-import { Dimension, DurationType } from './enums';
+import { Dimension, DurationType, GoalHorizon, GoalTrackingType } from './enums';
 
 export interface ValidationResult {
   valid: boolean;
@@ -85,5 +85,80 @@ export function validateDimensionScores(
     if (!scoreResult.valid) return scoreResult;
   }
 
+  return { valid: true };
+}
+
+// ── Goal & Profile Validation ──
+
+export function validateGoal(input: {
+  title: string;
+  horizon: GoalHorizon;
+  trackingType: GoalTrackingType;
+  targetDate: string;
+  dimensions: string[];
+}): ValidationResult {
+  if (!input.title || input.title.trim().length === 0) {
+    return { valid: false, error: 'Title is required' };
+  }
+  if (input.title.length > 200) {
+    return { valid: false, error: 'Title must be 200 characters or fewer' };
+  }
+  if (!Object.values(GoalHorizon).includes(input.horizon)) {
+    return { valid: false, error: 'Invalid goal horizon' };
+  }
+  if (!Object.values(GoalTrackingType).includes(input.trackingType)) {
+    return { valid: false, error: 'Invalid tracking type' };
+  }
+  const dateResult = validateDate(input.targetDate);
+  if (!dateResult.valid) return dateResult;
+
+  if (!input.dimensions || input.dimensions.length === 0) {
+    return { valid: false, error: 'At least one dimension is required' };
+  }
+  if (input.dimensions.length > 3) {
+    return { valid: false, error: 'A goal can map to at most 3 dimensions' };
+  }
+  return { valid: true };
+}
+
+export function validateMilestone(input: { title: string }): ValidationResult {
+  if (!input.title || input.title.trim().length === 0) {
+    return { valid: false, error: 'Milestone title is required' };
+  }
+  if (input.title.length > 200) {
+    return { valid: false, error: 'Milestone title must be 200 characters or fewer' };
+  }
+  return { valid: true };
+}
+
+export function validateProgress(input: { metricValue?: number | null }): ValidationResult {
+  if (input.metricValue != null && input.metricValue < 0) {
+    return { valid: false, error: 'Metric value must be >= 0' };
+  }
+  return { valid: true };
+}
+
+export function validateUserProfile(input: {
+  profession?: string | null;
+  interests?: string[];
+  projects?: string[];
+  hobbies?: string[];
+  skills?: string[];
+}): ValidationResult {
+  if (input.profession && input.profession.length > 200) {
+    return { valid: false, error: 'Profession must be 200 characters or fewer' };
+  }
+  if (input.interests && input.interests.length > 20) {
+    return { valid: false, error: 'Maximum 20 interests allowed' };
+  }
+  if (input.projects && input.projects.length > 20) {
+    return { valid: false, error: 'Maximum 20 projects allowed' };
+  }
+  if (input.hobbies && input.hobbies.length > 20) {
+    return { valid: false, error: 'Maximum 20 hobbies allowed' };
+  }
+  if (input.skills && input.skills.length > 20) {
+    return { valid: false, error: 'Maximum 20 skills allowed' };
+  }
   return { valid: true };
 }

@@ -6,8 +6,12 @@ import {
   InsightType,
   IntegrationProvider,
   IntegrationStatus,
+  GoalHorizon,
+  GoalStatus,
+  GoalTrackingType,
   ALL_DIMENSIONS,
   DIMENSION_LABELS,
+  GOAL_HORIZON_LABELS,
 } from '../enums';
 
 describe('Dimension', () => {
@@ -75,9 +79,59 @@ describe('InsightType', () => {
   });
 });
 
+describe('GoalHorizon', () => {
+  it('has Short, Medium, and Long horizons', () => {
+    expect(GoalHorizon.Short).toBe('short');
+    expect(GoalHorizon.Medium).toBe('medium');
+    expect(GoalHorizon.Long).toBe('long');
+  });
+
+  it('has exactly 3 values', () => {
+    expect(Object.values(GoalHorizon)).toHaveLength(3);
+  });
+});
+
+describe('GOAL_HORIZON_LABELS', () => {
+  it('has a label for each horizon', () => {
+    for (const horizon of Object.values(GoalHorizon)) {
+      expect(GOAL_HORIZON_LABELS[horizon]).toBeDefined();
+      expect(typeof GOAL_HORIZON_LABELS[horizon]).toBe('string');
+    }
+  });
+});
+
+describe('GoalStatus', () => {
+  it('has Active, Completed, Paused, and Abandoned statuses', () => {
+    expect(GoalStatus.Active).toBe('active');
+    expect(GoalStatus.Completed).toBe('completed');
+    expect(GoalStatus.Paused).toBe('paused');
+    expect(GoalStatus.Abandoned).toBe('abandoned');
+  });
+
+  it('has exactly 4 values', () => {
+    expect(Object.values(GoalStatus)).toHaveLength(4);
+  });
+});
+
+describe('GoalTrackingType', () => {
+  it('has Milestone and Metric types', () => {
+    expect(GoalTrackingType.Milestone).toBe('milestone');
+    expect(GoalTrackingType.Metric).toBe('metric');
+  });
+
+  it('has exactly 2 values', () => {
+    expect(Object.values(GoalTrackingType)).toHaveLength(2);
+  });
+});
+
 describe('IntegrationProvider', () => {
-  it('has Strava provider', () => {
+  it('has all expected providers', () => {
     expect(IntegrationProvider.Strava).toBe('strava');
+    expect(IntegrationProvider.GoogleCalendar).toBe('google_calendar');
+    expect(IntegrationProvider.Gmail).toBe('gmail');
+    expect(IntegrationProvider.Slack).toBe('slack');
+    expect(IntegrationProvider.Instagram).toBe('instagram');
+    expect(IntegrationProvider.Weather).toBe('weather');
   });
 });
 
