@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import GoalProgress from '@/components/goals/goal-progress';
 import PathwayCard from '@/components/goals/pathway-card';
 import PathwayBuilder from '@/components/goals/pathway-builder';
+import TradeoffDashboard from '@/components/goals/tradeoff-dashboard';
+import ScenarioComparison from '@/components/goals/scenario-comparison';
 import { DIMENSION_LABELS, GOAL_HORIZON_LABELS, GoalStatus, type Dimension, type GoalHorizon } from '@life-design/core';
 import {
   updateGoalAction,
@@ -65,6 +67,7 @@ interface PathwayData {
 interface GoalDetailClientProps {
   goal: GoalDetailData;
   pathways: PathwayData[];
+  currentScores?: Record<string, number>;
 }
 
 const STATUS_ACTIONS = [
@@ -74,7 +77,7 @@ const STATUS_ACTIONS = [
   { value: 'abandoned', label: 'Abandon' },
 ];
 
-export default function GoalDetailClient({ goal, pathways }: GoalDetailClientProps) {
+export default function GoalDetailClient({ goal, pathways, currentScores = {} }: GoalDetailClientProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
@@ -193,6 +196,26 @@ export default function GoalDetailClient({ goal, pathways }: GoalDetailClientPro
           onGenerate={generatePathwayAction}
         />
       </div>
+
+      {/* Trade-off dashboard */}
+      {pathways.length > 0 && pathways[0].dimension_impacts?.length > 0 && (
+        <div className="rounded-lg border p-4 space-y-6">
+          <TradeoffDashboard
+            currentScores={currentScores}
+            dimensionImpacts={pathways[0].dimension_impacts}
+            goalTitle={goal.title}
+          />
+
+          {pathways.length >= 2 && (
+            <ScenarioComparison
+              pathways={pathways.map((pw) => ({
+                title: pw.title,
+                dimensionImpacts: pw.dimension_impacts,
+              }))}
+            />
+          )}
+        </div>
+      )}
 
       {/* Back link */}
       <button
