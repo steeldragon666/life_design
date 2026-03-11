@@ -10,6 +10,7 @@ describe('OnboardingClient', () => {
 
   const mockOnComplete = vi.fn();
   const mockOnActivateMentor = vi.fn();
+  const mockOnSaveProfile = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -21,19 +22,37 @@ describe('OnboardingClient', () => {
         mentors={mockMentors}
         onComplete={mockOnComplete}
         onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
       />,
     );
     expect(screen.getByText(/welcome/i)).toBeDefined();
   });
 
-  it('shows the dimensions step after clicking next', () => {
+  it('shows the about-you step after clicking next', () => {
     render(
       <OnboardingClient
         mentors={mockMentors}
         onComplete={mockOnComplete}
         onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
       />,
     );
+    fireEvent.click(screen.getByText(/next/i));
+    expect(screen.getByText(/About You/)).toBeDefined();
+  });
+
+  it('shows the dimensions step after profile steps', () => {
+    render(
+      <OnboardingClient
+        mentors={mockMentors}
+        onComplete={mockOnComplete}
+        onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
+      />,
+    );
+    // Welcome -> About You -> Skills & Projects -> Dimensions
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     expect(screen.getByText(/The 8 Dimensions of Life/)).toBeDefined();
   });
@@ -44,8 +63,12 @@ describe('OnboardingClient', () => {
         mentors={mockMentors}
         onComplete={mockOnComplete}
         onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
       />,
     );
+    // Welcome -> About You -> Skills -> Dimensions -> Mentors
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     expect(screen.getByText(/The Stoic/)).toBeDefined();
@@ -58,12 +81,32 @@ describe('OnboardingClient', () => {
         mentors={mockMentors}
         onComplete={mockOnComplete}
         onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
       />,
     );
+    // Navigate to mentors step
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/The Stoic/));
     expect(mockOnActivateMentor).toHaveBeenCalledWith('m1');
+  });
+
+  it('calls onSaveProfile when leaving skills step', () => {
+    render(
+      <OnboardingClient
+        mentors={mockMentors}
+        onComplete={mockOnComplete}
+        onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
+      />,
+    );
+    // Welcome -> About You -> Skills (clicking next here saves profile)
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
+    expect(mockOnSaveProfile).toHaveBeenCalled();
   });
 
   it('calls onComplete on the final step', () => {
@@ -72,9 +115,12 @@ describe('OnboardingClient', () => {
         mentors={mockMentors}
         onComplete={mockOnComplete}
         onActivateMentor={mockOnActivateMentor}
+        onSaveProfile={mockOnSaveProfile}
       />,
     );
-    // Welcome -> Dimensions -> Mentors -> Finish
+    // Welcome -> About You -> Skills -> Dimensions -> Mentors -> Finish
+    fireEvent.click(screen.getByText(/next/i));
+    fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));
     fireEvent.click(screen.getByText(/next/i));

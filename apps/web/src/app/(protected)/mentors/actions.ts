@@ -11,6 +11,7 @@ import { getGoals } from '@/lib/services/goal-service';
 import { sendMentorMessage, buildSystemPrompt } from '@life-design/ai';
 import type { UserContext } from '@life-design/ai';
 import { MentorType, computeDimensionAverage } from '@life-design/core';
+import { buildWeatherContext } from '@/lib/integrations/weather';
 
 export async function sendMessage(
   userMentorId: string,
@@ -102,8 +103,17 @@ export async function sendMessage(
     });
   }
 
-  // Build system prompt and send to AI
-  const systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
+  // Build system prompt with weather context
+  let systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
+
+  // Add weather context if user has a postcode
+  if (profile?.postcode) {
+    const weatherCtx = await buildWeatherContext(profile.postcode);
+    if (weatherCtx) {
+      systemPrompt += weatherCtx;
+    }
+  }
+
   const result = await sendMentorMessage(messages, systemPrompt);
 
   // Save assistant response if successful

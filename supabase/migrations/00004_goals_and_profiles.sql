@@ -21,6 +21,12 @@ ALTER TYPE integration_provider ADD VALUE IF NOT EXISTS 'instagram';
 ALTER TYPE integration_provider ADD VALUE IF NOT EXISTS 'weather';
 
 -- ============================================================
+-- Extend insight_type enum with goal-aware types
+-- ============================================================
+ALTER TYPE insight_type ADD VALUE IF NOT EXISTS 'goal_progress';
+ALTER TYPE insight_type ADD VALUE IF NOT EXISTS 'goal_risk';
+
+-- ============================================================
 -- Goal enums
 -- ============================================================
 CREATE TYPE goal_horizon AS ENUM ('short', 'medium', 'long');

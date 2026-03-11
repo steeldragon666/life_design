@@ -8,11 +8,16 @@ const mocks = vi.hoisted(() => ({
   mockActivateMentor: vi.fn(),
   mockSendMentorMessage: vi.fn(),
   mockBuildSystemPrompt: vi.fn(),
+  mockGetProfile: vi.fn(),
+  mockGetGoals: vi.fn(),
+  mockBuildWeatherContext: vi.fn(),
+  mockFrom: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
     auth: { getUser: mocks.mockGetUser },
+    from: mocks.mockFrom,
   })),
 }));
 
@@ -21,6 +26,18 @@ vi.mock('@/lib/services/mentor-service', () => ({
   getChatHistory: mocks.mockGetChatHistory,
   saveChatMessage: mocks.mockSaveChatMessage,
   activateMentor: mocks.mockActivateMentor,
+}));
+
+vi.mock('@/lib/services/profile-service', () => ({
+  getProfile: mocks.mockGetProfile,
+}));
+
+vi.mock('@/lib/services/goal-service', () => ({
+  getGoals: mocks.mockGetGoals,
+}));
+
+vi.mock('@/lib/integrations/weather', () => ({
+  buildWeatherContext: mocks.mockBuildWeatherContext,
 }));
 
 vi.mock('@life-design/ai', () => ({
@@ -32,6 +49,22 @@ import { sendMessage, activateUserMentor } from '@/app/(protected)/mentors/actio
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default mocks for profile and goals
+  mocks.mockGetProfile.mockResolvedValue({ data: null, error: null });
+  mocks.mockGetGoals.mockResolvedValue({ data: [], error: null });
+  mocks.mockBuildWeatherContext.mockResolvedValue(null);
+  // Mock supabase.from() for the latest checkin query
+  mocks.mockFrom.mockReturnValue({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        order: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      }),
+    }),
+  });
 });
 
 describe('sendMessage', () => {
