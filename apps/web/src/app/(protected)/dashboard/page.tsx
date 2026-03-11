@@ -5,7 +5,8 @@ import {
   getStreakData,
 } from '@/lib/services/dashboard-service';
 import { getInsights } from '@/lib/services/insights-service';
-import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension } from '@life-design/core';
+import { getGoals } from '@/lib/services/goal-service';
+import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension, GoalStatus } from '@life-design/core';
 import DashboardClient from './dashboard-client';
 
 export default async function DashboardPage() {
@@ -20,11 +21,12 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [latestResult, historyResult, streakResult, insightsResult] = await Promise.all([
+  const [latestResult, historyResult, streakResult, insightsResult, goalsResult] = await Promise.all([
     getLatestScores(user.id),
     getScoreHistory(user.id, 30),
     getStreakData(user.id),
     getInsights(user.id, 3),
+    getGoals(user.id, { status: GoalStatus.Active }),
   ]);
 
   const latestScores = latestResult.data ?? [];
@@ -53,11 +55,29 @@ export default async function DashboardPage() {
 
   const recentInsights = (insightsResult.data ?? []) as {
     id: string;
-    type: 'trend' | 'correlation' | 'suggestion';
+    type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
     title: string;
     body: string;
     dimension: string | null;
   }[];
+
+  // Build goals summary
+  const activeGoals = (goalsResult.data ?? []) as Array<Record<string, unknown>>;
+  const goalsSummary = {
+    total: activeGoals.length,
+    byHorizon: {
+      short: activeGoals.filter((g) => g.horizon === 'short').length,
+      medium: activeGoals.filter((g) => g.horizon === 'medium').length,
+      long: activeGoals.filter((g) => g.horizon === 'long').length,
+    },
+    nearestDeadline: activeGoals.length > 0
+      ? activeGoals.reduce((nearest, g) => {
+          const gDate = new Date(g.target_date as string).getTime();
+          const nDate = nearest ? new Date(nearest.target_date as string).getTime() : Infinity;
+          return gDate < nDate ? g : nearest;
+        }, null as Record<string, unknown> | null)
+      : null,
+  };
 
   return (
     <DashboardClient
@@ -66,6 +86,7 @@ export default async function DashboardPage() {
       streak={streak}
       dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
+      goalsSummary={goalsSummary}
     />
   );
 }
