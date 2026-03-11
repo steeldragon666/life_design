@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { listMentors } from '@/lib/services/mentor-service';
 import OnboardingClient from './onboarding-client';
-import { completeOnboarding, onboardActivateMentor } from './actions';
+import { completeOnboarding, onboardActivateMentor, onboardSaveProfile } from './actions';
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -29,6 +29,7 @@ export default async function OnboardingPage() {
       mentors={mentors ?? []}
       onComplete={completeOnboarding}
       onActivateMentor={onboardActivateMentor}
+      onSaveProfile={onboardSaveProfile}
     />
   );
 }

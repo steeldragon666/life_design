@@ -52,6 +52,12 @@ export default async function ProtectedLayout({
           <Link href="/insights" className="text-sm hover:underline">
             Insights
           </Link>
+          <Link href="/goals" className="text-sm hover:underline">
+            Goals
+          </Link>
+          <Link href="/profile" className="text-sm hover:underline">
+            Profile
+          </Link>
           <Link href="/settings" className="text-sm hover:underline">
             Settings
           </Link>

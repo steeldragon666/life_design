@@ -10,23 +10,94 @@ interface Mentor {
   description: string;
 }
 
+interface ProfileInput {
+  profession: string;
+  interests: string[];
+  hobbies: string[];
+  skills: string[];
+  projects: string[];
+  postcode: string;
+}
+
 interface OnboardingClientProps {
   mentors: Mentor[];
   onComplete: () => void;
   onActivateMentor: (mentorId: string) => void;
+  onSaveProfile?: (data: ProfileInput) => void;
 }
 
-const STEPS = ['welcome', 'dimensions', 'mentors', 'finish'] as const;
+function OnboardingTagInput({
+  label,
+  values,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  values: string[];
+  onChange: (values: string[]) => void;
+  placeholder: string;
+}) {
+  const [inputValue, setInputValue] = useState('');
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if ((e.key === 'Enter' || e.key === ',') && inputValue.trim()) {
+      e.preventDefault();
+      const v = inputValue.trim();
+      if (!values.includes(v)) onChange([...values, v]);
+      setInputValue('');
+    }
+    if (e.key === 'Backspace' && !inputValue && values.length > 0) {
+      onChange(values.slice(0, -1));
+    }
+  }
+
+  return (
+    <div className="text-left space-y-1">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <div className="flex flex-wrap gap-1.5 rounded-lg border p-2">
+        {values.map((v, i) => (
+          <span key={`${v}-${i}`} className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-sm text-indigo-800">
+            {v}
+            <button type="button" onClick={() => onChange(values.filter((_, j) => j !== i))} className="text-indigo-500 hover:text-indigo-700">&times;</button>
+          </span>
+        ))}
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={values.length === 0 ? placeholder : ''}
+          className="flex-1 min-w-[120px] border-none outline-none text-sm"
+        />
+      </div>
+    </div>
+  );
+}
+
+const STEPS = ['welcome', 'about-you', 'skills-projects', 'dimensions', 'mentors', 'finish'] as const;
 
 export default function OnboardingClient({
   mentors,
   onComplete,
   onActivateMentor,
+  onSaveProfile,
 }: OnboardingClientProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const step = STEPS[stepIndex];
 
+  const [profileData, setProfileData] = useState<ProfileInput>({
+    profession: '',
+    interests: [],
+    hobbies: [],
+    skills: [],
+    projects: [],
+    postcode: '',
+  });
+
   function handleNext() {
+    if (step === 'skills-projects' && onSaveProfile) {
+      onSaveProfile(profileData);
+    }
     setStepIndex((prev) => Math.min(prev + 1, STEPS.length - 1));
   }
 
@@ -39,6 +110,84 @@ export default function OnboardingClient({
             Track your well-being across 8 life dimensions, get AI-powered
             insights, and grow with personalized mentors.
           </p>
+          <button
+            onClick={handleNext}
+            className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {step === 'about-you' && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">About You</h2>
+          <p className="text-gray-600">
+            Tell us a bit about yourself so your AI mentors can give tailored advice.
+          </p>
+          <div className="space-y-3 text-left">
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">What do you do for work?</label>
+              <input
+                type="text"
+                value={profileData.profession}
+                onChange={(e) => setProfileData({ ...profileData, profession: e.target.value })}
+                placeholder="e.g. Commodities Trader, Retail Manager, Teacher"
+                className="w-full rounded-lg border p-2 text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Your postcode (for weather-aware suggestions)</label>
+              <input
+                type="text"
+                value={profileData.postcode}
+                onChange={(e) => setProfileData({ ...profileData, postcode: e.target.value })}
+                placeholder="e.g. SW1A 1AA, 10001"
+                className="w-full rounded-lg border p-2 text-sm"
+              />
+            </div>
+            <OnboardingTagInput
+              label="What are you interested in?"
+              values={profileData.interests}
+              onChange={(v) => setProfileData({ ...profileData, interests: v })}
+              placeholder="e.g. AI, cooking, travel..."
+            />
+            <OnboardingTagInput
+              label="What are your hobbies?"
+              values={profileData.hobbies}
+              onChange={(v) => setProfileData({ ...profileData, hobbies: v })}
+              placeholder="e.g. guitar, hiking, photography..."
+            />
+          </div>
+          <button
+            onClick={handleNext}
+            className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {step === 'skills-projects' && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Your Skills & Projects</h2>
+          <p className="text-gray-600">
+            These help us connect your goals to what you already know and are working on.
+          </p>
+          <div className="space-y-3">
+            <OnboardingTagInput
+              label="What skills do you have?"
+              values={profileData.skills}
+              onChange={(v) => setProfileData({ ...profileData, skills: v })}
+              placeholder="e.g. TypeScript, public speaking, data analysis..."
+            />
+            <OnboardingTagInput
+              label="Any active projects?"
+              values={profileData.projects}
+              onChange={(v) => setProfileData({ ...profileData, projects: v })}
+              placeholder="e.g. Side business, Renovation, Open source..."
+            />
+          </div>
           <button
             onClick={handleNext}
             className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
