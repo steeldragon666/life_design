@@ -42,6 +42,8 @@ export interface UserContext {
   postcode?: string;
   interests?: string[];
   hobbies?: string[];
+  // Integration context strings (appended directly to prompt)
+  integrationContexts?: string[];
 }
 
 export function buildSystemPrompt(
@@ -61,7 +63,11 @@ export function buildSystemPrompt(
   - Adapt your awareness to ANY profession — think about what external pressures affect them.
 - If the user has a postcode and hobbies/interests, consider weather and local events when making suggestions.
 - Reference active goals naturally in conversation — encourage progress, suggest strategies, warn about at-risk dimensions.
-- If a goal is falling behind (low progress % with few days remaining), gently bring it up.`;
+- If a goal is falling behind (low progress % with few days remaining), gently bring it up.
+- If Spotify data is available, notice music patterns — shifts to melancholic genres may indicate mood changes.
+- If health metrics are available, use sleep/steps/HRV data to inform wellbeing suggestions. Low HRV or poor sleep should trigger gentle check-ins.
+- If Notion productivity data is available, reference task completion and overdue items to help with workload management.
+- If financial data is available, NEVER share exact figures unless the user asks. Use general terms like "spending seems higher than usual" or "on track with budget".`;
 
   if (context) {
     const contextLines: string[] = [
@@ -101,6 +107,13 @@ export function buildSystemPrompt(
     }
 
     prompt += contextLines.join('\n');
+
+    // Append integration context blocks (Spotify, Health, Notion, Banking, Weather)
+    if (context.integrationContexts && context.integrationContexts.length > 0) {
+      for (const ctx of context.integrationContexts) {
+        prompt += '\n' + ctx;
+      }
+    }
   }
 
   return prompt;

@@ -72,6 +72,10 @@ export enum IntegrationProvider {
   Slack = 'slack',
   Instagram = 'instagram',
   Weather = 'weather',
+  Spotify = 'spotify',
+  AppleHealth = 'apple_health',
+  Notion = 'notion',
+  OpenBanking = 'banking',
 }
 
 export enum IntegrationStatus {

@@ -12,6 +12,10 @@ import { sendMentorMessage, buildSystemPrompt } from '@life-design/ai';
 import type { UserContext } from '@life-design/ai';
 import { MentorType, computeDimensionAverage } from '@life-design/core';
 import { buildWeatherContext } from '@/lib/integrations/weather';
+import { buildSpotifyContext } from '@/lib/integrations/spotify';
+import { buildHealthContext } from '@/lib/integrations/apple-health';
+import { buildNotionContext } from '@/lib/integrations/notion';
+import { buildBankingContext } from '@/lib/integrations/banking';
 
 export async function sendMessage(
   userMentorId: string,
@@ -103,16 +107,24 @@ export async function sendMessage(
     });
   }
 
-  // Build system prompt with weather context
-  let systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
+  // Gather all integration contexts in parallel
+  const integrationPromises: Promise<string | null>[] = [
+    buildSpotifyContext(user.id),
+    buildHealthContext(user.id),
+    buildNotionContext(user.id),
+    buildBankingContext(user.id),
+  ];
 
-  // Add weather context if user has a postcode
+  // Weather uses postcode, not userId
   if (profile?.postcode) {
-    const weatherCtx = await buildWeatherContext(profile.postcode);
-    if (weatherCtx) {
-      systemPrompt += weatherCtx;
-    }
+    integrationPromises.push(buildWeatherContext(profile.postcode));
   }
+
+  const integrationResults = await Promise.all(integrationPromises);
+  userContext.integrationContexts = integrationResults.filter((ctx): ctx is string => ctx !== null);
+
+  // Build system prompt with all context
+  const systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
 
   const result = await sendMentorMessage(messages, systemPrompt);
 

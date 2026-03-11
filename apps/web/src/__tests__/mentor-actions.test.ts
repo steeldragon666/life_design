@@ -11,6 +11,10 @@ const mocks = vi.hoisted(() => ({
   mockGetProfile: vi.fn(),
   mockGetGoals: vi.fn(),
   mockBuildWeatherContext: vi.fn(),
+  mockBuildSpotifyContext: vi.fn(),
+  mockBuildHealthContext: vi.fn(),
+  mockBuildNotionContext: vi.fn(),
+  mockBuildBankingContext: vi.fn(),
   mockFrom: vi.fn(),
 }));
 
@@ -40,6 +44,22 @@ vi.mock('@/lib/integrations/weather', () => ({
   buildWeatherContext: mocks.mockBuildWeatherContext,
 }));
 
+vi.mock('@/lib/integrations/spotify', () => ({
+  buildSpotifyContext: mocks.mockBuildSpotifyContext,
+}));
+
+vi.mock('@/lib/integrations/apple-health', () => ({
+  buildHealthContext: mocks.mockBuildHealthContext,
+}));
+
+vi.mock('@/lib/integrations/notion', () => ({
+  buildNotionContext: mocks.mockBuildNotionContext,
+}));
+
+vi.mock('@/lib/integrations/banking', () => ({
+  buildBankingContext: mocks.mockBuildBankingContext,
+}));
+
 vi.mock('@life-design/ai', () => ({
   sendMentorMessage: mocks.mockSendMentorMessage,
   buildSystemPrompt: mocks.mockBuildSystemPrompt,
@@ -53,6 +73,10 @@ beforeEach(() => {
   mocks.mockGetProfile.mockResolvedValue({ data: null, error: null });
   mocks.mockGetGoals.mockResolvedValue({ data: [], error: null });
   mocks.mockBuildWeatherContext.mockResolvedValue(null);
+  mocks.mockBuildSpotifyContext.mockResolvedValue(null);
+  mocks.mockBuildHealthContext.mockResolvedValue(null);
+  mocks.mockBuildNotionContext.mockResolvedValue(null);
+  mocks.mockBuildBankingContext.mockResolvedValue(null);
   // Mock supabase.from() for the latest checkin query
   mocks.mockFrom.mockReturnValue({
     select: vi.fn().mockReturnValue({

@@ -4,7 +4,6 @@ export interface ProviderConfig {
   description: string;
   dimension: string;
   authType: 'oauth2' | 'api_key' | 'none';
-  comingSoon?: boolean;
 }
 
 export const INTEGRATION_PROVIDERS: ProviderConfig[] = [
@@ -50,25 +49,19 @@ export const INTEGRATION_PROVIDERS: ProviderConfig[] = [
     dimension: 'Health, Social',
     authType: 'api_key',
   },
-];
-
-// Suggested additional integrations
-export const SUGGESTED_INTEGRATIONS: ProviderConfig[] = [
   {
     id: 'spotify',
     name: 'Spotify',
     description: 'Track listening patterns. Music choices often correlate with mood — your mentor can spot these patterns.',
     dimension: 'Growth, Social',
     authType: 'oauth2',
-    comingSoon: true,
   },
   {
     id: 'apple_health',
     name: 'Apple Health',
     description: 'Sync sleep, steps, and heart rate data for comprehensive health tracking.',
     dimension: 'Health, Fitness',
-    authType: 'oauth2',
-    comingSoon: true,
+    authType: 'none',
   },
   {
     id: 'notion',
@@ -76,7 +69,6 @@ export const SUGGESTED_INTEGRATIONS: ProviderConfig[] = [
     description: 'Connect your productivity workspace. Track project progress and link it to your Career dimension.',
     dimension: 'Career, Growth',
     authType: 'oauth2',
-    comingSoon: true,
   },
   {
     id: 'banking',
@@ -84,6 +76,5 @@ export const SUGGESTED_INTEGRATIONS: ProviderConfig[] = [
     description: 'Track spending patterns securely. Your mentor can correlate spending habits with your Finance dimension scores.',
     dimension: 'Finance',
     authType: 'oauth2',
-    comingSoon: true,
   },
 ];

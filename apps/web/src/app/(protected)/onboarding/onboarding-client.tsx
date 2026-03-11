@@ -23,7 +23,7 @@ interface OnboardingClientProps {
   mentors: Mentor[];
   onComplete: () => void;
   onActivateMentor: (mentorId: string) => void;
-  onSaveProfile?: (data: ProfileInput) => void;
+  onSaveProfile: (data: ProfileInput) => Promise<{ error: string | null }>;
 }
 
 function OnboardingTagInput({
@@ -84,6 +84,8 @@ export default function OnboardingClient({
 }: OnboardingClientProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const step = STEPS[stepIndex];
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [profileData, setProfileData] = useState<ProfileInput>({
     profession: '',
@@ -94,9 +96,23 @@ export default function OnboardingClient({
     postcode: '',
   });
 
-  function handleNext() {
-    if (step === 'skills-projects' && onSaveProfile) {
-      onSaveProfile(profileData);
+  async function handleNext() {
+    if (step === 'skills-projects') {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        const result = await onSaveProfile(profileData);
+        if (result?.error) {
+          setSaveError(result.error);
+          setSaving(false);
+          return;
+        }
+      } catch {
+        setSaveError('Failed to save profile. Please try again.');
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
     }
     setStepIndex((prev) => Math.min(prev + 1, STEPS.length - 1));
   }
@@ -188,11 +204,15 @@ export default function OnboardingClient({
               placeholder="e.g. Side business, Renovation, Open source..."
             />
           </div>
+          {saveError && (
+            <p className="text-sm text-red-600">{saveError}</p>
+          )}
           <button
             onClick={handleNext}
-            className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
+            disabled={saving}
+            className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            Next
+            {saving ? 'Saving...' : 'Next'}
           </button>
         </div>
       )}
