@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GoalProgress from '@/components/goals/goal-progress';
+import PathwayCard from '@/components/goals/pathway-card';
+import PathwayBuilder from '@/components/goals/pathway-builder';
 import { DIMENSION_LABELS, GOAL_HORIZON_LABELS, GoalStatus, type Dimension, type GoalHorizon } from '@life-design/core';
 import {
   updateGoalAction,
@@ -11,6 +13,11 @@ import {
   toggleMilestoneAction,
   logProgressAction,
 } from '../actions';
+import {
+  generatePathwayAction,
+  toggleStepAction,
+  deletePathwayAction,
+} from './pathway-actions';
 
 interface GoalDetailData {
   id: string;
@@ -40,8 +47,24 @@ interface GoalDetailData {
   }>;
 }
 
+interface PathwayData {
+  id: string;
+  title: string;
+  description: string | null;
+  ai_generated: boolean;
+  dimension_impacts: Array<{ dimension: string; impact: number; explanation: string }>;
+  pathway_steps: Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    position: number;
+    completed: boolean;
+  }>;
+}
+
 interface GoalDetailClientProps {
   goal: GoalDetailData;
+  pathways: PathwayData[];
 }
 
 const STATUS_ACTIONS = [
@@ -51,7 +74,7 @@ const STATUS_ACTIONS = [
   { value: 'abandoned', label: 'Abandon' },
 ];
 
-export default function GoalDetailClient({ goal }: GoalDetailClientProps) {
+export default function GoalDetailClient({ goal, pathways }: GoalDetailClientProps) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
@@ -148,8 +171,28 @@ export default function GoalDetailClient({ goal }: GoalDetailClientProps) {
         />
       </div>
 
-      {/* Pathway section placeholder — will be filled in Phase F */}
-      <div id="pathways-section" />
+      {/* Pathways section */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Pathways</h2>
+
+        {pathways.map((pw) => (
+          <PathwayCard
+            key={pw.id}
+            pathway={pw}
+            onToggleStep={(stepId) => toggleStepAction(stepId, goal.id)}
+            onDelete={(pathwayId) => {
+              if (confirm('Remove this pathway?')) {
+                deletePathwayAction(pathwayId, goal.id);
+              }
+            }}
+          />
+        ))}
+
+        <PathwayBuilder
+          goalId={goal.id}
+          onGenerate={generatePathwayAction}
+        />
+      </div>
 
       {/* Back link */}
       <button

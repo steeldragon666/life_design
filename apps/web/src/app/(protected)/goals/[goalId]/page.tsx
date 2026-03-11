@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { getGoalById } from '@/lib/services/goal-service';
+import { getPathways } from '@/lib/services/pathway-service';
 import GoalDetailClient from './goal-detail-client';
 
 interface GoalDetailPageProps {
@@ -17,9 +18,17 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
   if (!user) redirect('/login');
 
   const { goalId } = await params;
-  const { data: goal, error } = await getGoalById(goalId);
+  const [goalResult, pathwaysResult] = await Promise.all([
+    getGoalById(goalId),
+    getPathways(goalId),
+  ]);
 
-  if (error || !goal) notFound();
+  if (goalResult.error || !goalResult.data) notFound();
 
-  return <GoalDetailClient goal={goal} />;
+  return (
+    <GoalDetailClient
+      goal={goalResult.data}
+      pathways={pathwaysResult.data ?? []}
+    />
+  );
 }
