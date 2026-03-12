@@ -78,7 +78,7 @@ export interface AssetLoaderOptions {
 }
 
 // Default options
-const defaultOptions: Required<Omit<AssetLoaderOptions, 'onProgress' | 'onComplete' | 'onError'>> = {
+const defaultOptions: Required<Omit<AssetLoaderOptions, 'onProgress' | 'onComplete' | 'onError' | 'videoOptions'>> & { videoOptions: VideoOptimizationOptions } = {
   priority: 'critical',
   sequence: [],
   parallel: false,
@@ -105,7 +105,12 @@ export class AssetLoader {
     state: 'idle',
     errors: [],
   };
-  private options: Required<AssetLoaderOptions>;
+  private options: Required<Omit<AssetLoaderOptions, 'onProgress' | 'onComplete' | 'onError' | 'videoOptions'>> & { 
+    videoOptions: VideoOptimizationOptions;
+    onProgress?: ProgressCallback;
+    onComplete?: CompleteCallback;
+    onError?: ErrorCallback;
+  };
 
   constructor(options: AssetLoaderOptions = {}) {
     this.options = { ...defaultOptions, ...options };

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import type { AssetLoadProgress } from '@/lib/asset-loader';
 import { loadingMessages } from '@/config/assets';
 
-interface LoadingScreenProps {
+export interface LoadingScreenProps {
   /** Current loading progress (0-100) */
   progress?: number;
   /** Loading state from AssetLoader */

@@ -136,13 +136,15 @@ export default function SettingsPage() {
       const provider = error.split('_')[0];
       setNotification(`Failed to connect ${provider}. Please try again.`);
     }
+  }, [searchParams, addIntegration]);
 
-    // Clear notification after 5 seconds
+  // Clear notification after 5 seconds
+  useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 5000);
       return () => clearTimeout(timer);
     }
-  }, [searchParams, addIntegration]);
+  }, [notification]);
 
   const isConnected = (providerId: string) => {
     return connectedIntegrations.some(i => i.provider === providerId);

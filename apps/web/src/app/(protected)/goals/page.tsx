@@ -1,17 +1,25 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { getGoals } from '@/lib/services/goal-service';
+'use client';
+
+import { useGuest } from '@/lib/guest-context';
 import GoalsClient from './goals-client';
 
-export default async function GoalsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default function GoalsPage() {
+  const { goals } = useGuest();
+  
+  // Transform guest goals to match GoalsClient expectations
+  const transformedGoals = goals.map(goal => ({
+    id: goal.id,
+    title: goal.title,
+    horizon: goal.horizon,
+    status: goal.status,
+    tracking_type: 'simple' as const,
+    target_date: goal.target_date,
+    metric_target: null,
+    metric_current: null,
+    metric_unit: null,
+    goal_dimensions: [],
+    goal_milestones: [],
+  }));
 
-  if (!user) redirect('/login');
-
-  const { data: goals } = await getGoals(user.id);
-
-  return <GoalsClient goals={goals ?? []} />;
+  return <GoalsClient goals={transformedGoals} />;
 }

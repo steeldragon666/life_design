@@ -130,7 +130,7 @@ function getScreenCapabilities(): {
  * Detect if device is low-power (e.g., older mobile devices)
  */
 function detectLowPowerDevice(): boolean {
-  const memory = (navigator as Navigator).deviceMemory;
+  const memory = (navigator as any).deviceMemory as number | undefined;
   const cores = navigator.hardwareConcurrency || 2;
   const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -160,9 +160,9 @@ function getConnectionInfo(): {
   rtt?: number;
   effectiveType?: string;
 } {
-  const connection = (navigator as Navigator).connection ||
-    (navigator as Navigator).mozConnection ||
-    (navigator as Navigator).webkitConnection;
+  const connection = (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection;
 
   if (connection) {
     return {
@@ -192,7 +192,7 @@ export async function getDeviceCapabilities(): Promise<DeviceCapabilities> {
   const screen = getScreenCapabilities();
   const connection = getConnectionInfo();
   const isLowPower = detectLowPowerDevice();
-  const deviceMemory = (navigator as Navigator).deviceMemory;
+  const deviceMemory = (navigator as any).deviceMemory as number | undefined;
 
   cachedCapabilities = {
     supportsWebM: codecSupport.webm,
@@ -219,9 +219,9 @@ export function estimateBandwidth(): BandwidthEstimate {
     return cachedBandwidth;
   }
 
-  const connection = (navigator as Navigator).connection ||
-    (navigator as Navigator).mozConnection ||
-    (navigator as Navigator).webkitConnection;
+  const connection = (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection;
 
   const estimate: BandwidthEstimate = {
     downlink: connection?.downlink || 10,

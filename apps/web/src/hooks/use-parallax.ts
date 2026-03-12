@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-interface ParallaxValues {
+export interface ParallaxValues {
   x: number;
   y: number;
   rotateX: number;
   rotateY: number;
 }
 
-interface UseParallaxOptions {
+export interface UseParallaxOptions {
   intensity?: number;
   smoothing?: number;
   maxRotation?: number;
@@ -17,7 +17,7 @@ interface UseParallaxOptions {
   enabled?: boolean;
 }
 
-interface UseParallaxReturn {
+export interface UseParallaxReturn {
   values: ParallaxValues;
   isGyroscopeActive: boolean;
   containerRef: React.RefObject<HTMLDivElement | null>;

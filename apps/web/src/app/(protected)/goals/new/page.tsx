@@ -1,39 +1,40 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useGuest } from '@/lib/guest-context';
 import GoalForm from '@/components/goals/goal-form';
-import { createGoalAction } from '../actions';
 import type { GoalFormData } from '@/components/goals/goal-form';
 
 export default function NewGoalPage() {
   const router = useRouter();
+  const { addGoal } = useGuest();
 
   async function handleSubmit(formData: GoalFormData) {
-    const result = await createGoalAction({
-      title: formData.title,
-      description: formData.description || undefined,
-      horizon: formData.horizon,
-      trackingType: formData.trackingType,
-      targetDate: formData.targetDate,
-      metricTarget: formData.metricTarget,
-      metricUnit: formData.metricUnit,
-      dimensions: formData.dimensions,
-      milestones: formData.milestones.length > 0 ? formData.milestones : undefined,
-    });
+    try {
+      // Save to guest context
+      addGoal({
+        id: `goal-${Date.now()}`,
+        title: formData.title,
+        description: formData.description,
+        horizon: formData.horizon as 'short' | 'medium' | 'long',
+        status: 'active',
+        target_date: formData.targetDate,
+      });
 
-    if (result.error) return { error: result.error };
-
-    if (result.success && result.goal?.id) {
-      router.push(`/goals/${result.goal.id}`);
-    } else {
+      // Navigate to goals page
       router.push('/goals');
+      return { error: null };
+    } catch (err) {
+      return { error: 'Failed to create goal. Please try again.' };
     }
-    return { error: null };
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Create a New Goal</h1>
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create a New Goal</h1>
+        <p className="text-slate-400">Define what you want to achieve</p>
+      </div>
       <GoalForm onSubmit={handleSubmit} />
     </div>
   );

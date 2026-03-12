@@ -7,6 +7,21 @@ export interface OAuthProvider {
   scopes: string[];
 }
 
+/**
+ * Validates that an OAuth provider has the required configuration
+ */
+export function validateOAuthConfig(provider: OAuthProvider): boolean {
+  if (!provider.clientId || provider.clientId === '') {
+    console.error(`OAuth config missing client_id for ${provider.name}`);
+    return false;
+  }
+  if (!provider.clientSecret || provider.clientSecret === '') {
+    console.error(`OAuth config missing client_secret for ${provider.name}`);
+    return false;
+  }
+  return true;
+}
+
 export const STRAVA_CONFIG: OAuthProvider = {
   name: 'strava',
   authUrl: 'https://www.strava.com/oauth/authorize',

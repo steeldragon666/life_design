@@ -22,6 +22,7 @@ export default function CinematicOpener({
   const [showSkip, setShowSkip] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const skipTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -38,6 +39,23 @@ export default function CinematicOpener({
       }
     };
   }, [enableSkipAfter, enableVideoSkip]);
+
+  // Update progress bar while video is playing
+  useEffect(() => {
+    if (!isPlaying || !videoRef.current) return;
+
+    const updateProgress = () => {
+      if (videoRef.current && !videoRef.current.paused) {
+        const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+        setProgress(currentProgress);
+      }
+    };
+
+    // Update progress every 100ms for smooth animation
+    const interval = setInterval(updateProgress, 100);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   const handleVideoLoaded = () => {
     setIsLoaded(true);
@@ -205,11 +223,7 @@ export default function CinematicOpener({
             <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transition-all duration-300"
-                style={{ 
-                  width: videoRef.current 
-                    ? `${(videoRef.current.currentTime / videoRef.current.duration) * 100}%` 
-                    : '0%' 
-                }}
+                style={{ width: `${progress}%` }}
               />
             </div>
             <p className="text-white/40 text-xs font-light tracking-wider">

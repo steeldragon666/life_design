@@ -6,8 +6,5 @@ export {
   LoadingScreen,
   LoadingIndicator,
   LoadingSkeleton,
-} from './loading-screen';
-
-export type {
-  LoadingScreenProps,
+  type LoadingScreenProps,
 } from './loading-screen';

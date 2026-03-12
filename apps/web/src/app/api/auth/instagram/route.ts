@@ -1,18 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { buildAuthorizationUrl, INSTAGRAM_CONFIG } from '@/lib/integrations/oauth';
+import { buildAuthorizationUrl, INSTAGRAM_CONFIG, validateOAuthConfig } from '@/lib/integrations/oauth';
 import { randomBytes } from 'crypto';
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.redirect(`${appUrl}/login`);
+  // Validate OAuth configuration
+  if (!validateOAuthConfig(INSTAGRAM_CONFIG)) {
+    console.error('Instagram OAuth not configured. Please set INSTAGRAM_CLIENT_ID and INSTAGRAM_CLIENT_SECRET environment variables.');
+    return NextResponse.redirect(`${appUrl}/settings?error=instagram_not_configured`);
   }
 
   const state = randomBytes(16).toString('hex');

@@ -5,14 +5,14 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 export type TransitionType = 'crossfade' | 'blur' | 'fade-through-white' | 'fade-through-black';
 export type TransitionState = 'idle' | 'preloading' | 'transitioning' | 'completed';
 
-interface UseVideoTransitionOptions {
+export interface UseVideoTransitionOptions {
   duration?: number;
   type?: TransitionType;
   onTransitionStart?: () => void;
   onTransitionComplete?: () => void;
 }
 
-interface UseVideoTransitionReturn {
+export interface UseVideoTransitionReturn {
   // State
   state: TransitionState;
   progress: number;

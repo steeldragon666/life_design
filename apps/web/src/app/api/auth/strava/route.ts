@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
-import { STRAVA_CONFIG } from '@/lib/integrations/oauth';
+import { STRAVA_CONFIG, validateOAuthConfig } from '@/lib/integrations/oauth';
 import { randomBytes } from 'crypto';
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  
+  // Validate OAuth configuration
+  if (!validateOAuthConfig(STRAVA_CONFIG)) {
+    console.error('Strava OAuth not configured. Please set STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET environment variables.');
+    return NextResponse.redirect(`${appUrl}/settings?error=strava_not_configured`);
+  }
   
   const state = randomBytes(16).toString('hex');
   const redirectUri = `${appUrl}/api/integrations/strava/callback`;

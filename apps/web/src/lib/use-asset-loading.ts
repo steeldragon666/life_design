@@ -16,7 +16,7 @@ import {
   type AssetLoaderOptions,
 } from './asset-loader';
 import { getDeviceCapabilities, estimateBandwidth, type DeviceCapabilities } from './video-optimizer';
-import { preloadVoiceSamples, type VoiceSample, getVoiceSamplesForVoice } from '@/config/assets';
+import { type VoiceSample } from '@/config/assets';
 
 interface UseAssetLoadingOptions {
   autoStart?: boolean;
@@ -144,7 +144,8 @@ export function useAssetLoading(options: UseAssetLoadingOptions = {}): UseAssetL
   }, []);
 
   const preloadVoice = useCallback(async (voiceId: string): Promise<void> => {
-    return loaderRef.current?.loader.preloadVoiceSamples(voiceId);
+    // TODO: Implement voice sample preloading when voice assets are configured
+    console.warn('Voice preloading not yet implemented:', voiceId);
   }, []);
 
   return {
@@ -278,7 +279,8 @@ export function useVoicePreloader(voiceId: string) {
 
     setIsLoading(true);
     try {
-      await preloadVoiceSamples(voiceId);
+      // TODO: Implement voice sample preloading
+      console.warn('Voice preloading not yet implemented:', voiceId);
       setIsPreloaded(true);
     } catch (error) {
       console.warn(`Failed to preload voice samples for ${voiceId}:`, error);
@@ -287,7 +289,10 @@ export function useVoicePreloader(voiceId: string) {
     }
   }, [voiceId, isPreloaded]);
 
-  const samples = useMemo(() => getVoiceSamplesForVoice(voiceId), [voiceId]);
+  const samples = useMemo(() => {
+    // TODO: Implement getVoiceSamplesForVoice
+    return [];
+  }, [voiceId]);
 
   return { preload, isPreloaded, isLoading, samples };
 }

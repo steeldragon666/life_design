@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guest Mode Testing Console</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .section h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button.danger {
+      background: #ef4444;
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    button.secondary {
+      background: #64748b;
+    }
+
+    button.secondary:hover {
+      background: #475569;
+    }
+
+    .output {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 15px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status.warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .key-value {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+
+    .key-value:last-child {
+      border-bottom: none;
+    }
+
+    .key {
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .value {
+      color: #64748b;
+      font-family: 'Monaco', monospace;
+      font-size: 11px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge.exists {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.missing {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Guest Mode Testing Console</h1>
+    <p class="subtitle">Test and debug localStorage, navigation, and data persistence for Life Design app</p>
+
+    <div class="section">
+      <h2>🗄️ localStorage Operations</h2>
+      <button onclick="checkLocalStorage()">Check All Keys</button>
+      <button onclick="clearAllData()" class="danger">Clear All Data</button>
+      <button onclick="seedTestData()" class="secondary">Seed Test Data</button>
+      <div id="storage-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>👤 Profile Operations</h2>
+      <button onclick="getProfile()">Get Profile</button>
+      <button onclick="setTestProfile()">Set Test Profile</button>
+      <button onclick="markOnboarded()">Mark Onboarded</button>
+      <div id="profile-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Goal Operations</h2>
+      <button onclick="getGoals()">Get Goals</button>
+      <button onclick="addTestGoal()">Add Test Goal</button>
+      <button onclick="clearGoals()">Clear Goals</button>
+      <div id="goals-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>✅ Check-in Operations</h2>
+      <button onclick="getCheckins()">Get Check-ins</button>
+      <button onclick="addTestCheckin()">Add Test Check-in</button>
+      <button onclick="clearCheckins()">Clear Check-ins</button>
+      <div id="checkins-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>🔗 Integration Operations</h2>
+      <button onclick="getIntegrations()">Get Integrations</button>
+      <button onclick="addTestIntegration()">Add Test Integration</button>
+      <button onclick="clearIntegrations()">Clear Integrations</button>
+      <div id="integrations-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>🧭 Navigation Tests</h2>
+      <button onclick="navigateTo('/')">Go to Root</button>
+      <button onclick="navigateTo('/login')">Go to Login</button>
+      <button onclick="navigateTo('/onboarding')">Go to Onboarding</button>
+      <button onclick="navigateTo('/dashboard')">Go to Dashboard</button>
+      <div id="nav-output" class="output"></div>
+    </div>
+  </div>
+
+  <script>
+    const KEYS = {
+      profile: 'life-design-guest-profile',
+      goals: 'life-design-guest-goals',
+      checkins: 'life-design-guest-checkins',
+      integrations: 'life-design-guest-integrations',
+      theme: 'life-design-theme',
+      voice: 'life-design-voice-preference',
+    };
+
+    const OLD_KEYS = {
+      profile: 'life_design_guest_profile',
+      goals: 'life_design_guest_goals',
+      checkins: 'life_design_guest_checkins',
+      integrations: 'life_design_guest_integrations',
+      voice: 'life_design_voice_preference',
+    };
+
+    function output(elementId, text, isError = false) {
+      const element = document.getElementById(elementId);
+      const timestamp = new Date().toLocaleTimeString();
+      const prefix = isError ? '❌' : '✅';
+      element.textContent = `[${timestamp}] ${prefix} ${text}`;
+    }
+
+    function checkLocalStorage() {
+      let report = '=== localStorage Check ===\n\n';
+      
+      // Check new keys
+      report += 'NEW KEYS (life-design-*):\n';
+      Object.entries(KEYS).forEach(([name, key]) => {
+        const exists = localStorage.getItem(key) !== null;
+        report += `  ${exists ? '✅' : '❌'} ${key}\n`;
+        if (exists) {
+          const value = localStorage.getItem(key);
+          report += `     Size: ${value.length} chars\n`;
+        }
+      });
+
+      // Check old keys
+      report += '\nOLD KEYS (life_design_*):\n';
+      Object.entries(OLD_KEYS).forEach(([name, key]) => {
+        const exists = localStorage.getItem(key) !== null;
+        report += `  ${exists ? '⚠️' : '✅'} ${key}\n`;
+        if (exists) {
+          report += `     WARNING: Old key format detected!\n`;
+        }
+      });
+
+      // Total size
+      let totalSize = 0;
+      for (let key in localStorage) {
+        if (key.startsWith('life-design-') || key.startsWith('life_design_')) {
+          totalSize += (localStorage.getItem(key) || '').length;
+        }
+      }
+      report += `\nTotal storage used: ${totalSize} chars (${(totalSize / 1024).toFixed(2)} KB)`;
+
+      output('storage-output', report);
+    }
+
+    function clearAllData() {
+      if (!confirm('Clear ALL guest data? This cannot be undone.')) return;
+      
+      // Clear new keys
+      Object.values(KEYS).forEach(key => localStorage.removeItem(key));
+      // Clear old keys
+      Object.values(OLD_KEYS).forEach(key => localStorage.removeItem(key));
+      
+      output('storage-output', 'All guest data cleared!');
+      checkLocalStorage();
+    }
+
+    function seedTestData() {
+      const profile = {
+        id: 'guest-user',
+        name: 'Test User',
+        profession: 'Software Developer',
+        postcode: 'SW1A 1AA',
+        interests: ['Technology', 'Reading', 'Fitness'],
+        hobbies: ['Coding', 'Hiking'],
+        maritalStatus: 'single',
+        onboarded: true,
+        voicePreference: 'calm-british-female',
+      };
+
+      const goals = [
+        {
+          id: 'goal-1',
+          title: 'Launch MVP',
+          horizon: 'short',
+          description: 'Complete and launch minimum viable product',
+          status: 'active',
+          target_date: '2026-06-01',
+        },
+        {
+          id: 'goal-2',
+          title: 'Get promoted',
+          horizon: 'medium',
+          description: 'Achieve senior developer position',
+          status: 'active',
+          target_date: '2026-12-31',
+        },
+      ];
+
+      const checkins = [
+        {
+          id: 'checkin-1',
+          date: '2026-03-13',
+          mood: 8,
+          duration_type: 'quick',
+          dimension_scores: [
+            { dimension: 'physical', score: 7 },
+            { dimension: 'mental', score: 8 },
+            { dimension: 'emotional', score: 7 },
+            { dimension: 'social', score: 6 },
+            { dimension: 'professional', score: 9 },
+            { dimension: 'financial', score: 7 },
+            { dimension: 'spiritual', score: 6 },
+          ],
+        },
+      ];
+
+      localStorage.setItem(KEYS.profile, JSON.stringify(profile));
+      localStorage.setItem(KEYS.goals, JSON.stringify(goals));
+      localStorage.setItem(KEYS.checkins, JSON.stringify(checkins));
+      localStorage.setItem(KEYS.integrations, JSON.stringify([]));
+      localStorage.setItem(KEYS.theme, 'botanical');
+      localStorage.setItem(KEYS.voice, 'calm-british-female');
+
+      output('storage-output', 'Test data seeded successfully!');
+      checkLocalStorage();
+    }
+
+    function getProfile() {
+      const profile = localStorage.getItem(KEYS.profile);
+      if (profile) {
+        const parsed = JSON.parse(profile);
+        output('profile-output', JSON.stringify(parsed, null, 2));
+      } else {
+        output('profile-output', 'No profile found', true);
+      }
+    }
+
+    function setTestProfile() {
+      const profile = {
+        id: 'guest-user',
+        name: 'John Doe',
+        profession: 'Designer',
+        onboarded: false,
+      };
+      localStorage.setItem(KEYS.profile, JSON.stringify(profile));
+      output('profile-output', 'Test profile created');
+      getProfile();
+    }
+
+    function markOnboarded() {
+      const profile = localStorage.getItem(KEYS.profile);
+      if (profile) {
+        const parsed = JSON.parse(profile);
+        parsed.onboarded = true;
+        localStorage.setItem(KEYS.profile, JSON.stringify(parsed));
+        output('profile-output', 'Profile marked as onboarded');
+        getProfile();
+      } else {
+        output('profile-output', 'No profile to update', true);
+      }
+    }
+
+    function getGoals() {
+      const goals = localStorage.getItem(KEYS.goals);
+      if (goals) {
+        const parsed = JSON.parse(goals);
+        output('goals-output', `Found ${parsed.length} goals:\n${JSON.stringify(parsed, null, 2)}`);
+      } else {
+        output('goals-output', 'No goals found', true);
+      }
+    }
+
+    function addTestGoal() {
+      const goals = JSON.parse(localStorage.getItem(KEYS.goals) || '[]');
+      const newGoal = {
+        id: `goal-${Date.now()}`,
+        title: 'Test Goal',
+        horizon: 'short',
+        description: 'This is a test goal',
+        status: 'active',
+        target_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      };
+      goals.push(newGoal);
+      localStorage.setItem(KEYS.goals, JSON.stringify(goals));
+      output('goals-output', `Added test goal: ${newGoal.title}`);
+      getGoals();
+    }
+
+    function clearGoals() {
+      localStorage.setItem(KEYS.goals, JSON.stringify([]));
+      output('goals-output', 'Goals cleared');
+    }
+
+    function getCheckins() {
+      const checkins = localStorage.getItem(KEYS.checkins);
+      if (checkins) {
+        const parsed = JSON.parse(checkins);
+        output('checkins-output', `Found ${parsed.length} check-ins:\n${JSON.stringify(parsed, null, 2)}`);
+      } else {
+        output('checkins-output', 'No check-ins found', true);
+      }
+    }
+
+    function addTestCheckin() {
+      const checkins = JSON.parse(localStorage.getItem(KEYS.checkins) || '[]');
+      const newCheckin = {
+        id: `checkin-${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
+        mood: 7,
+        duration_type: 'quick',
+        dimension_scores: [
+          { dimension: 'physical', score: 7 },
+          { dimension: 'mental', score: 8 },
+          { dimension: 'emotional', score: 7 },
+          { dimension: 'social', score: 6 },
+          { dimension: 'professional', score: 8 },
+          { dimension: 'financial', score: 7 },
+          { dimension: 'spiritual', score: 6 },
+        ],
+      };
+      checkins.push(newCheckin);
+      localStorage.setItem(KEYS.checkins, JSON.stringify(checkins));
+      output('checkins-output', `Added test check-in for ${newCheckin.date}`);
+      getCheckins();
+    }
+
+    function clearCheckins() {
+      localStorage.setItem(KEYS.checkins, JSON.stringify([]));
+      output('checkins-output', 'Check-ins cleared');
+    }
+
+    function getIntegrations() {
+      const integrations = localStorage.getItem(KEYS.integrations);
+      if (integrations) {
+        const parsed = JSON.parse(integrations);
+        output('integrations-output', `Found ${parsed.length} integrations:\n${JSON.stringify(parsed, null, 2)}`);
+      } else {
+        output('integrations-output', 'No integrations found', true);
+      }
+    }
+
+    function addTestIntegration() {
+      const integrations = JSON.parse(localStorage.getItem(KEYS.integrations) || '[]');
+      const newIntegration = {
+        id: `integration-${Date.now()}`,
+        provider: 'strava',
+        access_token: 'mock_token_12345',
+        connected_at: new Date().toISOString(),
+        metadata: { scope: 'read,activity:read' },
+      };
+      integrations.push(newIntegration);
+      localStorage.setItem(KEYS.integrations, JSON.stringify(integrations));
+      output('integrations-output', `Added test integration: ${newIntegration.provider}`);
+      getIntegrations();
+    }
+
+    function clearIntegrations() {
+      localStorage.setItem(KEYS.integrations, JSON.stringify([]));
+      output('integrations-output', 'Integrations cleared');
+    }
+
+    function navigateTo(path) {
+      output('nav-output', `Navigating to: ${path}`);
+      setTimeout(() => {
+        window.location.href = path;
+      }, 500);
+    }
+
+    // Auto-check on load
+    window.addEventListener('load', () => {
+      checkLocalStorage();
+    });
+  </script>
+</body>
+</html>

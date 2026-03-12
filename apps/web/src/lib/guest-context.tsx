@@ -72,17 +72,21 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const savedProfile = localStorage.getItem('life_design_guest_profile');
-    const savedGoals = localStorage.getItem('life_design_guest_goals');
-    const savedCheckins = localStorage.getItem('life_design_guest_checkins');
-    const savedIntegrations = localStorage.getItem('life_design_guest_integrations');
-    const savedVoice = localStorage.getItem('life_design_voice_preference');
+    try {
+      const savedProfile = localStorage.getItem('life-design-guest-profile');
+      const savedGoals = localStorage.getItem('life-design-guest-goals');
+      const savedCheckins = localStorage.getItem('life-design-guest-checkins');
+      const savedIntegrations = localStorage.getItem('life-design-guest-integrations');
+      const savedVoice = localStorage.getItem('life-design-voice-preference');
 
-    if (savedProfile) setProfileState(JSON.parse(savedProfile));
-    if (savedGoals) setGoals(JSON.parse(savedGoals));
-    if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
-    if (savedIntegrations) setIntegrations(JSON.parse(savedIntegrations));
-    if (savedVoice) setVoicePreferenceState(savedVoice);
+      if (savedProfile) setProfileState(JSON.parse(savedProfile));
+      if (savedGoals) setGoals(JSON.parse(savedGoals));
+      if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
+      if (savedIntegrations) setIntegrations(JSON.parse(savedIntegrations));
+      if (savedVoice) setVoicePreferenceState(savedVoice);
+    } catch (error) {
+      console.error('Failed to load guest data from localStorage:', error);
+    }
     
     setIsHydrated(true);
   }, []);
@@ -91,17 +95,28 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
     
-    if (profile) {
-      localStorage.setItem('life_design_guest_profile', JSON.stringify(profile));
+    try {
+      if (profile) {
+        localStorage.setItem('life-design-guest-profile', JSON.stringify(profile));
+      }
+      localStorage.setItem('life-design-guest-goals', JSON.stringify(goals));
+      localStorage.setItem('life-design-guest-checkins', JSON.stringify(checkins));
+      localStorage.setItem('life-design-guest-integrations', JSON.stringify(integrations));
+      localStorage.setItem('life-design-voice-preference', voicePreference);
+    } catch (error) {
+      console.error('Failed to save guest data to localStorage:', error);
     }
-    localStorage.setItem('life_design_guest_goals', JSON.stringify(goals));
-    localStorage.setItem('life_design_guest_checkins', JSON.stringify(checkins));
-    localStorage.setItem('life_design_guest_integrations', JSON.stringify(integrations));
-    localStorage.setItem('life_design_voice_preference', voicePreference);
   }, [profile, goals, checkins, integrations, voicePreference, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {
-    setProfileState({ ...profile, ...newProfile, id: 'guest-user' });
+    if (profile) {
+      // Update existing profile
+      setProfileState({ ...profile, ...newProfile });
+    } else {
+      // Create new profile with guest-user ID if not provided
+      const profileWithId = newProfile.id ? newProfile : { ...newProfile, id: 'guest-user' };
+      setProfileState(profileWithId);
+    }
   };
 
   const addGoal = (goal: GuestGoals) => {
@@ -135,10 +150,10 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearGuestData = () => {
-    localStorage.removeItem('life_design_guest_profile');
-    localStorage.removeItem('life_design_guest_goals');
-    localStorage.removeItem('life_design_guest_checkins');
-    localStorage.removeItem('life_design_guest_integrations');
+    localStorage.removeItem('life-design-guest-profile');
+    localStorage.removeItem('life-design-guest-goals');
+    localStorage.removeItem('life-design-guest-checkins');
+    localStorage.removeItem('life-design-guest-integrations');
     setProfileState(null);
     setGoals([]);
     setCheckins([]);
@@ -146,7 +161,28 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   };
 
   if (!isHydrated) {
-    return null; // or a loading spinner
+    // Provide context during hydration to prevent layout shift
+    return (
+      <GuestContext.Provider
+        value={{
+          profile: null,
+          goals: [],
+          checkins: [],
+          integrations: [],
+          voicePreference: 'calm-british-female',
+          setProfile: () => {},
+          addGoal: () => {},
+          addCheckin: () => {},
+          addIntegration: () => {},
+          removeIntegration: () => {},
+          setVoicePreference: () => {},
+          clearGuestData: () => {},
+          isGuest: true,
+        }}
+      >
+        {children}
+      </GuestContext.Provider>
+    );
   }
 
   return (

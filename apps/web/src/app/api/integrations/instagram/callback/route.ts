@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { INSTAGRAM_CONFIG } from '@/lib/integrations/oauth';
-import { connectIntegration } from '@/lib/services/integration-service';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -11,19 +9,10 @@ export async function GET(request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
   if (error || !code) {
-    return NextResponse.redirect(`${appUrl}/settings?error=auth_denied`);
+    return NextResponse.redirect(`${appUrl}/settings?error=instagram_denied`);
   }
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.redirect(`${appUrl}/login`);
-    }
-
     // Instagram uses form-encoded POST for token exchange
     const redirectUri = `${appUrl}/api/integrations/instagram/callback`;
     const response = await fetch(INSTAGRAM_CONFIG.tokenUrl, {
@@ -51,16 +40,17 @@ export async function GET(request: NextRequest) {
 
     const longLived = longLivedRes.ok ? await longLivedRes.json() : tokens;
 
-    await connectIntegration(
-      user.id,
-      'instagram',
-      longLived.access_token ?? tokens.access_token,
-      '', // Instagram doesn't provide refresh tokens for long-lived tokens
-    );
+    // For guest mode, redirect with tokens in URL (will be stored in localStorage by client)
+    const tokenData = encodeURIComponent(JSON.stringify({
+      provider: 'instagram',
+      access_token: longLived.access_token ?? tokens.access_token,
+      expires_at: longLived.expires_in ? Date.now() + (longLived.expires_in * 1000) : undefined,
+      user_id: tokens.user_id,
+    }));
 
-    return NextResponse.redirect(`${appUrl}/settings?connected=instagram`);
+    return NextResponse.redirect(`${appUrl}/settings?connected=instagram&token=${tokenData}`);
   } catch (err) {
     console.error('Instagram callback error:', err);
-    return NextResponse.redirect(`${appUrl}/settings?error=exchange_failed`);
+    return NextResponse.redirect(`${appUrl}/settings?error=instagram_failed`);
   }
 }
