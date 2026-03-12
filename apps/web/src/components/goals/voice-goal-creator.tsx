@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { ALL_DIMENSIONS, computeAllPairCorrelations, detectSignificantPatterns } from '@life-design/core';
 import { Mic, Loader2, MessageSquare, Sparkles } from 'lucide-react';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
@@ -17,7 +18,7 @@ interface VoiceGoalCreatorProps {
 }
 
 export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps) {
-  const { mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
+  const { profile, mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
   const [userInput, setUserInput] = useState('');
   const [response, setResponse] = useState('');
   const [draft, setDraft] = useState<GoalDraft | null>(null);
@@ -27,6 +28,61 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
     () => `${mentorProfile.characterName}: Tell me what matters most right now, and I will help shape it into a clear goal.`,
     [mentorProfile.characterName]
   );
+
+  const correlationInsights = useMemo(() => {
+    if (checkins.length < 7) return [];
+    const sorted = [...checkins].sort((a, b) => a.date.localeCompare(b.date));
+    const byDimension = ALL_DIMENSIONS.reduce<Record<string, number[]>>((acc, dimension) => {
+      acc[dimension] = [];
+      return acc;
+    }, {});
+    sorted.forEach((checkin) => {
+      const scoreMap = new Map(checkin.dimension_scores.map((item) => [item.dimension, item.score] as const));
+      ALL_DIMENSIONS.forEach((dimension) => {
+        const score = scoreMap.get(dimension);
+        byDimension[dimension].push(typeof score === 'number' ? score : Number.NaN);
+      });
+    });
+    const matrix = computeAllPairCorrelations(byDimension);
+    return detectSignificantPatterns(matrix, 0.55).slice(0, 3).map((pattern) => ({
+      dimensionA: pattern.keyA,
+      dimensionB: pattern.keyB,
+      coefficient: pattern.correlation,
+      lagDays: pattern.bestLag,
+      confidence: pattern.confidence,
+    }));
+  }, [checkins]);
+
+  async function readSseCompletion(response: Response): Promise<string> {
+    if (!response.body) return '';
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split('\n\n');
+      buffer = events.pop() ?? '';
+      for (const event of events) {
+        if (!event.startsWith('data: ')) continue;
+        try {
+          const parsed = JSON.parse(event.slice(6)) as { type?: string; text?: string };
+          if (parsed.type === 'chunk' && typeof parsed.text === 'string') {
+            fullText += parsed.text;
+          }
+          if (parsed.type === 'done' && typeof parsed.text === 'string') {
+            fullText = parsed.text;
+          }
+        } catch {
+          // Ignore malformed chunks and continue stream parsing.
+        }
+      }
+    }
+    return fullText;
+  }
 
   async function processInput() {
     if (!userInput.trim()) return;
@@ -49,10 +105,19 @@ Respond in two sections:
       const chatRes = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          message,
+          stream: true,
+          correlationInsights,
+          persistConversation: true,
+          userId: profile?.id,
+          source: 'goals',
+        }),
       });
-      const chatData = await chatRes.json();
-      const text = chatData.text || 'Let us shape this with one small next step.';
+      if (!chatRes.ok) {
+        throw new Error('Unable to generate goal guidance right now.');
+      }
+      const text = (await readSseCompletion(chatRes)) || 'Let us shape this with one small next step.';
       setResponse(text);
       appendConversationSummary(`Goal discussion: "${userInput}"`, 'goals');
 

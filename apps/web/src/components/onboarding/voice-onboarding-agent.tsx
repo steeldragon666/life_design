@@ -72,6 +72,7 @@ export default function VoiceOnboardingAgent({
 }: VoiceOnboardingAgentProps) {
   const { theme: currentTheme, setTheme } = useTheme();
   const {
+    profile,
     voicePreference,
     setVoicePreference,
     mentorProfile,
@@ -111,6 +112,7 @@ export default function VoiceOnboardingAgent({
     processUserMessage,
     handleManualComplete,
   } = useOnboardingConversation({
+    userId: profile?.id,
     mentorProfile,
     checkins,
     conversationMemory,

@@ -7,16 +7,16 @@ export interface PersonaConfig {
 
 export const PERSONA_CONFIGS: Record<MentorType, PersonaConfig> = {
   [MentorType.Stoic]: {
-    name: 'The Stoic',
-    basePrompt: `You are a stoic philosophy mentor. Draw on ancient wisdom from Marcus Aurelius, Seneca, and Epictetus. Help the user examine what is within their control, practice acceptance of what is not, and cultivate inner resilience. Speak with calm authority and use philosophical reflections to guide growth. Keep responses concise and actionable.`,
+    name: 'Therapist',
+    basePrompt: `You are a warm therapist-like mentor grounded in stoic wisdom and practical philosophy. Prioritize emotional safety, reflective listening, and gentle reframing. Validate lived experience before giving advice. Ask one thoughtful question at a time and keep suggestions practical, compassionate, and non-judgmental.`,
   },
   [MentorType.Coach]: {
-    name: 'The Coach',
-    basePrompt: `You are an energetic life coach focused on goal-setting and action. Help the user set clear, measurable goals, break them into steps, and build momentum. Celebrate wins, address setbacks with encouragement, and always drive toward concrete next actions. Be direct, supportive, and results-oriented.`,
+    name: 'Coach',
+    basePrompt: `You are a high-clarity performance coach. Turn insight into action with concrete next steps, accountability cues, and momentum loops. Be encouraging but specific: define what to do today, what to review this week, and how to measure progress.`,
   },
   [MentorType.Scientist]: {
-    name: 'The Scientist',
-    basePrompt: `You are a data-driven wellness scientist. Analyze the user's patterns using evidence-based approaches. Reference research on habits, well-being, and behavior change. Identify correlations in their data, suggest experiments to test improvements, and explain the science behind your recommendations. Be precise and analytical while remaining approachable.`,
+    name: 'Sage',
+    basePrompt: `You are a wise systems-thinking mentor. Interpret life patterns with calm perspective, long-term meaning, and disciplined curiosity. Blend practical wisdom with evidence-informed reasoning. Help the user identify patterns worth exploring rather than claiming certainty.`,
   },
 };
 
@@ -44,6 +44,15 @@ export interface UserContext {
   hobbies?: string[];
   // Integration context strings (appended directly to prompt)
   integrationContexts?: string[];
+  // Correlation summaries to ground responses in actual detected patterns
+  correlationInsights?: Array<{
+    dimensionA: string;
+    dimensionB: string;
+    coefficient: number;
+    lagDays?: number;
+    confidence?: number;
+    narrative?: string;
+  }>;
 }
 
 export function buildSystemPrompt(
@@ -68,6 +77,7 @@ export function buildSystemPrompt(
 - If health metrics are available, use sleep/steps/HRV data to inform wellbeing suggestions. Low HRV or poor sleep should trigger gentle check-ins.
 - If Notion productivity data is available, reference task completion and overdue items to help with workload management.
 - If financial data is available, NEVER share exact figures unless the user asks. Use general terms like "spending seems higher than usual" or "on track with budget".`;
+  prompt += `\n- When discussing correlations, frame findings as "patterns worth exploring" rather than proven causation.`;
 
   if (context) {
     const contextLines: string[] = [
@@ -112,6 +122,24 @@ export function buildSystemPrompt(
     if (context.integrationContexts && context.integrationContexts.length > 0) {
       for (const ctx of context.integrationContexts) {
         prompt += '\n' + ctx;
+      }
+    }
+
+    if (context.correlationInsights && context.correlationInsights.length > 0) {
+      prompt += '\n\nRecent detected correlations (exploratory, not causal):';
+      for (const insight of context.correlationInsights.slice(0, 5)) {
+        const lagText =
+          typeof insight.lagDays === 'number' && insight.lagDays !== 0
+            ? `, lag ${insight.lagDays} day(s)`
+            : '';
+        const confidenceText =
+          typeof insight.confidence === 'number'
+            ? `, confidence ${Math.round(insight.confidence * 100)}%`
+            : '';
+        prompt += `\n- ${insight.dimensionA} ↔ ${insight.dimensionB}: r=${insight.coefficient.toFixed(2)}${lagText}${confidenceText}`;
+        if (insight.narrative) {
+          prompt += `\n  narrative: ${insight.narrative}`;
+        }
       }
     }
   }

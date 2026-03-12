@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { computeAllPairCorrelations, detectSignificantPatterns } from '@life-design/core';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
 import type { MentorProfile } from '@/lib/guest-context';
@@ -24,6 +25,7 @@ export interface ConversationMessage {
 }
 
 interface UseOnboardingConversationOptions {
+  userId?: string;
   mentorProfile: MentorProfile;
   checkins: Array<{ mood: number }>;
   conversationMemory: ConversationMemoryEntry[];
@@ -36,6 +38,7 @@ interface UseOnboardingConversationOptions {
 }
 
 export function useOnboardingConversation({
+  userId,
   mentorProfile,
   checkins,
   conversationMemory,
@@ -46,6 +49,70 @@ export function useOnboardingConversation({
   onSaveProfile,
   onCreateGoals,
 }: UseOnboardingConversationOptions) {
+  const getCorrelationInsights = useCallback(() => {
+    if (checkins.length < 6) return [];
+    const moodSeries = checkins.map((item) => item.mood);
+    const moodDeltaSeries = moodSeries.map((value, index) =>
+      index === 0 ? 0 : value - moodSeries[index - 1]
+    );
+    const matrix = computeAllPairCorrelations({ mood: moodSeries, mood_delta: moodDeltaSeries });
+    return detectSignificantPatterns(matrix, 0.55).slice(0, 2).map((item) => ({
+      dimensionA: item.keyA,
+      dimensionB: item.keyB,
+      coefficient: item.correlation,
+      lagDays: item.bestLag,
+      confidence: item.confidence,
+    }));
+  }, [checkins]);
+
+  const getStreamingResponse = useCallback(
+    async (payload: Record<string, unknown>) => {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, stream: true }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      if (!response.body) {
+        const fallback = await response.json();
+        return typeof fallback.text === 'string'
+          ? fallback.text
+          : "I'm here with you. Tell me more when you're ready.";
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() ?? '';
+        for (const event of events) {
+          if (!event.startsWith('data: ')) continue;
+          const json = event.slice(6);
+          try {
+            const parsed = JSON.parse(json) as { type?: string; text?: string };
+            if (parsed.type === 'chunk' && typeof parsed.text === 'string') {
+              fullText += parsed.text;
+            }
+            if (parsed.type === 'done' && typeof parsed.text === 'string') {
+              fullText = parsed.text;
+            }
+          } catch {
+            // Ignore malformed chunk and continue.
+          }
+        }
+      }
+      return fullText || "I'm here with you. Tell me more when you're ready.";
+    },
+    []
+  );
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [extractedProfile, setExtractedProfile] = useState<ExtractedProfile>({});
@@ -132,16 +199,13 @@ export function useOnboardingConversation({
           conversationContext
         )}\n\nUser: "${userMessage}"\n\nRespond warmly and naturally, as ${voiceName}:`;
 
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: fullPrompt }),
+        const aiResponse = await getStreamingResponse({
+          message: fullPrompt,
+          correlationInsights: getCorrelationInsights(),
+          persistConversation: true,
+          userId,
+          source: 'onboarding',
         });
-
-        if (!response.ok) throw new Error('Failed to get AI response');
-
-        const data = await response.json();
-        const aiResponse = data.text || "I'm here with you. Tell me more when you're ready.";
 
         setMessages((prev) => [...prev, { role: 'assistant', content: aiResponse }]);
         appendConversationSummary(
@@ -172,9 +236,12 @@ export function useOnboardingConversation({
       checkins,
       conversationMemory,
       extractAndUpdateProfile,
+      getCorrelationInsights,
+      getStreamingResponse,
       mentorProfile,
       messages,
       speakMessage,
+      userId,
     ]
   );
 

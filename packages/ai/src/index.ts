@@ -1,6 +1,6 @@
 export * from './client';
-export { sendMentorMessage } from './chat';
-export type { ChatMessage, ChatResult } from './chat';
+export { sendMentorMessage, streamMentorMessage } from './chat';
+export type { ChatMessage, ChatResult, ChatStreamChunk } from './chat';
 export { buildSystemPrompt, PERSONA_CONFIGS } from './personas';
 export type { PersonaConfig, UserContext } from './personas';
 export * from './insights';

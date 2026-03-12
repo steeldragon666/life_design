@@ -1,11 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@supabase/supabase-js';
 import {
   applyChatRateLimit,
   normalizeAndSanitizeOutputText,
   validateAndNormalizeChatPayload,
   ValidationError,
 } from '@/lib/chat-security';
+
+type OptionalChatMetadata = {
+  stream?: boolean;
+  systemPrompt?: string;
+  correlationInsights?: Array<{
+    dimensionA?: string;
+    dimensionB?: string;
+    coefficient?: number;
+    lagDays?: number;
+    confidence?: number;
+  }>;
+  persistConversation?: boolean;
+  userId?: string;
+  source?: string;
+};
+
+function buildCorrelationContext(
+  insights?: OptionalChatMetadata['correlationInsights']
+): string {
+  if (!insights || insights.length === 0) return '';
+  const lines = insights
+    .slice(0, 5)
+    .map((insight) => {
+      const a = insight.dimensionA ?? 'unknown_a';
+      const b = insight.dimensionB ?? 'unknown_b';
+      const r = typeof insight.coefficient === 'number' ? insight.coefficient.toFixed(2) : 'n/a';
+      const lag =
+        typeof insight.lagDays === 'number' && insight.lagDays !== 0
+          ? `, lag ${insight.lagDays} day(s)`
+          : '';
+      const confidence =
+        typeof insight.confidence === 'number'
+          ? `, confidence ${Math.round(insight.confidence * 100)}%`
+          : '';
+      return `- ${a} ↔ ${b}: r=${r}${lag}${confidence}`;
+    })
+    .join('\n');
+  return `\n\nDetected cross-domain patterns (exploratory):\n${lines}\nFrame as patterns worth exploring, not causal proof.`;
+}
+
+function getServiceRoleClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+async function persistConversationSummary(params: {
+  userId?: string;
+  source?: string;
+  userMessage: string;
+  responseText: string;
+}) {
+  if (!params.userId) return;
+  const supabase = getServiceRoleClient();
+  if (!supabase) return;
+  const summary = `User: "${params.userMessage.slice(0, 250)}" | Mentor: "${params.responseText.slice(0, 350)}"`;
+  await supabase.from('mentor_conversation_summaries').insert({
+    user_id: params.userId,
+    source: params.source ?? 'chat',
+    user_message: params.userMessage.slice(0, 4000),
+    mentor_response: params.responseText.slice(0, 8000),
+    summary,
+    created_at: new Date().toISOString(),
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +99,8 @@ export async function POST(request: NextRequest) {
 
     const payload = await request.json();
     const { message, history = [] } = validateAndNormalizeChatPayload(payload);
+    const metadata = (payload ?? {}) as OptionalChatMetadata;
+    const wantsStream = metadata.stream === true;
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) {
@@ -37,13 +108,21 @@ export async function POST(request: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ 
+    const systemInstruction =
+      typeof metadata.systemPrompt === 'string' && metadata.systemPrompt.trim().length > 0
+        ? metadata.systemPrompt.trim()
+        : undefined;
+    const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
+      ...(systemInstruction ? { systemInstruction } : {}),
       generationConfig: {
         temperature: 0.8,
         maxOutputTokens: 1024,
       },
     });
+
+    const correlationContext = buildCorrelationContext(metadata.correlationInsights);
+    const finalMessage = `${message}${correlationContext}`;
 
     // Build the conversation
     const chat = model.startChat({
@@ -53,9 +132,71 @@ export async function POST(request: NextRequest) {
       })),
     });
 
-    const result = await chat.sendMessage(message);
+    if (wantsStream) {
+      const encoder = new TextEncoder();
+      const streamResult = await chat.sendMessageStream(finalMessage);
+
+      const stream = new ReadableStream({
+        async start(controller) {
+          let fullText = '';
+          try {
+            for await (const chunk of streamResult.stream) {
+              const text = normalizeAndSanitizeOutputText(chunk.text() ?? '');
+              if (!text) continue;
+              fullText += text;
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`));
+            }
+
+            if (metadata.persistConversation) {
+              await persistConversationSummary({
+                userId: metadata.userId,
+                source: metadata.source,
+                userMessage: message,
+                responseText: fullText,
+              });
+            }
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: 'done', text: fullText })}\n\n`)
+            );
+          } catch (streamError) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: 'error',
+                  error:
+                    streamError instanceof Error ? streamError.message : 'Streaming response failed',
+                })}\n\n`
+              )
+            );
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+          'X-RateLimit-Limit': String(rateLimit.limit),
+          'X-RateLimit-Remaining': String(rateLimit.remaining),
+        },
+      });
+    }
+
+    const result = await chat.sendMessage(finalMessage);
     const response = await result.response;
     const text = normalizeAndSanitizeOutputText(response.text());
+
+    if (metadata.persistConversation) {
+      await persistConversationSummary({
+        userId: metadata.userId,
+        source: metadata.source,
+        userMessage: message,
+        responseText: text,
+      });
+    }
 
     return NextResponse.json(
       { text },
