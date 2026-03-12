@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
+import { Dimension } from '@life-design/core';
 import WheelOfLife from '@/components/dashboard/wheel-of-life';
-import TrendSparkline from '@/components/dashboard/trend-sparkline';
 import InsightCard from '@/components/insights/insight-card';
 import LifeOrb from '@/components/dashboard/life-orb';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
 import MicroMomentCard from '@/components/nudges/micro-moment-card';
+import CorrelationCards, { type CorrelationInsight } from '@/components/dashboard/correlation-cards';
+import TrendCharts from '@/components/dashboard/trend-charts';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import type { MicroMomentNudge } from '@/lib/micro-moments';
 import type { ConversationMemoryEntry } from '@/lib/conversation-memory';
@@ -24,7 +25,6 @@ import type {
 import { 
   Target, 
   Lightbulb, 
-  TrendingUp, 
   ArrowRight, 
   Compass,
   MessageCircle,
@@ -65,7 +65,6 @@ interface DashboardClientProps {
   latestScores: { dimension: string; score: number }[];
   overallScore: number;
   streak: number;
-  dimensionTrends: Record<string, { date: string; score: number }[]>;
   recentInsights: InsightData[];
   goalsSummary?: GoalsSummary;
   nudges?: any[];
@@ -75,6 +74,9 @@ interface DashboardClientProps {
     name?: string;
     profession?: string;
   };
+  correlationInsights?: CorrelationInsight[];
+  highlightedCorrelationPair?: readonly [string, string] | null;
+  daysUntilFirstCorrelation?: number;
 }
 
 const ErrorBoundary = ResilientErrorBoundary as any;
@@ -83,13 +85,15 @@ export default function DashboardClient({
   latestScores,
   overallScore,
   streak,
-  dimensionTrends,
   recentInsights,
   goalsSummary,
   nudges = [],
   nextMicroMomentNudge = null,
   digestContext,
   profile,
+  correlationInsights = [],
+  highlightedCorrelationPair = null,
+  daysUntilFirstCorrelation = 0,
 }: DashboardClientProps) {
   const [digestLoading, setDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
@@ -313,6 +317,44 @@ export default function DashboardClient({
 
         <div className="mt-5 space-y-5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <CorrelationCards
+              insights={correlationInsights}
+              emptyTitle="Correlation engine is warming up"
+              emptyDescription={
+                daysUntilFirstCorrelation > 0
+                  ? `${daysUntilFirstCorrelation} more day${daysUntilFirstCorrelation === 1 ? '' : 's'} of check-ins until your first statistically meaningful cross-domain pattern.`
+                  : 'No statistically significant patterns yet. Keep check-ins consistent to surface insights.'
+              }
+            />
+            <div className="glass-card p-5 space-y-3">
+              <h3 className="section-header mb-0">Milestones</h3>
+              <p className="text-xs text-slate-500">
+                Streak and cadence milestones unlock stronger insight confidence.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[7, 14, 30, 90].map((target) => {
+                  const unlocked = streak >= target;
+                  return (
+                    <div
+                      key={`streak-target-${target}`}
+                      className={`rounded-xl border p-2 text-center ${
+                        unlocked
+                          ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+                          : 'border-white/10 bg-white/5 text-slate-400'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">{target}d</p>
+                      <p className="text-[10px] uppercase tracking-wide">
+                        {unlocked ? 'Unlocked' : 'Pending'}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ErrorBoundary
               fallback={
                 <GlassErrorFallbackCard
@@ -325,30 +367,13 @@ export default function DashboardClient({
             >
               <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
             </ErrorBoundary>
-
-            <div className="glass-card p-5">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="section-header mb-0">Dimension trends</h3>
-                    <p className="text-xs text-slate-500">Last 30 days</p>
-                  </div>
-                </div>
-                <span className="badge-blue">{ALL_DIMENSIONS.length} dimensions</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {ALL_DIMENSIONS.slice(0, 4).map((dim) => (
-                  <TrendSparkline
-                    key={dim}
-                    label={DIMENSION_LABELS[dim]}
-                    data={dimensionTrends[dim] ?? []}
-                  />
-                ))}
-              </div>
-            </div>
+            <TrendCharts
+              history={(digestContext?.checkins ?? []).map((checkin) => ({
+                date: checkin.date,
+                dimension_scores: checkin.dimension_scores,
+              }))}
+              highlightedCorrelationPair={highlightedCorrelationPair}
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
