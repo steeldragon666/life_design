@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { signIn, signInWithGoogle } from '../actions';
 
 export default function LoginPage() {
@@ -25,9 +26,16 @@ export default function LoginPage() {
       <div className="absolute bottom-0 left-0 h-96 w-96 bg-indigo-500/10 rounded-full blur-[120px]" />
 
       <div className="w-full max-w-md glass-card space-y-8 relative z-10">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-gradient">Welcome Back</h1>
-          <p className="text-slate-400">Sign in to continue your evolution</p>
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+              <Sparkles className="h-6 w-6 text-indigo-400" />
+            </div>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gradient">Life Design OS</h1>
+            <p className="text-slate-400 text-sm mt-1">Sign in to continue your evolution</p>
+          </div>
         </div>
 
         <form action={handleSubmit} className="space-y-6">
@@ -109,15 +117,22 @@ export default function LoginPage() {
               fill="#EA4335"
             />
           </svg>
-          Google Cloud
+          <span className="text-slate-300">Sign in with Google</span>
         </button>
 
-        <p className="text-center text-sm text-slate-400">
-          New to Life Design?{' '}
-          <Link href="/signup" className="text-primary-400 hover:text-primary-300 transition-colors font-medium">
-            Create account
-          </Link>
-        </p>
+        <div className="space-y-4">
+          <p className="text-center text-sm text-slate-400">
+            New to Life Design?{' '}
+            <Link href="/signup" className="text-primary-400 hover:text-primary-300 transition-colors font-medium">
+              Create account
+            </Link>
+          </p>
+
+          <div className="flex justify-center gap-4 text-[10px] text-slate-600 uppercase tracking-widest">
+            <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-slate-400 transition-colors">Terms of Service</Link>
+          </div>
+        </div>
       </div>
     </div>
   );

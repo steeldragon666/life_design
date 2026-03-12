@@ -9,7 +9,7 @@ export default function Home() {
 
       <div className="relative z-10 glass-card max-w-2xl text-center space-y-8 animate-float">
         <h1 className="text-6xl font-extrabold tracking-tight text-gradient">
-          Life Design
+          Life Design OS
         </h1>
         <p className="text-xl text-slate-300">
           Your personal well-being companion, powered by Gemini intelligence.
