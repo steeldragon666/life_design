@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { SkipForward, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import { useFlowState } from './flow-state';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ export default function CinematicOpener({
   const [isMuted, setIsMuted] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [hasVideoError, setHasVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const skipTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -39,6 +41,20 @@ export default function CinematicOpener({
       }
     };
   }, [enableSkipAfter, enableVideoSkip]);
+
+  // If intro video fails to load, auto-advance after showing fallback briefly.
+  useEffect(() => {
+    if (!hasVideoError || isTransitioning) return;
+
+    const timer = setTimeout(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        onVideoComplete();
+      }, 500);
+    }, 2800);
+
+    return () => clearTimeout(timer);
+  }, [hasVideoError, isTransitioning, onVideoComplete]);
 
   // Update progress bar while video is playing
   useEffect(() => {
@@ -65,6 +81,12 @@ export default function CinematicOpener({
     }).catch(() => {
       // Auto-play blocked, wait for user interaction
     });
+  };
+
+  const handleVideoError = () => {
+    setHasVideoError(true);
+    setShowSkip(true);
+    enableVideoSkip();
   };
 
   const handleVideoEnded = () => {
@@ -119,6 +141,7 @@ export default function CinematicOpener({
           playsInline
           muted={isMuted}
           onLoadedData={handleVideoLoaded}
+          onError={handleVideoError}
           onEnded={handleVideoEnded}
           onClick={tryPlay}
           poster="/images/life-design-hero-illustration.png"
@@ -128,7 +151,7 @@ export default function CinematicOpener({
         </video>
 
         {/* Fallback gradient animation when video not available */}
-        {!isLoaded && (
+        {(!isLoaded || hasVideoError) && (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900">
             {/* Animated gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-teal-500/10 animate-pulse-subtle" />
@@ -144,7 +167,7 @@ export default function CinematicOpener({
                 <div className="relative flex flex-col items-center gap-4">
                   <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" />
                   <p className="text-cyan-300/70 text-sm font-light tracking-wider">
-                    Preparing your experience...
+                    {hasVideoError ? 'Setting the scene...' : 'Preparing your experience...'}
                   </p>
                 </div>
               </div>
@@ -243,8 +266,22 @@ interface BeachBackgroundProps {
 }
 
 export function BeachBackground({ children, className }: BeachBackgroundProps) {
+  const [hasVideoError, setHasVideoError] = useState(false);
+
   return (
     <div className={cn('fixed inset-0 overflow-hidden', className)}>
+      {/* Static fallback image if video is unavailable */}
+      <Image
+        src="/images/life-design-hero-illustration.png"
+        alt=""
+        fill
+        priority
+        className={cn(
+          'absolute inset-0 object-cover transition-opacity duration-500',
+          hasVideoError ? 'opacity-100' : 'opacity-0'
+        )}
+      />
+
       {/* Beach video background */}
       <video
         className="absolute inset-0 w-full h-full object-cover"
@@ -253,6 +290,7 @@ export function BeachBackground({ children, className }: BeachBackgroundProps) {
         muted
         playsInline
         poster="/images/life-design-hero-illustration.png"
+        onError={() => setHasVideoError(true)}
       >
         <source src="/videos/beach-hero.mp4" type="video/mp4" />
       </video>
