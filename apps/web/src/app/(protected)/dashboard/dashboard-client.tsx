@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
 import WheelOfLife from '@/components/dashboard/wheel-of-life';
@@ -7,7 +8,19 @@ import TrendSparkline from '@/components/dashboard/trend-sparkline';
 import InsightCard from '@/components/insights/insight-card';
 import LifeOrb from '@/components/dashboard/life-orb';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
+import MicroMomentCard from '@/components/nudges/micro-moment-card';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+import type { MicroMomentNudge } from '@/lib/micro-moments';
+import type { ConversationMemoryEntry } from '@/lib/conversation-memory';
+import type { MentorProfile } from '@/lib/guest-context';
+import type {
+  WeeklyDigestCheckin,
+  WeeklyDigestGoal,
+  WeeklyDigestProfile,
+  WeeklyDigestSections,
+  WeeklyDigestStats,
+  WeeklyDigestInsights,
+} from '@/lib/weekly-digest';
 import { 
   Target, 
   Lightbulb, 
@@ -32,6 +45,22 @@ interface GoalsSummary {
   nearestDeadline: Record<string, unknown> | null;
 }
 
+interface DigestContext {
+  profile: WeeklyDigestProfile | null;
+  goals: WeeklyDigestGoal[];
+  checkins: WeeklyDigestCheckin[];
+  mentorProfile: MentorProfile;
+  conversationMemory: ConversationMemoryEntry[];
+}
+
+interface WeeklyDigestResponse {
+  digest: WeeklyDigestSections;
+  stats: WeeklyDigestStats;
+  insights: WeeklyDigestInsights;
+  source: 'ai' | 'fallback';
+  generatedAt: string;
+}
+
 interface DashboardClientProps {
   latestScores: { dimension: string; score: number }[];
   overallScore: number;
@@ -40,6 +69,8 @@ interface DashboardClientProps {
   recentInsights: InsightData[];
   goalsSummary?: GoalsSummary;
   nudges?: any[];
+  nextMicroMomentNudge?: MicroMomentNudge | null;
+  digestContext?: DigestContext;
   profile?: {
     name?: string;
     profession?: string;
@@ -56,8 +87,14 @@ export default function DashboardClient({
   recentInsights,
   goalsSummary,
   nudges = [],
+  nextMicroMomentNudge = null,
+  digestContext,
   profile,
 }: DashboardClientProps) {
+  const [digestLoading, setDigestLoading] = useState(false);
+  const [digestError, setDigestError] = useState<string | null>(null);
+  const [weeklyDigest, setWeeklyDigest] = useState<WeeklyDigestResponse | null>(null);
+
   const greeting = profile?.name
     ? `Good ${getTimeOfDay()}, ${profile.name.split(' ')[0]}`
     : 'Welcome to Life Design';
@@ -69,6 +106,37 @@ export default function DashboardClient({
     goalsSummary,
     profileName: profile?.name,
   });
+
+  async function requestWeeklyDigest() {
+    if (!digestContext || digestLoading) return;
+
+    setDigestLoading(true);
+    setDigestError(null);
+    try {
+      const response = await fetch('/api/weekly-digest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile: digestContext.profile,
+          goals: digestContext.goals,
+          checkins: digestContext.checkins,
+          mentorProfile: digestContext.mentorProfile,
+          conversationMemory: digestContext.conversationMemory,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate weekly digest.');
+      }
+
+      setWeeklyDigest(data as WeeklyDigestResponse);
+    } catch (error) {
+      setDigestError(error instanceof Error ? error.message : 'Failed to generate weekly digest.');
+    } finally {
+      setDigestLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -144,6 +212,58 @@ export default function DashboardClient({
             <Link href="/goals" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
               View goals
             </Link>
+          </div>
+
+          {nextMicroMomentNudge && <MicroMomentCard nudge={nextMicroMomentNudge} />}
+
+          <div className="rounded-xl p-4 border border-white/10 bg-white/5 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Weekly digest
+              </p>
+              <button
+                type="button"
+                onClick={requestWeeklyDigest}
+                disabled={digestLoading || !digestContext}
+                className="text-xs rounded-md border border-blue-400/30 px-2.5 py-1 text-blue-300 hover:text-blue-200 hover:border-blue-300/50 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {digestLoading ? 'Generating...' : weeklyDigest ? 'Refresh' : 'Generate'}
+              </button>
+            </div>
+
+            {digestError && <p className="text-xs text-red-400">{digestError}</p>}
+
+            {weeklyDigest ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Wins</p>
+                  <ul className="mt-1 space-y-1">
+                    {weeklyDigest.digest.wins.slice(0, 2).map((item, index) => (
+                      <li key={`digest-win-${index}`} className="text-sm text-slate-300">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">Focus next week</p>
+                  <ul className="mt-1 space-y-1">
+                    {weeklyDigest.digest.focusNextWeek.slice(0, 2).map((item, index) => (
+                      <li key={`digest-focus-${index}`} className="text-sm text-slate-300">
+                        • {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Source: {weeklyDigest.source === 'ai' ? 'AI-assisted' : 'Deterministic'} digest
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">
+                Generate a weekly summary of wins, patterns, and focus areas from your goals and check-ins.
+              </p>
+            )}
           </div>
 
           {goalsSummary?.nearestDeadline ? (

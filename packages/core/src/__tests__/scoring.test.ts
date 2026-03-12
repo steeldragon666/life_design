@@ -4,6 +4,10 @@ import {
   computeDimensionAverage,
   computeStreak,
   computeTrend,
+  computeMovingAverage,
+  computeVolatility,
+  computeWeightedScore,
+  computeBalanceIndex,
 } from '../scoring';
 import { Dimension } from '../enums';
 import type { DimensionScore } from '../types';
@@ -96,5 +100,50 @@ describe('computeTrend', () => {
 
   it('returns exact slope of 1 for [1, 2, 3]', () => {
     expect(computeTrend([1, 2, 3])).toBeCloseTo(1.0);
+  });
+});
+
+describe('computeMovingAverage', () => {
+  it('computes sliding window averages', () => {
+    expect(computeMovingAverage([2, 4, 6, 8], 2)).toEqual([3, 5, 7]);
+  });
+
+  it('returns empty array for invalid window', () => {
+    expect(computeMovingAverage([1, 2, 3], 0)).toEqual([]);
+    expect(computeMovingAverage([1, 2, 3], 4)).toEqual([]);
+  });
+});
+
+describe('computeVolatility', () => {
+  it('returns 0 for a flat series', () => {
+    expect(computeVolatility([5, 5, 5, 5])).toBe(0);
+  });
+
+  it('returns positive sample standard deviation for varying scores', () => {
+    expect(computeVolatility([4, 6, 8, 10])).toBeCloseTo(2.58199, 4);
+  });
+});
+
+describe('computeWeightedScore', () => {
+  it('computes weighted mean when weights sum is positive', () => {
+    expect(computeWeightedScore([10, 5], [0.8, 0.2])).toBeCloseTo(9);
+  });
+
+  it('falls back to simple average when weights are unusable', () => {
+    expect(computeWeightedScore([8, 4], [0, 0])).toBeCloseTo(6);
+    expect(computeWeightedScore([8, 4], [1])).toBeCloseTo(6);
+  });
+});
+
+describe('computeBalanceIndex', () => {
+  it('returns 1 for perfectly balanced dimensions', () => {
+    expect(computeBalanceIndex([6, 6, 6, 6])).toBeCloseTo(1);
+  });
+
+  it('returns lower values when spread increases', () => {
+    const balanced = computeBalanceIndex([6, 6, 6, 6]);
+    const imbalanced = computeBalanceIndex([2, 10, 3, 9]);
+    expect(imbalanced).toBeLessThan(balanced);
+    expect(imbalanced).toBeGreaterThanOrEqual(0);
   });
 });

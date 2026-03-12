@@ -4,11 +4,12 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGuest } from '@/lib/guest-context';
 import DashboardClient from './dashboard-client';
-import { Dimension, GoalStatus, computeOverallScore, computeStreak } from '@life-design/core';
+import { Dimension, computeOverallScore, computeStreak } from '@life-design/core';
+import { getDeterministicNextNudgeSuggestion } from '@/lib/micro-moments';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { profile, goals, checkins } = useGuest();
+  const { profile, goals, checkins, mentorProfile, conversationMemory, microMoments } = useGuest();
 
   // Redirect to onboarding if not onboarded
   useEffect(() => {
@@ -86,6 +87,15 @@ export default function DashboardPage() {
     },
   ] : [];
 
+  const nextMicroMomentNudge = getDeterministicNextNudgeSuggestion({
+    now: new Date(),
+    profile,
+    goals,
+    checkins,
+    mentorArchetype: mentorProfile.archetype,
+    preferences: microMoments,
+  });
+
   return (
     <DashboardClient
       latestScores={latestScores}
@@ -95,7 +105,15 @@ export default function DashboardPage() {
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
       nudges={nudges}
+      nextMicroMomentNudge={nextMicroMomentNudge}
       profile={profile}
+      digestContext={{
+        profile,
+        goals,
+        checkins,
+        mentorProfile,
+        conversationMemory,
+      }}
     />
   );
 }

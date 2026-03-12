@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGuest } from '@/lib/guest-context';
-import { DurationType } from '@life-design/core';
+import { ALL_DIMENSIONS, Dimension, DurationType } from '@life-design/core';
 import CheckInForm from '@/components/checkin/checkin-form';
 import type { CheckInFormData } from '@/components/checkin/checkin-form';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
@@ -20,6 +20,13 @@ export default function CheckInClient({ date }: CheckInClientProps) {
   const [loading, setLoading] = useState(false);
   const [groundingStarted, setGroundingStarted] = useState(false);
   const [groundingLoading, setGroundingLoading] = useState(false);
+  const latestCheckin = checkins.length > 0 ? checkins[checkins.length - 1] : null;
+  const latestScores = latestCheckin?.dimension_scores.reduce<Partial<Record<Dimension, number>>>((acc, item) => {
+    if (ALL_DIMENSIONS.includes(item.dimension as Dimension) && item.score >= 1 && item.score <= 10) {
+      acc[item.dimension as Dimension] = item.score;
+    }
+    return acc;
+  }, {});
 
   async function startGrounding() {
     const fallbackOpener =
@@ -124,15 +131,32 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         <p className="text-sm text-slate-300 mb-3">
           {mentorProfile.characterName} can lead a brief grounding moment before your check-in.
         </p>
-        <button onClick={startGrounding} className="btn-secondary" type="button" disabled={groundingLoading}>
-          {groundingLoading
-            ? 'Preparing grounding...'
-            : groundingStarted
-              ? 'Replay grounding intro'
-              : 'Start 30-second grounding'}
-        </button>
+        <div className="flex flex-wrap gap-2 items-center">
+          <button onClick={startGrounding} className="btn-secondary" type="button" disabled={groundingLoading}>
+            {groundingLoading
+              ? 'Preparing grounding...'
+              : groundingStarted
+                ? 'Replay grounding intro'
+                : 'Start 30-second grounding'}
+          </button>
+          <a
+            href="#checkin-form"
+            className="text-sm text-slate-300 underline underline-offset-2 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 rounded-sm"
+          >
+            Skip grounding and continue
+          </a>
+        </div>
       </div>
-      <CheckInForm onSubmit={handleSubmit} loading={loading} />
+      <div id="checkin-form">
+        <CheckInForm
+          onSubmit={handleSubmit}
+          loading={loading}
+          initialValues={{
+            mood: latestCheckin?.mood,
+            scores: latestScores,
+          }}
+        />
+      </div>
     </>
   );
 }

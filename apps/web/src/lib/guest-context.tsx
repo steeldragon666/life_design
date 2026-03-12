@@ -41,6 +41,13 @@ export interface SoundscapePreferences {
   humFrequency: number;
 }
 
+export type MicroMomentsCadence = 'light' | 'balanced' | 'focused';
+
+export interface MicroMomentsPreferences {
+  enabled: boolean;
+  cadence: MicroMomentsCadence;
+}
+
 interface GuestGoals {
   id: string;
   title: string;
@@ -78,6 +85,7 @@ interface GuestContextType {
   voicePreference: string;
   mentorProfile: MentorProfile;
   soundscape: SoundscapePreferences;
+  microMoments: MicroMomentsPreferences;
   setProfile: (profile: GuestProfile) => void;
   addGoal: (goal: GuestGoals) => void;
   addCheckin: (checkin: GuestCheckins) => void;
@@ -88,6 +96,7 @@ interface GuestContextType {
   setVoicePreference: (voiceId: string) => void;
   setMentorProfile: (profile: Partial<MentorProfile>) => void;
   setSoundscape: (prefs: Partial<SoundscapePreferences>) => void;
+  setMicroMoments: (prefs: Partial<MicroMomentsPreferences>) => void;
   clearGuestData: () => void;
   isGuest: boolean;
 }
@@ -112,6 +121,11 @@ const DEFAULT_SOUNDSCAPE: SoundscapePreferences = {
   humFrequency: 100,
 };
 
+const DEFAULT_MICRO_MOMENTS: MicroMomentsPreferences = {
+  enabled: true,
+  cadence: 'balanced',
+};
+
 const GUEST_PROFILE_STORAGE_KEY = 'life-design-guest-profile';
 const GUEST_GOALS_STORAGE_KEY = 'life-design-guest-goals';
 const GUEST_CHECKINS_STORAGE_KEY = 'life-design-guest-checkins';
@@ -119,6 +133,7 @@ const CONVERSATION_MEMORY_STORAGE_KEY = 'life-design-conversation-memory';
 const VOICE_PREFERENCE_STORAGE_KEY = 'life-design-voice-preference';
 const MENTOR_PROFILE_STORAGE_KEY = 'life-design-mentor-profile';
 const SOUNDSCAPE_STORAGE_KEY = 'life-design-soundscape-preferences';
+const MICRO_MOMENTS_STORAGE_KEY = 'life-design-micro-moments-preferences';
 const ONBOARDING_PROGRESS_STORAGE_KEY = 'life-design-onboarding-progress';
 const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
 const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
@@ -142,6 +157,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [voicePreference, setVoicePreferenceState] = useState<string>('calm-british-female');
   const [mentorProfile, setMentorProfileState] = useState<MentorProfile>(DEFAULT_MENTOR_PROFILE);
   const [soundscape, setSoundscapeState] = useState<SoundscapePreferences>(DEFAULT_SOUNDSCAPE);
+  const [microMoments, setMicroMomentsState] = useState<MicroMomentsPreferences>(DEFAULT_MICRO_MOMENTS);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Load from localStorage on mount
@@ -158,6 +174,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         const savedVoice = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
         const savedMentor = localStorage.getItem(MENTOR_PROFILE_STORAGE_KEY);
         const savedSoundscape = localStorage.getItem(SOUNDSCAPE_STORAGE_KEY);
+        const savedMicroMoments = localStorage.getItem(MICRO_MOMENTS_STORAGE_KEY);
 
         if (savedProfile) setProfileState(JSON.parse(savedProfile));
         if (savedGoals) setGoals(JSON.parse(savedGoals));
@@ -166,6 +183,9 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         if (savedVoice) setVoicePreferenceState(savedVoice);
         if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
         if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
+        if (savedMicroMoments) {
+          setMicroMomentsState({ ...DEFAULT_MICRO_MOMENTS, ...JSON.parse(savedMicroMoments) });
+        }
 
         if (savedIntegrations) {
           const result = await decryptLocalStorageString(savedIntegrations, GUEST_INTEGRATIONS_CRYPTO_SCOPE);
@@ -222,6 +242,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(VOICE_PREFERENCE_STORAGE_KEY, voicePreference);
         localStorage.setItem(MENTOR_PROFILE_STORAGE_KEY, JSON.stringify(mentorProfile));
         localStorage.setItem(SOUNDSCAPE_STORAGE_KEY, JSON.stringify(soundscape));
+        localStorage.setItem(MICRO_MOMENTS_STORAGE_KEY, JSON.stringify(microMoments));
       } catch (error) {
         console.error('Failed to save guest data to localStorage:', error);
       }
@@ -252,7 +273,18 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isCancelled = true;
     };
-  }, [profile, goals, checkins, conversationMemory, integrations, voicePreference, mentorProfile, soundscape, isHydrated]);
+  }, [
+    profile,
+    goals,
+    checkins,
+    conversationMemory,
+    integrations,
+    voicePreference,
+    mentorProfile,
+    soundscape,
+    microMoments,
+    isHydrated,
+  ]);
 
   const setProfile = (newProfile: GuestProfile) => {
     if (profile) {
@@ -312,6 +344,10 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     setSoundscapeState((prev) => ({ ...prev, ...next }));
   };
 
+  const setMicroMoments = (next: Partial<MicroMomentsPreferences>) => {
+    setMicroMomentsState((prev) => ({ ...prev, ...next }));
+  };
+
   const clearGuestData = () => {
     localStorage.removeItem(GUEST_PROFILE_STORAGE_KEY);
     localStorage.removeItem(GUEST_GOALS_STORAGE_KEY);
@@ -321,6 +357,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(GUEST_INTEGRATIONS_STORAGE_KEY);
     localStorage.removeItem(MENTOR_PROFILE_STORAGE_KEY);
     localStorage.removeItem(SOUNDSCAPE_STORAGE_KEY);
+    localStorage.removeItem(MICRO_MOMENTS_STORAGE_KEY);
     localStorage.removeItem(ONBOARDING_PROGRESS_STORAGE_KEY);
     setProfileState(null);
     setGoals([]);
@@ -329,6 +366,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     setIntegrations([]);
     setMentorProfileState(DEFAULT_MENTOR_PROFILE);
     setSoundscapeState(DEFAULT_SOUNDSCAPE);
+    setMicroMomentsState(DEFAULT_MICRO_MOMENTS);
   };
 
   if (!isHydrated) {
@@ -344,6 +382,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           voicePreference: 'calm-british-female',
           mentorProfile: DEFAULT_MENTOR_PROFILE,
           soundscape: DEFAULT_SOUNDSCAPE,
+          microMoments: DEFAULT_MICRO_MOMENTS,
           setProfile: () => {},
           addGoal: () => {},
           addCheckin: () => {},
@@ -354,6 +393,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           setVoicePreference: () => {},
           setMentorProfile: () => {},
           setSoundscape: () => {},
+          setMicroMoments: () => {},
           clearGuestData: () => {},
           isGuest: true,
         }}
@@ -374,6 +414,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         voicePreference,
         mentorProfile,
         soundscape,
+        microMoments,
         setProfile,
         addGoal,
         addCheckin,
@@ -384,6 +425,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         setVoicePreference,
         setMentorProfile,
         setSoundscape,
+        setMicroMoments,
         clearGuestData,
         isGuest: true,
       }}

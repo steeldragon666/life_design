@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ALL_DIMENSIONS, Dimension, DurationType } from '@life-design/core';
 import MoodSlider from './mood-slider';
+import MoodSegment from './mood-segment';
 import DimensionCard from './dimension-card';
 
 export interface CheckInFormData {
@@ -15,15 +16,31 @@ export interface CheckInFormData {
 interface CheckInFormProps {
   onSubmit: (data: CheckInFormData) => void;
   loading?: boolean;
+  initialValues?: {
+    mood?: number;
+    scores?: Partial<Record<Dimension, number>>;
+  };
 }
 
-export default function CheckInForm({ onSubmit, loading }: CheckInFormProps) {
-  const [mood, setMood] = useState(5);
+const QUICK_DIMENSIONS = ALL_DIMENSIONS.slice(0, 3);
+
+export default function CheckInForm({ onSubmit, loading, initialValues }: CheckInFormProps) {
+  const [mood, setMood] = useState(initialValues?.mood ?? 5);
   const [durationType, setDurationType] = useState<DurationType>(DurationType.Quick);
-  const [scores, setScores] = useState<Record<string, number>>({});
+  const [scores, setScores] = useState<Record<string, number>>(() => {
+    if (!initialValues?.scores) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(initialValues.scores).filter(([, score]) => typeof score === 'number' && score >= 1 && score <= 10),
+    );
+  });
   const [notes, setNotes] = useState<Record<string, string>>({});
 
   const isDeep = durationType === DurationType.Deep;
+  const dimensionsToRender = isDeep ? ALL_DIMENSIONS : QUICK_DIMENSIONS;
+  const hasSmartDefaults = Boolean(initialValues?.mood || Object.keys(initialValues?.scores ?? {}).length > 0);
 
   function handleScoreChange(dimension: Dimension, score: number) {
     setScores((prev) => ({ ...prev, [dimension]: score }));
@@ -34,7 +51,7 @@ export default function CheckInForm({ onSubmit, loading }: CheckInFormProps) {
   }
 
   function handleSubmit() {
-    const scoreEntries = ALL_DIMENSIONS
+    const scoreEntries = dimensionsToRender
       .filter((dim) => scores[dim])
       .map((dim) => ({
         dimension: dim,
@@ -51,31 +68,43 @@ export default function CheckInForm({ onSubmit, loading }: CheckInFormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="tablist" aria-label="Check-in mode">
         <button
           type="button"
           onClick={() => setDurationType(DurationType.Quick)}
+          role="tab"
+          aria-selected={!isDeep}
           className={`px-4 py-2 rounded text-sm font-medium ${
-            !isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100'
+            !isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-slate-900'
           }`}
         >
-          Quick
+          Quick mode
         </button>
         <button
           type="button"
           onClick={() => setDurationType(DurationType.Deep)}
+          role="tab"
+          aria-selected={isDeep}
           className={`px-4 py-2 rounded text-sm font-medium ${
-            isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100'
+            isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-slate-900'
           }`}
         >
-          Deep
+          Deep mode
         </button>
       </div>
 
-      <MoodSlider value={mood} onChange={setMood} />
+      {hasSmartDefaults && (
+        <p className="text-xs text-slate-300">Pre-filled from your most recent check-in. Adjust anything in one tap.</p>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {ALL_DIMENSIONS.map((dim) => (
+      {!isDeep ? <MoodSegment value={mood} onChange={setMood} /> : <MoodSlider value={mood} onChange={setMood} />}
+
+      {!isDeep && (
+        <p className="text-sm text-slate-300">Quick mode focuses on your top 3 dimensions. Switch to deep mode for full detail.</p>
+      )}
+
+      <div className={`grid grid-cols-1 gap-4 ${isDeep ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+        {dimensionsToRender.map((dim) => (
           <DimensionCard
             key={dim}
             dimension={dim}

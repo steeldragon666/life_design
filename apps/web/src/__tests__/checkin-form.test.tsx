@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ALL_DIMENSIONS, DIMENSION_LABELS } from '@life-design/core';
+import { ALL_DIMENSIONS, DIMENSION_LABELS, Dimension } from '@life-design/core';
 import CheckInForm from '@/components/checkin/checkin-form';
 
 describe('CheckInForm', () => {
@@ -8,30 +8,34 @@ describe('CheckInForm', () => {
     onSubmit: vi.fn(),
   };
 
-  it('renders mood slider', () => {
+  it('renders one-tap mood control in quick mode', () => {
     render(<CheckInForm {...defaultProps} />);
     expect(screen.getByText('Mood')).toBeInTheDocument();
-    expect(screen.getByRole('slider')).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: /quick mood selection/i })).toBeInTheDocument();
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
   });
 
-  it('renders all 8 dimension cards', () => {
+  it('renders top 3 dimensions in quick mode', () => {
     render(<CheckInForm {...defaultProps} />);
-    for (const dim of ALL_DIMENSIONS) {
+    for (const dim of ALL_DIMENSIONS.slice(0, 3)) {
       expect(screen.getByText(DIMENSION_LABELS[dim])).toBeInTheDocument();
+    }
+    for (const dim of ALL_DIMENSIONS.slice(3)) {
+      expect(screen.queryByText(DIMENSION_LABELS[dim])).not.toBeInTheDocument();
     }
   });
 
   it('renders quick/deep mode toggle', () => {
     render(<CheckInForm {...defaultProps} />);
-    expect(screen.getByRole('button', { name: /quick/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /deep/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /quick mode/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /deep mode/i })).toBeInTheDocument();
   });
 
   it('shows note textareas in deep mode', () => {
     render(<CheckInForm {...defaultProps} />);
 
     // Switch to deep mode
-    fireEvent.click(screen.getByRole('button', { name: /deep/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /deep mode/i }));
 
     const textareas = screen.getAllByPlaceholderText(/note/i);
     expect(textareas.length).toBe(8);
@@ -40,6 +44,12 @@ describe('CheckInForm', () => {
   it('does not show note textareas in quick mode', () => {
     render(<CheckInForm {...defaultProps} />);
     expect(screen.queryByPlaceholderText(/note/i)).not.toBeInTheDocument();
+  });
+
+  it('renders mood slider in deep mode', () => {
+    render(<CheckInForm {...defaultProps} />);
+    fireEvent.click(screen.getByRole('tab', { name: /deep mode/i }));
+    expect(screen.getByRole('slider')).toBeInTheDocument();
   });
 
   it('renders a submit button', () => {
@@ -51,8 +61,8 @@ describe('CheckInForm', () => {
     const onSubmit = vi.fn();
     render(<CheckInForm {...defaultProps} onSubmit={onSubmit} />);
 
-    // Set mood
-    fireEvent.change(screen.getByRole('slider'), { target: { value: '8' } });
+    // Set mood via quick mode segment
+    fireEvent.click(screen.getByRole('radio', { name: /good mood 8 out of 10/i }));
 
     // Set a dimension score
     const careerButtons = screen.getByText('Career')
@@ -70,6 +80,35 @@ describe('CheckInForm', () => {
     expect(callArg.scores).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ dimension: 'career', score: 7 }),
+      ]),
+    );
+  });
+
+  it('prefills mood and scores from initial values', () => {
+    const onSubmit = vi.fn();
+    render(
+      <CheckInForm
+        {...defaultProps}
+        onSubmit={onSubmit}
+        initialValues={{
+          mood: 8,
+          scores: {
+            [Dimension.Career]: 7,
+            [Dimension.Finance]: 6,
+          },
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /save check-in/i }));
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    const callArg = onSubmit.mock.calls[0][0];
+    expect(callArg.mood).toBe(8);
+    expect(callArg.scores).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ dimension: 'career', score: 7 }),
+        expect.objectContaining({ dimension: 'finance', score: 6 }),
       ]),
     );
   });

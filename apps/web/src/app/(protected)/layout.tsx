@@ -41,6 +41,7 @@ export default function ProtectedLayout({
     { name: 'Today', mobileName: 'Today', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Rituals', mobileName: 'Rituals', href: '/checkin', icon: Compass },
     { name: 'Meditations', mobileName: 'Meditations', href: '/meditations', icon: Waves },
+    { name: 'Future Self', mobileName: 'Future', href: '/future-self', icon: Sparkles },
     { name: 'Mentor', mobileName: 'Mentor', href: '/mentors', icon: Users },
     { name: 'Goals', mobileName: 'Goals', href: '/goals', icon: Target },
   ];

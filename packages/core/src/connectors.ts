@@ -1,10 +1,13 @@
 import { Dimension, IntegrationProvider } from './enums';
+import { normalizeProviderPayload, type NormalizedSignal } from './feature-extraction';
 
 export interface LifeConnector {
   provider: IntegrationProvider;
   dimension: Dimension;
   fetchData(...args: any[]): Promise<any>;
   writeData?(...args: any[]): Promise<any>;
+  normalizeData?(rawData: unknown): NormalizedSignal[];
+  fetchNormalizedData?(...args: any[]): Promise<NormalizedSignal[]>;
 }
 
 export abstract class BaseLifeConnector implements LifeConnector {
@@ -17,6 +20,15 @@ export abstract class BaseLifeConnector implements LifeConnector {
   abstract fetchData(...args: any[]): Promise<any>;
   async writeData(..._args: any[]): Promise<any> {
     throw new Error('Method not implemented.');
+  }
+
+  normalizeData(rawData: unknown): NormalizedSignal[] {
+    return normalizeProviderPayload(this.provider, rawData, this.dimension);
+  }
+
+  async fetchNormalizedData(...args: any[]): Promise<NormalizedSignal[]> {
+    const rawData = await this.fetchData(...args);
+    return this.normalizeData(rawData);
   }
 }
 
@@ -242,4 +254,12 @@ export function getConnector(provider: IntegrationProvider, accessToken: string)
     default:
       return null;
   }
+}
+
+export function normalizeConnectorData(
+  provider: IntegrationProvider,
+  rawData: unknown,
+  fallbackDimension?: Dimension,
+): NormalizedSignal[] {
+  return normalizeProviderPayload(provider, rawData, fallbackDimension);
 }

@@ -17,12 +17,13 @@ import {
   CheckCircle2,
   X,
   ExternalLink,
-  Volume2
+  Volume2,
+  BellRing
 } from 'lucide-react';
 import ThemeSelector from '@/components/theme/theme-selector';
 import { ThemeSelectorCompact } from '@/components/theme/theme-selector';
 import VoiceSelector, { VOICE_OPTIONS } from '@/components/voice/voice-selector';
-import { useGuest } from '@/lib/guest-context';
+import { useGuest, type MicroMomentsCadence } from '@/lib/guest-context';
 import ArchetypeSelector from '@/components/mentor/archetype-selector';
 import SoundscapeControls from '@/components/audio/soundscape-controls';
 import { getArchetypeConfig, getRecommendedVoiceForArchetype, type MentorArchetype } from '@/lib/mentor-archetypes';
@@ -100,6 +101,28 @@ const integrations = [
   },
 ];
 
+const MICRO_MOMENT_CADENCE_OPTIONS: Array<{
+  id: MicroMomentsCadence;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: 'light',
+    label: 'Light',
+    description: 'Morning and evening touchpoints only.',
+  },
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    description: 'Morning, midday, and evening rhythm.',
+  },
+  {
+    id: 'focused',
+    label: 'Focused',
+    description: 'Higher-intent prompts through the day.',
+  },
+];
+
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { 
@@ -110,6 +133,8 @@ export default function SettingsPage() {
     setVoicePreference,
     mentorProfile,
     setMentorProfile,
+    microMoments,
+    setMicroMoments,
   } = useGuest();
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -284,6 +309,55 @@ export default function SettingsPage() {
 
       {/* Meditation Soundscape */}
       <SoundscapeControls />
+
+      {/* Micro-Moments */}
+      <div className="glass-card p-8 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-400/20 to-cyan-400/20 flex items-center justify-center">
+            <BellRing className="h-5 w-5 text-teal-200" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Micro-Moments</h2>
+            <p className="text-sm text-slate-500">
+              In-app mentor touchpoints to keep your day intentional.
+            </p>
+          </div>
+        </div>
+
+        <label className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300">
+          <span>Enable in-app micro-moment nudges</span>
+          <input
+            type="checkbox"
+            checked={microMoments.enabled}
+            onChange={(e) => setMicroMoments({ enabled: e.target.checked })}
+          />
+        </label>
+
+        <div className="space-y-2">
+          <p className="text-sm text-slate-400">Preferred cadence</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {MICRO_MOMENT_CADENCE_OPTIONS.map((option) => {
+              const isActive = option.id === microMoments.cadence;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  disabled={!microMoments.enabled}
+                  onClick={() => setMicroMoments({ cadence: option.id })}
+                  className={`text-left rounded-xl border p-4 transition-all ${
+                    isActive
+                      ? 'bg-cyan-500/15 border-cyan-400/50'
+                      : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                  } ${!microMoments.enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <p className="text-sm font-semibold text-white">{option.label}</p>
+                  <p className="text-xs text-slate-400 mt-1">{option.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       {/* Integrations Section */}
       <div className="glass-card p-8">

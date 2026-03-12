@@ -1,24 +1,76 @@
 import { Dimension } from './enums';
+import {
+  computeAllPairCorrelations,
+  detectSignificantPatterns,
+  generateInsightNarrative,
+  rankInsightsByNovelty,
+  type CorrelationMatrix,
+  type RankedInsight,
+  type ScoresByDateOrSeries,
+} from './correlation';
+import { computeBalanceIndex } from './scoring';
 
 export interface HolisticContext {
   world: {
-    weather: any;
-    nearbyHubs: any[];
-    professionalTrends: any[];
+    weather: unknown;
+    nearbyHubs: unknown[];
+    professionalTrends: unknown[];
   };
   performance: {
     averageScores: Record<Dimension, number>;
     trends: Record<Dimension, number>;
-    recentActivities: any[];
+    recentActivities: unknown[];
+    balanceIndex?: number;
+    correlationMatrix?: CorrelationMatrix;
+    significantPatterns?: RankedInsight[];
   };
   intent: {
-    activeGoals: any[];
-    currentPathwayStep: any;
+    activeGoals: unknown[];
+    currentPathwayStep: unknown;
   };
   synthesis: {
     primaryFocus: Dimension;
     opportunityGap: string;
     actionableIntelligence: string;
+    balanceIndex?: number;
+    narratives?: string[];
+    correlationHighlights?: RankedInsight[];
+  };
+}
+
+export interface HolisticPerformanceInput {
+  averageScores?: Partial<Record<Dimension, number>>;
+  trends?: Partial<Record<Dimension, number>>;
+  recentActivities?: unknown[];
+  scoreSeries?: ScoresByDateOrSeries;
+  correlationMatrix?: CorrelationMatrix;
+  seenInsights?: Iterable<string>;
+}
+
+export interface HolisticIntentInput {
+  activeGoals?: unknown[];
+  currentPathwayStep?: unknown;
+}
+
+export interface HolisticWorldInput {
+  weather?: unknown;
+  nearbyHubs?: unknown[];
+  professionalTrends?: unknown[];
+  [key: string]: unknown;
+}
+
+function normalizeAverageScores(
+  scores?: Partial<Record<Dimension, number>>,
+): Record<Dimension, number> {
+  return {
+    [Dimension.Career]: scores?.[Dimension.Career] ?? 0,
+    [Dimension.Finance]: scores?.[Dimension.Finance] ?? 0,
+    [Dimension.Health]: scores?.[Dimension.Health] ?? 0,
+    [Dimension.Fitness]: scores?.[Dimension.Fitness] ?? 0,
+    [Dimension.Family]: scores?.[Dimension.Family] ?? 0,
+    [Dimension.Social]: scores?.[Dimension.Social] ?? 0,
+    [Dimension.Romance]: scores?.[Dimension.Romance] ?? 0,
+    [Dimension.Growth]: scores?.[Dimension.Growth] ?? 0,
   };
 }
 
@@ -29,22 +81,64 @@ export interface HolisticContext {
  * 3. Correlate Romance/Social scores + Nearby POIs (Suggestion: Date/Networking spots)
  */
 export function synthesizeHolisticState(
-  world: any,
-  performance: any,
-  intent: any
+  world: HolisticWorldInput,
+  performance: HolisticPerformanceInput,
+  intent: HolisticIntentInput,
 ): Partial<HolisticContext> {
-  // Logic to determine primary focus based on lowest balance score
-  const scores = Object.entries(performance.averageScores || {}) as [Dimension, number][];
-  const lowest = scores.sort((a, b) => a[1] - b[1])[0];
-  
+  const averageScores = normalizeAverageScores(performance.averageScores);
+  const scoreEntries = Object.entries(averageScores) as [Dimension, number][];
+  const lowest = [...scoreEntries].sort((a, b) => a[1] - b[1])[0];
+  const balanceIndex = computeBalanceIndex(scoreEntries.map(([, score]) => score));
+
+  const baseMatrix =
+    performance.correlationMatrix ??
+    (performance.scoreSeries ? computeAllPairCorrelations(performance.scoreSeries) : []);
+  const significant = detectSignificantPatterns(baseMatrix, 0.55);
+  const highlights = rankInsightsByNovelty(significant, performance.seenInsights ?? []).slice(0, 3);
+  const narratives = highlights.map(generateInsightNarrative);
+
+  const primaryFocus = lowest?.[0] ?? Dimension.Growth;
+  const primaryScore = lowest?.[1] ?? 0;
+  const opportunityGap = `Your ${primaryFocus} score (${primaryScore.toFixed(1)}) is currently the furthest from balance.`;
+  const actionableIntelligence =
+    narratives[0] ??
+    'No statistically significant life-pattern links yet. Keep consistent check-ins to unlock stronger signals.';
+
   return {
-    world,
-    performance,
-    intent,
+    world: {
+      ...world,
+      weather: world.weather ?? null,
+      nearbyHubs: world.nearbyHubs ?? [],
+      professionalTrends: world.professionalTrends ?? [],
+    },
+    performance: {
+      averageScores,
+      trends: {
+        [Dimension.Career]: performance.trends?.[Dimension.Career] ?? 0,
+        [Dimension.Finance]: performance.trends?.[Dimension.Finance] ?? 0,
+        [Dimension.Health]: performance.trends?.[Dimension.Health] ?? 0,
+        [Dimension.Fitness]: performance.trends?.[Dimension.Fitness] ?? 0,
+        [Dimension.Family]: performance.trends?.[Dimension.Family] ?? 0,
+        [Dimension.Social]: performance.trends?.[Dimension.Social] ?? 0,
+        [Dimension.Romance]: performance.trends?.[Dimension.Romance] ?? 0,
+        [Dimension.Growth]: performance.trends?.[Dimension.Growth] ?? 0,
+      },
+      recentActivities: performance.recentActivities ?? [],
+      balanceIndex,
+      correlationMatrix: baseMatrix,
+      significantPatterns: highlights,
+    },
+    intent: {
+      activeGoals: intent.activeGoals ?? [],
+      currentPathwayStep: intent.currentPathwayStep ?? null,
+    },
     synthesis: {
-      primaryFocus: lowest?.[0] || Dimension.Growth,
-      opportunityGap: `Your ${lowest?.[0]} score is below optimal balance.`,
-      actionableIntelligence: "Use current weather and professional trends to close the gap."
-    }
+      primaryFocus,
+      opportunityGap,
+      actionableIntelligence,
+      balanceIndex,
+      narratives,
+      correlationHighlights: highlights,
+    },
   };
 }
