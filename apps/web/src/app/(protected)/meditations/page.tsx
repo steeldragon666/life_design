@@ -18,9 +18,12 @@ export default function MeditationsPage() {
   const [script, setScript] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function generateMeditation() {
     setIsLoading(true);
+    setError(null);
+    const fallbackScript = 'Take a deep breath, and let your shoulders soften.';
     try {
       const prompt = buildGuidedMeditationPrompt(
         mentorProfile,
@@ -32,8 +35,16 @@ export default function MeditationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: prompt }),
       });
+
+      if (!response.ok) {
+        throw new Error('Meditation generation failed');
+      }
+
       const data = await response.json();
-      setScript(data.text || 'Take a deep breath, and let your shoulders soften.');
+      setScript(data.text || fallbackScript);
+    } catch {
+      setScript(fallbackScript);
+      setError('Could not generate a custom script right now. A calming fallback script is ready instead.');
     } finally {
       setIsLoading(false);
     }
@@ -41,6 +52,12 @@ export default function MeditationsPage() {
 
   function playScript() {
     if (!script) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      setError('Audio playback is unavailable in this browser.');
+      return;
+    }
+
+    setError(null);
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(script);
     utterance.rate = 0.86;
@@ -52,7 +69,9 @@ export default function MeditationsPage() {
   }
 
   function stopScript() {
-    window.speechSynthesis.cancel();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     setIsSpeaking(false);
   }
 
@@ -98,6 +117,11 @@ export default function MeditationsPage() {
       </div>
 
       <div className="glass-card p-6 space-y-4">
+        {error ? (
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">
+            {error}
+          </div>
+        ) : null}
         <div className="flex gap-2">
           {!isSpeaking ? (
             <button onClick={playScript} className="btn-secondary inline-flex items-center gap-2" disabled={!script}>

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Mic, Loader2, MessageSquare, Sparkles } from 'lucide-react';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
+import { inferMoodAdaptation } from '@/lib/mood-adapter';
 
 interface GoalDraft {
   title: string;
@@ -16,7 +17,7 @@ interface VoiceGoalCreatorProps {
 }
 
 export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps) {
-  const { mentorProfile } = useGuest();
+  const { mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
   const [userInput, setUserInput] = useState('');
   const [response, setResponse] = useState('');
   const [draft, setDraft] = useState<GoalDraft | null>(null);
@@ -31,7 +32,11 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
     if (!userInput.trim()) return;
     setLoading(true);
     try {
-      const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'goals');
+      const mood = inferMoodAdaptation(checkins);
+      const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'goals', {
+        mood,
+        memory: conversationMemory,
+      });
       const message = `${systemPrompt}
 
 User intent: "${userInput}"
@@ -49,6 +54,7 @@ Respond in two sections:
       const chatData = await chatRes.json();
       const text = chatData.text || 'Let us shape this with one small next step.';
       setResponse(text);
+      appendConversationSummary(`Goal discussion: "${userInput}"`, 'goals');
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {

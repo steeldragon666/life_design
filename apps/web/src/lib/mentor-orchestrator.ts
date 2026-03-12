@@ -1,5 +1,7 @@
 import type { MentorProfile } from './guest-context';
 import { getArchetypeConfig } from './mentor-archetypes';
+import { buildConversationMemorySnapshot, type ConversationMemoryEntry } from './conversation-memory';
+import { buildMoodModifierSummary, type MoodAdaptationResult } from './mood-adapter';
 
 export type MentorSessionIntent =
   | 'onboarding'
@@ -8,11 +10,19 @@ export type MentorSessionIntent =
   | 'mentors'
   | 'meditation';
 
+export interface MentorPromptContext {
+  mood?: MoodAdaptationResult;
+  memory?: ConversationMemoryEntry[];
+}
+
 export function buildMentorSystemPrompt(
   mentor: MentorProfile,
-  intent: MentorSessionIntent
+  intent: MentorSessionIntent,
+  context: MentorPromptContext = {}
 ): string {
   const archetype = getArchetypeConfig(mentor.archetype);
+  const moodSummary = buildMoodModifierSummary(context.mood);
+  const memorySnapshot = buildConversationMemorySnapshot(context.memory);
 
   return `You are ${mentor.characterName}, the user's persistent Life Design companion.
 
@@ -24,6 +34,12 @@ Style:
 - Meditation: ${archetype.meditationStyle}
 
 Session intent: ${intent}
+
+Mood adaptation:
+${moodSummary}
+
+Memory snapshot:
+${memorySnapshot}
 
 Behavior rules:
 - Sound like a guided meditation facilitator: calm, warm, slow, and clear.
@@ -40,12 +56,22 @@ Behavior rules:
 export function buildGuidedMeditationPrompt(
   mentor: MentorProfile,
   theme: string,
-  durationMinutes: number
+  durationMinutes: number,
+  context: MentorPromptContext = {}
 ): string {
+  const moodSummary = buildMoodModifierSummary(context.mood);
+  const memorySnapshot = buildConversationMemorySnapshot(context.memory, { maxEntries: 6 });
+
   return `You are ${mentor.characterName}, guiding a ${durationMinutes}-minute meditation.
 
 Theme: ${theme}
 Tone: calm, paced, soothing, grounded.
+
+Mood adaptation:
+${moodSummary}
+
+Memory snapshot:
+${memorySnapshot}
 
 Create a spoken script with:
 1) Arrival + breath settling

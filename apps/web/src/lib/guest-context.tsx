@@ -3,6 +3,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { MentorArchetype } from './mentor-archetypes';
 import { decryptLocalStorageString, encryptLocalStorageString } from './local-storage-crypto';
+import {
+  appendConversationExchangeSummary,
+  appendConversationKeyFact,
+  type ConversationMemoryEntry,
+} from './conversation-memory';
 
 interface GuestProfile {
   id: string;
@@ -68,6 +73,7 @@ interface GuestContextType {
   profile: GuestProfile | null;
   goals: GuestGoals[];
   checkins: GuestCheckins[];
+  conversationMemory: ConversationMemoryEntry[];
   integrations: GuestIntegration[];
   voicePreference: string;
   mentorProfile: MentorProfile;
@@ -75,6 +81,8 @@ interface GuestContextType {
   setProfile: (profile: GuestProfile) => void;
   addGoal: (goal: GuestGoals) => void;
   addCheckin: (checkin: GuestCheckins) => void;
+  appendConversationKeyFact: (fact: string, source?: string) => void;
+  appendConversationSummary: (summary: string, source?: string) => void;
   addIntegration: (integration: Omit<GuestIntegration, 'id' | 'connected_at'>) => void;
   removeIntegration: (provider: string) => void;
   setVoicePreference: (voiceId: string) => void;
@@ -104,6 +112,14 @@ const DEFAULT_SOUNDSCAPE: SoundscapePreferences = {
   humFrequency: 100,
 };
 
+const GUEST_PROFILE_STORAGE_KEY = 'life-design-guest-profile';
+const GUEST_GOALS_STORAGE_KEY = 'life-design-guest-goals';
+const GUEST_CHECKINS_STORAGE_KEY = 'life-design-guest-checkins';
+const CONVERSATION_MEMORY_STORAGE_KEY = 'life-design-conversation-memory';
+const VOICE_PREFERENCE_STORAGE_KEY = 'life-design-voice-preference';
+const MENTOR_PROFILE_STORAGE_KEY = 'life-design-mentor-profile';
+const SOUNDSCAPE_STORAGE_KEY = 'life-design-soundscape-preferences';
+const ONBOARDING_PROGRESS_STORAGE_KEY = 'life-design-onboarding-progress';
 const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
 const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
 
@@ -121,6 +137,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<GuestProfile | null>(null);
   const [goals, setGoals] = useState<GuestGoals[]>([]);
   const [checkins, setCheckins] = useState<GuestCheckins[]>([]);
+  const [conversationMemory, setConversationMemory] = useState<ConversationMemoryEntry[]>([]);
   const [integrations, setIntegrations] = useState<GuestIntegration[]>([]);
   const [voicePreference, setVoicePreferenceState] = useState<string>('calm-british-female');
   const [mentorProfile, setMentorProfileState] = useState<MentorProfile>(DEFAULT_MENTOR_PROFILE);
@@ -133,17 +150,19 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
 
     const hydrateGuestData = async () => {
       try {
-        const savedProfile = localStorage.getItem('life-design-guest-profile');
-        const savedGoals = localStorage.getItem('life-design-guest-goals');
-        const savedCheckins = localStorage.getItem('life-design-guest-checkins');
+        const savedProfile = localStorage.getItem(GUEST_PROFILE_STORAGE_KEY);
+        const savedGoals = localStorage.getItem(GUEST_GOALS_STORAGE_KEY);
+        const savedCheckins = localStorage.getItem(GUEST_CHECKINS_STORAGE_KEY);
+        const savedConversationMemory = localStorage.getItem(CONVERSATION_MEMORY_STORAGE_KEY);
         const savedIntegrations = localStorage.getItem(GUEST_INTEGRATIONS_STORAGE_KEY);
-        const savedVoice = localStorage.getItem('life-design-voice-preference');
-        const savedMentor = localStorage.getItem('life-design-mentor-profile');
-        const savedSoundscape = localStorage.getItem('life-design-soundscape-preferences');
+        const savedVoice = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
+        const savedMentor = localStorage.getItem(MENTOR_PROFILE_STORAGE_KEY);
+        const savedSoundscape = localStorage.getItem(SOUNDSCAPE_STORAGE_KEY);
 
         if (savedProfile) setProfileState(JSON.parse(savedProfile));
         if (savedGoals) setGoals(JSON.parse(savedGoals));
         if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
+        if (savedConversationMemory) setConversationMemory(JSON.parse(savedConversationMemory));
         if (savedVoice) setVoicePreferenceState(savedVoice);
         if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
         if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
@@ -195,13 +214,14 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     const saveGuestData = async () => {
       try {
         if (profile) {
-          localStorage.setItem('life-design-guest-profile', JSON.stringify(profile));
+          localStorage.setItem(GUEST_PROFILE_STORAGE_KEY, JSON.stringify(profile));
         }
-        localStorage.setItem('life-design-guest-goals', JSON.stringify(goals));
-        localStorage.setItem('life-design-guest-checkins', JSON.stringify(checkins));
-        localStorage.setItem('life-design-voice-preference', voicePreference);
-        localStorage.setItem('life-design-mentor-profile', JSON.stringify(mentorProfile));
-        localStorage.setItem('life-design-soundscape-preferences', JSON.stringify(soundscape));
+        localStorage.setItem(GUEST_GOALS_STORAGE_KEY, JSON.stringify(goals));
+        localStorage.setItem(GUEST_CHECKINS_STORAGE_KEY, JSON.stringify(checkins));
+        localStorage.setItem(CONVERSATION_MEMORY_STORAGE_KEY, JSON.stringify(conversationMemory));
+        localStorage.setItem(VOICE_PREFERENCE_STORAGE_KEY, voicePreference);
+        localStorage.setItem(MENTOR_PROFILE_STORAGE_KEY, JSON.stringify(mentorProfile));
+        localStorage.setItem(SOUNDSCAPE_STORAGE_KEY, JSON.stringify(soundscape));
       } catch (error) {
         console.error('Failed to save guest data to localStorage:', error);
       }
@@ -232,7 +252,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     return () => {
       isCancelled = true;
     };
-  }, [profile, goals, checkins, integrations, voicePreference, mentorProfile, soundscape, isHydrated]);
+  }, [profile, goals, checkins, conversationMemory, integrations, voicePreference, mentorProfile, soundscape, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {
     if (profile) {
@@ -251,6 +271,14 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
 
   const addCheckin = (checkin: GuestCheckins) => {
     setCheckins((prev) => [...prev, { ...checkin, id: `checkin-${Date.now()}` }]);
+  };
+
+  const appendConversationFact = (fact: string, source?: string) => {
+    setConversationMemory((prev) => appendConversationKeyFact(prev, fact, source));
+  };
+
+  const appendConversationSummary = (summary: string, source?: string) => {
+    setConversationMemory((prev) => appendConversationExchangeSummary(prev, summary, source));
   };
 
   const addIntegration = (integration: Omit<GuestIntegration, 'id' | 'connected_at'>) => {
@@ -285,15 +313,19 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearGuestData = () => {
-    localStorage.removeItem('life-design-guest-profile');
-    localStorage.removeItem('life-design-guest-goals');
-    localStorage.removeItem('life-design-guest-checkins');
+    localStorage.removeItem(GUEST_PROFILE_STORAGE_KEY);
+    localStorage.removeItem(GUEST_GOALS_STORAGE_KEY);
+    localStorage.removeItem(GUEST_CHECKINS_STORAGE_KEY);
+    localStorage.removeItem(CONVERSATION_MEMORY_STORAGE_KEY);
+    localStorage.removeItem(VOICE_PREFERENCE_STORAGE_KEY);
     localStorage.removeItem(GUEST_INTEGRATIONS_STORAGE_KEY);
-    localStorage.removeItem('life-design-mentor-profile');
-    localStorage.removeItem('life-design-soundscape-preferences');
+    localStorage.removeItem(MENTOR_PROFILE_STORAGE_KEY);
+    localStorage.removeItem(SOUNDSCAPE_STORAGE_KEY);
+    localStorage.removeItem(ONBOARDING_PROGRESS_STORAGE_KEY);
     setProfileState(null);
     setGoals([]);
     setCheckins([]);
+    setConversationMemory([]);
     setIntegrations([]);
     setMentorProfileState(DEFAULT_MENTOR_PROFILE);
     setSoundscapeState(DEFAULT_SOUNDSCAPE);
@@ -307,6 +339,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           profile: null,
           goals: [],
           checkins: [],
+          conversationMemory: [],
           integrations: [],
           voicePreference: 'calm-british-female',
           mentorProfile: DEFAULT_MENTOR_PROFILE,
@@ -314,6 +347,8 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           setProfile: () => {},
           addGoal: () => {},
           addCheckin: () => {},
+          appendConversationKeyFact: () => {},
+          appendConversationSummary: () => {},
           addIntegration: () => {},
           removeIntegration: () => {},
           setVoicePreference: () => {},
@@ -334,6 +369,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         profile,
         goals,
         checkins,
+        conversationMemory,
         integrations,
         voicePreference,
         mentorProfile,
@@ -341,6 +377,8 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         setProfile,
         addGoal,
         addCheckin,
+        appendConversationKeyFact: appendConversationFact,
+        appendConversationSummary,
         addIntegration,
         removeIntegration,
         setVoicePreference,
