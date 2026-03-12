@@ -92,8 +92,8 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
     router.push('/goals');
   }
 
-  async function handleToggleMilestone(milestoneId: string) {
-    await toggleMilestoneAction(milestoneId, goal.id);
+  async function handleToggleMilestone(milestoneId: string, completed: boolean) {
+    await toggleMilestoneAction(milestoneId, completed, goal.id);
   }
 
   async function handleAddMilestone(title: string) {

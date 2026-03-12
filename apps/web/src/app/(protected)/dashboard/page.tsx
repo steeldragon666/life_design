@@ -9,6 +9,9 @@ import { getGoals } from '@/lib/services/goal-service';
 import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension, GoalStatus } from '@life-design/core';
 import DashboardClient from './dashboard-client';
 
+import { getGranularContext } from '@life-design/core';
+import { generateNudges } from '@/lib/services/nudge-engine';
+
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
@@ -19,14 +22,22 @@ export default async function DashboardPage() {
     return <p>Loading...</p>;
   }
 
+  // Fetch profile for context
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('postcode, profession, interests')
+    .eq('id', user.id)
+    .single();
+
   const today = new Date().toISOString().slice(0, 10);
 
-  const [latestResult, historyResult, streakResult, insightsResult, goalsResult] = await Promise.all([
+  const [latestResult, historyResult, streakResult, insightsResult, goalsResult, worldContext] = await Promise.all([
     getLatestScores(user.id),
     getScoreHistory(user.id, 30),
     getStreakData(user.id),
     getInsights(user.id, 3),
     getGoals(user.id, { status: GoalStatus.Active }),
+    profile?.postcode ? getGranularContext(profile.postcode, profile.profession, profile.interests ?? []) : Promise.resolve(null),
   ]);
 
   const latestScores = latestResult.data ?? [];
@@ -79,6 +90,10 @@ export default async function DashboardPage() {
       : null,
   };
 
+  const nudges = worldContext 
+    ? await generateNudges(latestScores, activeGoals, worldContext)
+    : [];
+
   return (
     <DashboardClient
       latestScores={latestScores as { dimension: string; score: number }[]}
@@ -87,6 +102,7 @@ export default async function DashboardPage() {
       dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
+      nudges={nudges}
     />
   );
 }

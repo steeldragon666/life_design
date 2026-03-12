@@ -32,7 +32,7 @@ interface GoalProgressProps {
   metricTarget?: number | null;
   metricCurrent?: number | null;
   metricUnit?: string | null;
-  onToggleMilestone?: (milestoneId: string) => void;
+  onToggleMilestone?: (milestoneId: string, completed: boolean) => void;
   onAddMilestone?: (title: string) => void;
   onLogProgress?: (value: number, note?: string) => void;
 }
@@ -82,7 +82,7 @@ export default function GoalProgress({
               <input
                 type="checkbox"
                 checked={ms.completed}
-                onChange={() => onToggleMilestone?.(ms.id)}
+                onChange={() => onToggleMilestone?.(ms.id, !ms.completed)}
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600"
               />
               <span className={`text-sm ${ms.completed ? 'line-through text-gray-400' : ''}`}>

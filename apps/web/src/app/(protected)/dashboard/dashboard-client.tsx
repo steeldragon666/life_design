@@ -6,6 +6,9 @@ import WheelOfLife from '@/components/dashboard/wheel-of-life';
 import TrendSparkline from '@/components/dashboard/trend-sparkline';
 import StreakCounter from '@/components/dashboard/streak-counter';
 import InsightCard from '@/components/insights/insight-card';
+import LifeOrb from '@/components/dashboard/life-orb';
+import VoiceCheckin from '@/components/checkin/voice-checkin';
+import { Target, Lightbulb, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
 
 interface InsightData {
   id: string;
@@ -28,6 +31,7 @@ interface DashboardClientProps {
   dimensionTrends: Record<string, { date: string; score: number }[]>;
   recentInsights: InsightData[];
   goalsSummary?: GoalsSummary;
+  nudges?: any[];
 }
 
 export default function DashboardClient({
@@ -37,81 +41,148 @@ export default function DashboardClient({
   dimensionTrends,
   recentInsights,
   goalsSummary,
+  nudges = [],
 }: DashboardClientProps) {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="space-y-10 animate-fade-in animation-duration-1000">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-slate-400 mt-2 font-medium">
+            Welcome back. Your evolution is in progress.
+          </p>
+        </div>
+        
         <div className="flex items-center gap-4">
-          <div className="text-center">
-            <p className="text-3xl font-bold">{overallScore.toFixed(1)}</p>
-            <p className="text-xs text-gray-500">Overall</p>
+          <div className="glass rounded-2xl px-6 py-3 flex flex-col items-center border-white/5">
+            <span className="text-2xl font-bold text-primary-400">{overallScore.toFixed(1)}</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Overall</span>
           </div>
           <StreakCounter streak={streak} />
         </div>
       </div>
 
-      <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Primary View: Wheel of Life & 3D Orb */}
+        <div className="lg:col-span-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <LifeOrb scores={latestScores} overallScore={overallScore} />
+            <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
+          </div>
 
-      {/* Active Goals Summary */}
-      {goalsSummary && goalsSummary.total > 0 && (
-        <div className="rounded-lg border p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Active Goals</h2>
-            <Link href="/goals" className="text-sm text-indigo-600 hover:underline">
-              View all
-            </Link>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-lg bg-green-50 p-3 text-center">
-              <p className="text-2xl font-bold text-green-700">{goalsSummary.byHorizon.short}</p>
-              <p className="text-xs text-green-600">Short-term</p>
+          <VoiceCheckin />
+          
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary-400" />
+                <h2 className="text-xl font-bold text-white">Dimension Trends</h2>
+              </div>
+              <span className="text-xs font-medium text-slate-500">Last 30 Days</span>
             </div>
-            <div className="rounded-lg bg-amber-50 p-3 text-center">
-              <p className="text-2xl font-bold text-amber-700">{goalsSummary.byHorizon.medium}</p>
-              <p className="text-xs text-amber-600">Medium-term</p>
-            </div>
-            <div className="rounded-lg bg-blue-50 p-3 text-center">
-              <p className="text-2xl font-bold text-blue-700">{goalsSummary.byHorizon.long}</p>
-              <p className="text-xs text-blue-600">Long-term</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {ALL_DIMENSIONS.slice(0, 4).map((dim) => (
+                <TrendSparkline
+                  key={dim}
+                  label={DIMENSION_LABELS[dim]}
+                  data={dimensionTrends[dim] ?? []}
+                />
+              ))}
             </div>
           </div>
-          {goalsSummary.nearestDeadline && (() => {
-            const days = Math.ceil(
-              (new Date(goalsSummary.nearestDeadline.target_date as string).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-            );
-            return (
-              <p className={`text-xs ${days < 7 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                Next deadline: &quot;{goalsSummary.nearestDeadline.title as string}&quot; in {days > 0 ? `${days} days` : 'overdue'}
-              </p>
-            );
-          })()}
         </div>
-      )}
 
-      {recentInsights.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent Insights</h2>
-            <Link href="/insights" className="text-sm text-indigo-600 hover:underline">
-              View all
-            </Link>
+        {/* Info Sidebar: Goals & Insights */}
+        <div className="lg:col-span-4 space-y-8">
+          {/* Active Goals */}
+          <div className="glass-card border-primary-500/10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2 text-primary-400">
+                <Target className="h-5 w-5" />
+                <h2 className="text-lg font-bold text-white">Active Goals</h2>
+              </div>
+              <Link href="/goals" className="p-1.5 glass rounded-lg hover:bg-white/5 transition-all">
+                <ArrowRight className="h-4 w-4 text-slate-400" />
+              </Link>
+            </div>
+            
+            {goalsSummary && goalsSummary.total > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-slate-900/50 rounded-xl p-3 border border-white/5 text-center">
+                    <p className="text-xl font-bold text-white">{goalsSummary.byHorizon.short}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase">Short</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-3 border border-white/5 text-center">
+                    <p className="text-xl font-bold text-white">{goalsSummary.byHorizon.medium}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase">Med</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-3 border border-white/5 text-center">
+                    <p className="text-xl font-bold text-white">{goalsSummary.byHorizon.long}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase">Long</p>
+                  </div>
+                </div>
+                {goalsSummary.nearestDeadline && (
+                  <div className="p-3 bg-primary-500/10 border border-primary-500/20 rounded-xl">
+                    <p className="text-xs font-semibold text-primary-300">Next Priority</p>
+                    <p className="text-sm font-medium text-white truncate my-1">
+                      {goalsSummary.nearestDeadline.title as string}
+                    </p>
+                    <p className="text-[10px] text-primary-400 uppercase font-bold tracking-tight">
+                      Target: {new Date(goalsSummary.nearestDeadline.target_date as string).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 italic">No active goals yet.</p>
+            )}
           </div>
-          {recentInsights.map((insight) => (
-            <InsightCard key={insight.id} insight={insight} onDismiss={() => {}} />
-          ))}
-        </div>
-      )}
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Trends (30 days)</h2>
-        {ALL_DIMENSIONS.map((dim) => (
-          <TrendSparkline
-            key={dim}
-            label={DIMENSION_LABELS[dim]}
-            data={dimensionTrends[dim] ?? []}
-          />
-        ))}
+          {/* Proactive Nudges */}
+          {nudges.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-amber-400">
+                <Sparkles className="h-5 w-5" />
+                <h2 className="text-lg font-bold text-white">Proactive Nudges</h2>
+              </div>
+              <div className="space-y-3">
+                {nudges.map((nudge, i) => (
+                  <div key={i} className="glass-card border-amber-500/10 p-4 space-y-1">
+                    <h4 className="font-bold text-amber-400 text-sm">
+                      {nudge.title}
+                    </h4>
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      {nudge.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Insights */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-primary-400">
+                <Lightbulb className="h-5 w-5" />
+                <h2 className="text-lg font-bold text-white">AI Insights</h2>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {recentInsights.length > 0 ? (
+                recentInsights.map((insight) => (
+                  <InsightCard key={insight.id} insight={insight} onDismiss={() => {}} />
+                ))
+              ) : (
+                <p className="text-sm text-slate-500 italic">Analyzing your life patterns...</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

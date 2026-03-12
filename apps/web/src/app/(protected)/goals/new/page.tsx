@@ -23,8 +23,8 @@ export default function NewGoalPage() {
 
     if (result.error) return { error: result.error };
 
-    if (result.data?.id) {
-      router.push(`/goals/${result.data.id}`);
+    if (result.goal?.id) {
+      router.push(`/goals/${result.goal.id}`);
     } else {
       router.push('/goals');
     }

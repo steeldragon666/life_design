@@ -1,4 +1,4 @@
-import { getAnthropicClient } from './client';
+import { getGeminiClient } from './client';
 
 export interface PathwayInput {
   goal: {
@@ -30,12 +30,10 @@ export interface GeneratedPathway {
 const PATHWAY_PROMPT = `You are a life design strategist. The user wants to achieve a goal and has described their rough plan. Your job is to:
 
 1. Structure their plan into concrete, actionable steps (5-10 steps)
-2. Analyze how pursuing this pathway affects each of the 8 life dimensions (career, finance, health, fitness, family, social, romance, growth)
-3. Score each dimension's impact from -5 (severely negative) to +5 (highly positive)
-4. Identify risks based on their current dimension scores and trends
-5. Suggest strategies to mitigate negative impacts
-
-Consider the user's profession, skills, and current life situation when analyzing impacts.
+2. Analyze how pursuing this pathway affects each of the 8 life dimensions
+3. Score each dimension's impact from -5 to +5
+4. Identify risks based on current context and trends
+5. Suggest strategies integrating real-world opportunities (based on the provided context if available)
 
 Return ONLY valid JSON with this structure:
 {
@@ -49,10 +47,19 @@ Return ONLY valid JSON with this structure:
 
 export async function generatePathway(
   input: PathwayInput,
+  worldContext?: any,
 ): Promise<GeneratedPathway> {
-  const client = getAnthropicClient();
+  const client = getGeminiClient();
+  const model = client.getGenerativeModel({ 
+    model: 'gemini-1.5-pro',
+    generationConfig: { responseMimeType: 'application/json' }
+  });
+
+  const contextStr = worldContext ? JSON.stringify(worldContext) : 'No additional context';
 
   const userMessage = `
+Context: ${contextStr}
+
 Goal: ${input.goal.title}
 Description: ${input.goal.description}
 Time horizon: ${input.goal.horizon} (target: ${input.goal.targetDate})
@@ -68,22 +75,15 @@ Current dimension scores:
 ${input.currentScores.map((s) => `- ${s.dimension}: ${s.average.toFixed(1)}/10 (trend: ${s.trend > 0 ? '+' : ''}${s.trend.toFixed(2)})`).join('\n')}
 
 User's rough plan:
-${input.userPlan}
+${input.userPlan}`;
 
-Analyze this plan and structure it into a pathway with dimension impact analysis.`;
-
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    system: PATHWAY_PROMPT,
-    messages: [{ role: 'user', content: userMessage }],
-  });
-
-  const textBlock = response.content.find((block) => block.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text response from AI');
-  }
-
-  const parsed = JSON.parse(textBlock.text);
+  const result = await model.generateContent([
+    { text: PATHWAY_PROMPT },
+    { text: userMessage },
+  ]);
+  
+  const response = await result.response;
+  const text = response.text();
+  const parsed = JSON.parse(text);
   return parsed as GeneratedPathway;
 }

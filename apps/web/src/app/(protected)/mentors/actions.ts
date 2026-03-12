@@ -10,7 +10,7 @@ import { getProfile } from '@/lib/services/profile-service';
 import { getGoals } from '@/lib/services/goal-service';
 import { sendMentorMessage, buildSystemPrompt } from '@life-design/ai';
 import type { UserContext } from '@life-design/ai';
-import { MentorType, computeDimensionAverage } from '@life-design/core';
+import { MentorType, computeDimensionAverage, getGranularContext } from '@life-design/core';
 import { buildWeatherContext } from '@/lib/integrations/weather';
 import { buildSpotifyContext } from '@/lib/integrations/spotify';
 import { buildHealthContext } from '@/lib/integrations/apple-health';
@@ -37,7 +37,7 @@ export async function sendMessage(
   // Get chat history for context
   const { data: history } = await getChatHistory(userMentorId);
   const messages = (history ?? []).map((msg) => ({
-    role: msg.role as 'user' | 'assistant',
+    role: (msg.role === 'assistant' ? 'model' : msg.role) as 'user' | 'model',
     content: msg.content as string,
   }));
 
@@ -123,10 +123,15 @@ export async function sendMessage(
   const integrationResults = await Promise.all(integrationPromises);
   userContext.integrationContexts = integrationResults.filter((ctx): ctx is string => ctx !== null);
 
+  // Get granular real-world context (Search, Maps, etc.)
+  const worldContext = profile?.postcode 
+    ? await getGranularContext(profile.postcode, profile.profession, profile.interests ?? [])
+    : null;
+
   // Build system prompt with all context
   const systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
 
-  const result = await sendMentorMessage(messages, systemPrompt);
+  const result = await sendMentorMessage(messages, systemPrompt, worldContext);
 
   // Save assistant response if successful
   if (result.text) {

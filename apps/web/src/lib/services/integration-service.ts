@@ -41,3 +41,19 @@ export async function disconnectIntegration(integrationId: string) {
     .eq('id', integrationId);
   return { data, error };
 }
+export async function getIntegrationToken(userId: string, provider: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('integrations')
+    .select('access_token_encrypted, refresh_token_encrypted')
+    .eq('user_id', userId)
+    .eq('provider', provider)
+    .eq('status', 'connected')
+    .single();
+
+  if (error) return { data: null, error };
+  return {
+    accessToken: data.access_token_encrypted as string,
+    refreshToken: data.refresh_token_encrypted as string,
+  };
+}
