@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
 import WheelOfLife from '@/components/dashboard/wheel-of-life';
 import TrendSparkline from '@/components/dashboard/trend-sparkline';
-import StreakCounter from '@/components/dashboard/streak-counter';
 import InsightCard from '@/components/insights/insight-card';
 import LifeOrb from '@/components/dashboard/life-orb';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
@@ -15,13 +13,9 @@ import {
   Lightbulb, 
   TrendingUp, 
   ArrowRight, 
-  Sparkles,
-  Zap,
-  ChevronRight,
-  Plus,
   Compass,
-  Activity,
-  Flame
+  MessageCircle,
+  Flame,
 } from 'lucide-react';
 
 interface InsightData {
@@ -64,146 +58,141 @@ export default function DashboardClient({
   nudges = [],
   profile,
 }: DashboardClientProps) {
-  const greeting = profile?.name 
+  const greeting = profile?.name
     ? `Good ${getTimeOfDay()}, ${profile.name.split(' ')[0]}`
     : 'Welcome to Life Design';
+  const primaryRoutineLabel = getPrimaryRoutineLabel();
+  const mentorSentence = getMentorSentence({
+    primaryRoutineLabel,
+    streak,
+    overallScore,
+    goalsSummary,
+    profileName: profile?.name,
+  });
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Hero Section - iOS Large Title Style */}
-      <div className="relative overflow-hidden rounded-3xl glass-card p-6 lg:p-8">
-        {/* Background Illustration */}
-        <div className="absolute -top-10 -right-10 w-72 h-72 lg:w-96 lg:h-96 opacity-50">
-          <Image
-            src="/images/life-design-hero-illustration.png"
-            alt="Life Design"
-            width={384}
-            height={384}
-            className="object-contain"
-            priority
-          />
-        </div>
-        
-        <div className="relative z-10">
-          {/* Time Badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="badge-blue flex items-center gap-1.5">
-              <Zap className="h-3 w-3" />
-              Intelligence Platform
-            </span>
-          </div>
+    <div className="space-y-5 animate-fade-in">
+      {/* Today Hero */}
+      <div className="glass-card p-6 lg:p-8 rounded-3xl">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-5 lg:gap-6 items-stretch">
+          <div className="space-y-5">
+            <span className="badge-blue">Today Focus</span>
 
-          {/* Main Title - iOS Large Title */}
-          <h1 className="text-[32px] lg:text-[40px] font-bold text-white tracking-tight leading-tight">
-            {greeting}
-          </h1>
-          
-          <p className="text-[15px] text-slate-400 mt-2 font-medium leading-relaxed max-w-md">
-            {profile?.profession 
-              ? `${profile.profession} • Designing your best life`
-              : 'Track your goals, gain insights, design your future.'}
-          </p>
+            <div>
+              <h1 className="text-[30px] lg:text-[36px] font-bold text-white tracking-tight leading-tight">
+                {greeting}
+              </h1>
+              <p className="text-sm text-slate-400 mt-2 max-w-xl">
+                {profile?.profession
+                  ? `${profile.profession} • Build momentum one intentional step at a time.`
+                  : 'A calmer dashboard for your next best action.'}
+              </p>
+            </div>
 
-          {/* Stats Row - iOS Style */}
-          <div className="flex items-center gap-3 mt-6">
-            {/* Overall Score */}
-            <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="relative h-12 w-12">
-                <svg className="h-12 w-12 transform -rotate-90">
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    stroke="rgba(255,255,255,0.1)"
-                    strokeWidth="3"
-                    fill="none"
-                  />
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    stroke="#0a84ff"
-                    strokeWidth="3"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(overallScore / 10) * 125.6} 125.6`}
-                    className="transition-all duration-1000"
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">
-                  {Math.round(overallScore * 10)}
+            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4">
+              <p className="text-sm text-blue-300/90 leading-relaxed">
+                {mentorSentence}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Link href="/checkin" className="btn-primary justify-between py-3 px-4 w-full">
+                <span className="inline-flex items-center gap-2">
+                  <Compass className="h-4 w-4" />
+                  {primaryRoutineLabel}
                 </span>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-medium">Harmony</p>
-                <p className="text-sm font-semibold text-white">Score</p>
-              </div>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/mentors" className="btn-secondary justify-center py-3 px-4 w-full">
+                <span className="inline-flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Talk to Mentor
+                </span>
+              </Link>
             </div>
 
-            {/* Streak */}
-            <div className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full gradient-coral flex items-center justify-center">
-                <Flame className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-medium">Current</p>
-                <p className="text-sm font-semibold text-white">{streak} Day Streak</p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <StatPill label="Harmony" value={`${Math.round(overallScore * 10)}%`} />
+              <StatPill label="Streak" value={`${streak} day${streak === 1 ? '' : 's'}`} withFlame />
+              <StatPill label="Active Goals" value={`${goalsSummary?.total ?? 0}`} />
             </div>
           </div>
+
+          <ErrorBoundary
+            fallback={
+              <GlassErrorFallbackCard
+                title="Life Orb unavailable"
+                description="The 3D visualization hit an issue. You can still use the rest of your dashboard."
+                className="h-[400px]"
+              />
+            }
+            resetKeys={[latestScores.length, overallScore]}
+          >
+            <LifeOrb scores={latestScores} overallScore={overallScore} />
+          </ErrorBoundary>
         </div>
       </div>
 
-      {/* Quick Actions - iOS Style Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <QuickAction 
-          href="/checkin" 
-          icon={Compass} 
-          label="Check In" 
-          color="coral"
-          subtitle="Daily tracking"
-        />
-        <QuickAction 
-          href="/goals/new" 
-          icon={Plus} 
-          label="New Goal" 
-          color="blue"
-          subtitle="Set target"
-        />
-        <QuickAction 
-          href="/insights" 
-          icon={Activity} 
-          label="Insights" 
-          color="purple"
-          subtitle="AI analysis"
-        />
-        <QuickAction 
-          href="/goals" 
-          icon={Target} 
-          label="Goals" 
-          color="teal"
-          subtitle={goalsSummary?.total ? `${goalsSummary.total} active` : 'View all'}
-        />
+      {/* Today Support */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="lg:col-span-7">
+          <VoiceCheckin />
+        </div>
+        <div className="lg:col-span-5 glass-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="section-header mb-0">Today at a glance</h2>
+            <Link href="/goals" className="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+              View goals
+            </Link>
+          </div>
+
+          {goalsSummary?.nearestDeadline ? (
+            <div className="rounded-xl p-4 border border-white/10 bg-white/5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Next goal milestone</p>
+              <p className="text-sm text-white font-semibold mt-1 truncate">
+                {goalsSummary.nearestDeadline.title as string}
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Target: {new Date(goalsSummary.nearestDeadline.target_date as string).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl p-4 border border-white/10 bg-white/5">
+              <p className="text-sm text-slate-400">No active goals yet. Set one to anchor your next move.</p>
+              <Link href="/goals/new" className="text-sm text-blue-400 hover:text-blue-300 mt-2 inline-block">
+                Create a goal
+              </Link>
+            </div>
+          )}
+
+          {recentInsights.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Mentor insight</p>
+              <InsightCard insight={recentInsights[0]} onDismiss={() => {}} />
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Insights will appear as you check in.</p>
+          )}
+        </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column - Visualizations */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Life Orb & Wheel */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ErrorBoundary
-              fallback={
-                <GlassErrorFallbackCard
-                  title="Life Orb unavailable"
-                  description="The 3D visualization hit an issue. You can still use the rest of your dashboard."
-                  className="h-[400px]"
-                />
-              }
-              resetKeys={[latestScores.length, overallScore]}
-            >
-              <LifeOrb scores={latestScores} overallScore={overallScore} />
-            </ErrorBoundary>
+      {/* Secondary Analytics (collapsible) */}
+      <details className="glass-card p-5 rounded-2xl group">
+        <summary className="list-none cursor-pointer select-none">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="section-header mb-0">Trends and planning data</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Expand for dimension charts, goal breakdowns, and all suggestions.
+              </p>
+            </div>
+            <span className="text-xs text-slate-400 group-open:hidden">Show</span>
+            <span className="text-xs text-slate-300 hidden group-open:inline">Hide</span>
+          </div>
+        </summary>
+
+        <div className="mt-5 space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ErrorBoundary
               fallback={
                 <GlassErrorFallbackCard
@@ -216,196 +205,129 @@ export default function DashboardClient({
             >
               <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
             </ErrorBoundary>
+
+            <div className="glass-card p-5">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="section-header mb-0">Dimension trends</h3>
+                    <p className="text-xs text-slate-500">Last 30 days</p>
+                  </div>
+                </div>
+                <span className="badge-blue">{ALL_DIMENSIONS.length} dimensions</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {ALL_DIMENSIONS.slice(0, 4).map((dim) => (
+                  <TrendSparkline
+                    key={dim}
+                    label={DIMENSION_LABELS[dim]}
+                    data={dimensionTrends[dim] ?? []}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Voice Checkin - iOS Style Card */}
-          <VoiceCheckin />
-          
-          {/* Dimension Trends */}
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-blue-400" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="glass-card p-5">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg gradient-teal flex items-center justify-center">
+                    <Target className="h-4 w-4 text-white" />
+                  </div>
+                  <h3 className="section-header mb-0">Active goals</h3>
                 </div>
-                <div>
-                  <h2 className="section-header mb-0">Trends</h2>
-                  <p className="text-xs text-slate-500">Last 30 days</p>
-                </div>
+                <span className="badge-blue">{goalsSummary?.total ?? 0}</span>
               </div>
-              <span className="badge-blue">{ALL_DIMENSIONS.length} Dimensions</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {ALL_DIMENSIONS.slice(0, 4).map((dim) => (
-                <TrendSparkline
-                  key={dim}
-                  label={DIMENSION_LABELS[dim]}
-                  data={dimensionTrends[dim] ?? []}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Goals & Insights */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Active Goals Card */}
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg gradient-teal flex items-center justify-center">
-                  <Target className="h-4 w-4 text-white" />
-                </div>
-                <h2 className="section-header mb-0">Active Goals</h2>
-              </div>
-              <Link href="/goals" className="btn-secondary py-2 px-3 text-xs">
-                View All
-                <ChevronRight className="h-3 w-3 ml-1" />
-              </Link>
-            </div>
-            
-            {goalsSummary && goalsSummary.total > 0 ? (
-              <div className="space-y-4">
-                {/* Horizon Breakdown */}
+              {goalsSummary && goalsSummary.total > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
-                  <HorizonBadge 
-                    count={goalsSummary.byHorizon.short} 
-                    label="Short" 
+                  <HorizonBadge
+                    count={goalsSummary.byHorizon.short}
+                    label="Short"
                     color="amber"
                     period="1-6 mo"
                   />
-                  <HorizonBadge 
-                    count={goalsSummary.byHorizon.medium} 
-                    label="Medium" 
+                  <HorizonBadge
+                    count={goalsSummary.byHorizon.medium}
+                    label="Medium"
                     color="blue"
                     period="6-18 mo"
                   />
-                  <HorizonBadge 
-                    count={goalsSummary.byHorizon.long} 
-                    label="Long" 
+                  <HorizonBadge
+                    count={goalsSummary.byHorizon.long}
+                    label="Long"
                     color="purple"
                     period="1.5-5 yr"
                   />
                 </div>
-
-                {/* Next Priority */}
-                {goalsSummary.nearestDeadline && (
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/20">
-                    <div className="flex items-start gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="h-4 w-4 text-blue-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-blue-400 font-semibold uppercase tracking-wide">Next Priority</p>
-                        <p className="text-sm font-semibold text-white mt-1 truncate">
-                          {goalsSummary.nearestDeadline.title as string}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Target: {new Date(goalsSummary.nearestDeadline.target_date as string).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="h-16 w-16 mx-auto mb-3 rounded-2xl bg-slate-800 flex items-center justify-center">
-                  <Target className="h-8 w-8 text-slate-600" />
-                </div>
-                <p className="text-sm text-slate-500">No active goals yet</p>
-                <Link href="/goals/new" className="btn-primary mt-3 inline-flex">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Create Goal
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* AI Insights */}
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                  <Lightbulb className="h-4 w-4 text-purple-400" />
-                </div>
-                <h2 className="section-header mb-0">AI Insights</h2>
-              </div>
-              <span className="badge-purple">{recentInsights.length}</span>
-            </div>
-            <div className="space-y-3">
-              {recentInsights.length > 0 ? (
-                recentInsights.slice(0, 3).map((insight) => (
-                  <InsightCard key={insight.id} insight={insight} onDismiss={() => {}} />
-                ))
               ) : (
-                <div className="text-center py-6">
-                  <p className="text-sm text-slate-500">Analyzing your patterns...</p>
+                <p className="text-sm text-slate-500">No active goals yet.</p>
+              )}
+            </div>
+
+            <div className="glass-card p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Lightbulb className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <h3 className="section-header mb-0">Insights and suggestions</h3>
+                </div>
+                <span className="badge-purple">{recentInsights.length}</span>
+              </div>
+
+              {recentInsights.length > 0 ? (
+                <div className="space-y-3">
+                  {recentInsights.slice(0, 3).map((insight) => (
+                    <InsightCard key={insight.id} insight={insight} onDismiss={() => {}} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">Analyzing your patterns...</p>
+              )}
+
+              {nudges.length > 0 && (
+                <div className="space-y-3 pt-1">
+                  {nudges.slice(0, 2).map((nudge, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                      <p className="text-sm font-medium text-amber-400">{nudge.title}</p>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{nudge.body}</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
-
-          {/* Nudges */}
-          {nudges.length > 0 && (
-            <div className="glass-card p-5 border-amber-500/20">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-amber-400" />
-                </div>
-                <h2 className="section-header mb-0">Suggestions</h2>
-              </div>
-              <div className="space-y-3">
-                {nudges.slice(0, 2).map((nudge, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                    <p className="text-sm font-medium text-amber-400">{nudge.title}</p>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{nudge.body}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-      </div>
+      </details>
     </div>
   );
 }
 
-// Helper Components
-function QuickAction({ 
-  href, 
-  icon: Icon, 
-  label, 
-  subtitle,
-  color 
-}: { 
-  href: string; 
-  icon: any; 
-  label: string; 
-  subtitle: string;
-  color: 'blue' | 'coral' | 'purple' | 'teal';
+function StatPill({
+  label,
+  value,
+  withFlame = false,
+}: {
+  label: string;
+  value: string;
+  withFlame?: boolean;
 }) {
-  const gradients = {
-    blue: 'from-blue-500 to-blue-600',
-    coral: 'from-coral-400 to-coral-500',
-    purple: 'from-purple-500 to-purple-600',
-    teal: 'from-teal-400 to-teal-500',
-  };
-
   return (
-    <Link 
-      href={href}
-      className="glass-card p-4 flex items-center gap-3 hover:bg-white/8 transition-all group"
-    >
-      <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${gradients[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-        <Icon className="h-5 w-5 text-white" />
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+      {withFlame && (
+        <div className="text-coral-300">
+          <Flame className="h-3.5 w-3.5" />
+        </div>
+      )}
+      <div>
+        <p className="text-[10px] uppercase tracking-wide text-slate-500">{label}</p>
+        <p className="text-xs font-semibold text-white">{value}</p>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white">{label}</p>
-        <p className="text-xs text-slate-500">{subtitle}</p>
-      </div>
-      <ChevronRight className="h-4 w-4 text-slate-600 group-hover:text-white transition-colors" />
-    </Link>
+    </div>
   );
 }
 
@@ -440,4 +362,40 @@ function getTimeOfDay(): string {
   if (hour < 12) return 'Morning';
   if (hour < 17) return 'Afternoon';
   return 'Evening';
+}
+
+function getPrimaryRoutineLabel(): string {
+  const hour = new Date().getHours();
+  return hour < 16 ? 'Morning Alignment' : 'Evening Wind-Down';
+}
+
+function getMentorSentence({
+  primaryRoutineLabel,
+  streak,
+  overallScore,
+  goalsSummary,
+  profileName,
+}: {
+  primaryRoutineLabel: string;
+  streak: number;
+  overallScore: number;
+  goalsSummary?: GoalsSummary;
+  profileName?: string;
+}) {
+  const firstName = profileName?.split(' ')[0];
+  const opening = firstName ? `${firstName},` : 'Today,';
+  const routinePrompt = primaryRoutineLabel === 'Morning Alignment'
+    ? 'start with a 2-minute alignment to set your intention.'
+    : 'close your day with a short reflection to reset your focus.';
+  const momentum = streak > 0
+    ? `You are on a ${streak}-day streak.`
+    : 'A single check-in today builds momentum.';
+  const balance = overallScore > 0
+    ? `Your current harmony is ${Math.round(overallScore * 10)}%.`
+    : 'Your harmony baseline will appear after your first check-in.';
+  const goals = goalsSummary?.total
+    ? `${goalsSummary.total} active goal${goalsSummary.total === 1 ? '' : 's'} can guide what matters most.`
+    : 'Set one focused goal to give this week direction.';
+
+  return `${opening} ${routinePrompt} ${momentum} ${balance} ${goals}`;
 }

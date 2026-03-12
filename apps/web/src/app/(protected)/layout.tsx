@@ -9,7 +9,6 @@ import {
   Target, 
   Lightbulb, 
   Users, 
-  Settings,
   Sparkles,
   ChevronRight,
   UserCircle,
@@ -36,12 +35,18 @@ export default function ProtectedLayout({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Goals', href: '/goals', icon: Target },
-    { name: 'Meditations', href: '/meditations', icon: Waves },
+  const currentHour = new Date().getHours();
+  const ritualWindow = currentHour < 12 ? 'Morning' : 'Evening';
+  const primaryNavItems = [
+    { name: 'Today', mobileName: 'Today', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Rituals', mobileName: 'Rituals', href: '/checkin', icon: Compass },
+    { name: 'Meditations', mobileName: 'Meditations', href: '/meditations', icon: Waves },
+    { name: 'Mentor', mobileName: 'Mentor', href: '/mentors', icon: Users },
+    { name: 'Goals', mobileName: 'Goals', href: '/goals', icon: Target },
+  ];
+  const secondaryNavItems = [
     { name: 'Insights', href: '/insights', icon: Lightbulb },
-    { name: 'Mentors', href: '/mentors', icon: Users },
+    { name: 'Settings', href: '/settings', icon: Palette },
   ];
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -58,7 +63,7 @@ export default function ProtectedLayout({
             </div>
             <div>
               <span className="text-lg font-bold text-gradient-blue tracking-tight">Life Design</span>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wide">INTELLIGENCE PLATFORM</p>
+              <p className="text-[10px] text-slate-500 font-medium tracking-wide">COMPANION SPACE</p>
             </div>
           </Link>
         </div>
@@ -85,8 +90,8 @@ export default function ProtectedLayout({
 
         {/* Navigation - iOS Style */}
         <nav className="flex-1 px-4 space-y-1">
-          <p className="section-subheader px-2">Platform</p>
-          {navItems.map((item) => (
+          <p className="section-subheader px-2">Your Flow</p>
+          {primaryNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -105,6 +110,23 @@ export default function ProtectedLayout({
               )}
             </Link>
           ))}
+          <div className="pt-5 space-y-1">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600 px-2">More</p>
+            {secondaryNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group ${
+                  isActive(item.href)
+                    ? 'bg-white/8 text-slate-100'
+                    : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="font-medium text-sm">{item.name}</span>
+              </Link>
+            ))}
+          </div>
         </nav>
 
         {/* Bottom Section */}
@@ -124,21 +146,9 @@ export default function ProtectedLayout({
               <Compass className="h-4 w-4 text-teal-400" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-white">Daily Check-in</p>
-              <p className="text-xs text-slate-500">Track your progress</p>
+              <p className="text-sm font-semibold text-white">{ritualWindow} Ritual</p>
+              <p className="text-xs text-slate-500">Quick start your current ritual</p>
             </div>
-          </Link>
-
-          <Link
-            href="/settings"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-              isActive('/settings') 
-                ? 'bg-white/10 text-white' 
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <Palette className="h-5 w-5" />
-            <span className="font-medium text-sm">Settings</span>
           </Link>
         </div>
       </aside>
@@ -146,14 +156,14 @@ export default function ProtectedLayout({
       {/* Mobile Navigation - iOS Tab Bar Style */}
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 tab-bar">
-          {navItems.map((item) => (
+          {primaryNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={`tab-item ${isActive(item.href) ? 'active' : ''}`}
             >
               <item.icon className="h-6 w-6" strokeWidth={isActive(item.href) ? 2.5 : 2} />
-              <span>{item.name}</span>
+              <span>{item.mobileName}</span>
             </Link>
           ))}
           <Link href="/settings" className={`tab-item ${isActive('/settings') ? 'active' : ''}`}>
