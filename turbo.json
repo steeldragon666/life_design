@@ -1,9 +1,23 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_APP_URL",
+    "GOOGLE_GENERATIVE_AI_API_KEY",
+    "ANTHROPIC_API_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_APP_URL",
+        "GOOGLE_GENERATIVE_AI_API_KEY",
+        "ANTHROPIC_API_KEY"
+      ]
     },
     "dev": {
       "cache": false,

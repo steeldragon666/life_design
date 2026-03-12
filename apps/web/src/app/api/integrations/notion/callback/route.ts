@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { exchangeCodeForTokens, NOTION_CONFIG } from '@/lib/integrations/oauth';
-import { connectIntegration } from '@/lib/services/integration-service';
+import { NOTION_CONFIG } from '@/lib/integrations/oauth';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -11,33 +9,44 @@ export async function GET(request: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
   if (error || !code) {
-    return NextResponse.redirect(`${appUrl}/settings?error=auth_denied`);
+    return NextResponse.redirect(`${appUrl}/settings?error=notion_denied`);
   }
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const redirectUri = `${appUrl}/api/integrations/notion/callback`;
+    
+    // Notion uses Basic auth
+    const auth = Buffer.from(`${NOTION_CONFIG.clientId}:${NOTION_CONFIG.clientSecret}`).toString('base64');
+    
+    const response = await fetch('https://api.notion.com/v1/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${auth}`,
+      },
+      body: JSON.stringify({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+      }),
+    });
 
-    if (!user) {
-      return NextResponse.redirect(`${appUrl}/login`);
+    if (!response.ok) {
+      throw new Error(`Token exchange failed: ${response.statusText}`);
     }
 
-    const redirectUri = `${appUrl}/api/integrations/notion/callback`;
-    const tokens = await exchangeCodeForTokens(NOTION_CONFIG, code, redirectUri);
+    const tokens = await response.json();
+    
+    const tokenData = encodeURIComponent(JSON.stringify({
+      provider: 'notion',
+      access_token: tokens.access_token,
+      workspace_id: tokens.workspace_id,
+      workspace_name: tokens.workspace_name,
+    }));
 
-    // Notion returns access_token but no refresh_token (tokens don't expire)
-    await connectIntegration(
-      user.id,
-      'notion',
-      tokens.access_token,
-      tokens.refresh_token ?? '',
-    );
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=notion`);
+    return NextResponse.redirect(`${appUrl}/settings?connected=notion&token=${tokenData}`);
   } catch (err) {
     console.error('Notion callback error:', err);
-    return NextResponse.redirect(`${appUrl}/settings?error=exchange_failed`);
+    return NextResponse.redirect(`${appUrl}/settings?error=notion_failed`);
   }
 }

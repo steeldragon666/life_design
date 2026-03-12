@@ -1,35 +1,138 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { listMentors } from '@/lib/services/mentor-service';
-import OnboardingClient from './onboarding-client';
-import { completeOnboarding, onboardActivateMentor, onboardSaveProfile } from './actions';
+'use client';
 
-export default async function OnboardingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+import { useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useGuest } from '@/lib/guest-context';
+import { FlowStateProvider, useFlowState } from '@/components/onboarding/flow-state';
+import StepDots, { StepDotsCompact } from '@/components/onboarding/step-dots';
+import CinematicOpener, { BeachBackground } from '@/components/onboarding/cinematic-opener';
+import VoiceOnboardingAgent from '@/components/onboarding/voice-onboarding-agent';
+import { cn } from '@/lib/utils';
 
-  if (!user) redirect('/login');
+// Main content component that uses flow state
+function OnboardingContent() {
+  const router = useRouter();
+  const { profile, setProfile, addGoal } = useGuest();
+  const { currentStep, isTransitioning, goToStep } = useFlowState();
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('onboarded')
-    .eq('id', user.id)
-    .single();
+  // If already onboarded, redirect to dashboard
+  useEffect(() => {
+    if (profile?.onboarded) {
+      router.push('/dashboard');
+    }
+  }, [profile, router]);
 
-  if (profile?.onboarded) {
-    redirect('/dashboard');
+  const handleComplete = useCallback(() => {
+    router.push('/dashboard');
+  }, [router]);
+
+  const handleSaveProfile = async (data: any) => {
+    setProfile({ ...data, onboarded: true });
+    return { error: null };
+  };
+
+  const handleCreateGoals = async (goals: any[]) => {
+    goals.forEach((goal) => {
+      const targetDate = new Date();
+      if (goal.horizon === 'short') {
+        targetDate.setMonth(targetDate.getMonth() + 3);
+      } else if (goal.horizon === 'medium') {
+        targetDate.setMonth(targetDate.getMonth() + 12);
+      } else {
+        targetDate.setFullYear(targetDate.getFullYear() + 3);
+      }
+
+      addGoal({
+        ...goal,
+        status: 'active',
+        target_date: targetDate.toISOString().split('T')[0],
+      });
+    });
+    return { error: null };
+  };
+
+  const handleVideoComplete = useCallback(() => {
+    goToStep('theme');
+  }, [goToStep]);
+
+  const handleVideoSkip = useCallback(() => {
+    goToStep('theme');
+  }, [goToStep]);
+
+  // Video stage - show cinematic opener
+  if (currentStep === 'video') {
+    return (
+      <CinematicOpener
+        onVideoComplete={handleVideoComplete}
+        onVideoSkip={handleVideoSkip}
+        enableSkipAfter={3}
+      />
+    );
   }
 
-  const { data: mentors } = await listMentors();
-
+  // Other stages - show beach background with floating UI
   return (
-    <OnboardingClient
-      mentors={mentors ?? []}
-      onComplete={completeOnboarding}
-      onActivateMentor={onboardActivateMentor}
-      onSaveProfile={onboardSaveProfile}
-    />
+    <BeachBackground>
+      <div className={cn(
+        'min-h-screen flex flex-col transition-opacity duration-500',
+        isTransitioning ? 'opacity-0' : 'opacity-100'
+      )}>
+        {/* Top navigation bar */}
+        <header className="sticky top-0 z-50 px-4 py-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-cyan-400/30 to-teal-400/30 flex items-center justify-center">
+                  <span className="text-cyan-300 text-lg">◉</span>
+                </div>
+                <span className="text-white font-semibold tracking-tight hidden sm:block">Life Design</span>
+              </div>
+
+              {/* Step indicators - desktop */}
+              <div className="hidden md:block">
+                <StepDots />
+              </div>
+
+              {/* Step indicators - mobile */}
+              <div className="md:hidden">
+                <StepDotsCompact />
+              </div>
+
+              {/* Exit option */}
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="text-cyan-300/60 hover:text-cyan-300 text-sm transition-colors"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main content area */}
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            <VoiceOnboardingAgent
+              onComplete={handleComplete}
+              onSaveProfile={handleSaveProfile}
+              onCreateGoals={handleCreateGoals}
+            />
+          </div>
+        </main>
+
+        {/* Bottom safe area for mobile */}
+        <div className="h-safe-bottom" />
+      </div>
+    </BeachBackground>
+  );
+}
+
+// Wrapper with FlowStateProvider
+export default function OnboardingPage() {
+  return (
+    <FlowStateProvider>
+      <OnboardingContent />
+    </FlowStateProvider>
   );
 }

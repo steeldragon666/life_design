@@ -1,79 +1,56 @@
-import { createClient } from '@/lib/supabase/server';
-import {
-  getLatestScores,
-  getScoreHistory,
-  getStreakData,
-} from '@/lib/services/dashboard-service';
-import { getInsights } from '@/lib/services/insights-service';
-import { getGoals } from '@/lib/services/goal-service';
-import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension, GoalStatus } from '@life-design/core';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useGuest } from '@/lib/guest-context';
 import DashboardClient from './dashboard-client';
+import { Dimension, GoalStatus, computeOverallScore, computeStreak } from '@life-design/core';
 
-import { getGranularContext } from '@life-design/core';
-import { generateNudges } from '@/lib/services/nudge-engine';
+export default function DashboardPage() {
+  const router = useRouter();
+  const { profile, goals, checkins } = useGuest();
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Redirect to onboarding if not onboarded
+  useEffect(() => {
+    if (!profile?.onboarded) {
+      router.push('/onboarding');
+    }
+  }, [profile, router]);
 
-  if (!user) {
-    return <p>Loading...</p>;
+  if (!profile?.onboarded) {
+    return null;
   }
 
-  // Fetch profile for context
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('postcode, profession, interests')
-    .eq('id', user.id)
-    .single();
+  // Build latest scores from most recent checkin
+  const latestCheckin = checkins[checkins.length - 1];
+  const latestScores = latestCheckin?.dimension_scores || [];
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  const [latestResult, historyResult, streakResult, insightsResult, goalsResult, worldContext] = await Promise.all([
-    getLatestScores(user.id),
-    getScoreHistory(user.id, 30),
-    getStreakData(user.id),
-    getInsights(user.id, 3),
-    getGoals(user.id, { status: GoalStatus.Active }),
-    profile?.postcode ? getGranularContext(profile.postcode, profile.profession, profile.interests ?? []) : Promise.resolve(null),
-  ]);
-
-  const latestScores = latestResult.data ?? [];
-  const history = historyResult.data ?? [];
-  const streakDates = streakResult.data ?? [];
-
-  const streak = computeStreak(streakDates, today);
+  // Compute overall score
   const overallScore = latestScores.length > 0
     ? computeOverallScore(latestScores as { dimension: Dimension; score: number }[])
     : 0;
 
-  // Build per-dimension trend data from history
+  // Compute streak
+  const today = new Date().toISOString().slice(0, 10);
+  const streakDates = checkins.map((c) => c.date);
+  const streak = computeStreak(streakDates, today);
+
+  // Build dimension trends
   const dimensionTrends: Record<string, { date: string; score: number }[]> = {};
-  for (const checkin of history) {
-    const scores = (checkin as { date: string; dimension_scores: { dimension: string; score: number }[] }).dimension_scores ?? [];
-    for (const ds of scores) {
+  checkins.forEach((checkin) => {
+    checkin.dimension_scores.forEach((ds) => {
       if (!dimensionTrends[ds.dimension]) {
         dimensionTrends[ds.dimension] = [];
       }
       dimensionTrends[ds.dimension].push({
-        date: (checkin as { date: string }).date,
+        date: checkin.date,
         score: ds.score,
       });
-    }
-  }
-
-  const recentInsights = (insightsResult.data ?? []) as {
-    id: string;
-    type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
-    title: string;
-    body: string;
-    dimension: string | null;
-  }[];
+    });
+  });
 
   // Build goals summary
-  const activeGoals = (goalsResult.data ?? []) as Array<Record<string, unknown>>;
+  const activeGoals = goals.filter((g) => g.status === 'active');
   const goalsSummary = {
     total: activeGoals.length,
     byHorizon: {
@@ -83,26 +60,42 @@ export default async function DashboardPage() {
     },
     nearestDeadline: activeGoals.length > 0
       ? activeGoals.reduce((nearest, g) => {
-          const gDate = new Date(g.target_date as string).getTime();
-          const nDate = nearest ? new Date(nearest.target_date as string).getTime() : Infinity;
+          const gDate = new Date(g.target_date).getTime();
+          const nDate = nearest ? new Date(nearest.target_date).getTime() : Infinity;
           return gDate < nDate ? g : nearest;
-        }, null as Record<string, unknown> | null)
+        }, null as any)
       : null,
   };
 
-  const nudges = worldContext 
-    ? await generateNudges(latestScores, activeGoals, worldContext)
-    : [];
+  // Mock insights (in production, these would come from AI analysis)
+  const recentInsights = checkins.length > 2 ? [
+    {
+      id: '1',
+      type: 'suggestion' as const,
+      title: 'Keep up the momentum!',
+      body: `You've checked in ${checkins.length} times. Consistency is key to achieving your goals.`,
+      dimension: null,
+    },
+  ] : [];
+
+  // Mock nudges based on profile
+  const nudges = profile.interests?.length ? [
+    {
+      title: 'Personalized for you',
+      body: `Based on your interest in ${profile.interests[0]}, consider setting a related goal.`,
+    },
+  ] : [];
 
   return (
     <DashboardClient
-      latestScores={latestScores as { dimension: string; score: number }[]}
+      latestScores={latestScores}
       overallScore={overallScore}
       streak={streak}
       dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
       nudges={nudges}
+      profile={profile}
     />
   );
 }

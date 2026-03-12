@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import GoalCard from '@/components/goals/goal-card';
+import { Target, Plus } from 'lucide-react';
 
 type GoalWithRelations = {
   id: string;
@@ -42,15 +44,43 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Goals</h1>
-        <Link
-          href="/goals/new"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
-        >
-          New Goal
-        </Link>
+    <div className="space-y-8">
+      {/* Hero Header with Pathway Illustration */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-amber-500/10 border border-white/5 p-8">
+        <div className="absolute top-0 right-0 w-80 h-80 opacity-70">
+          <Image
+            src="/images/goals-pathway-illustration.png"
+            alt="Goals Pathway"
+            width={320}
+            height={320}
+            className="object-contain"
+            priority
+          />
+        </div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-xl bg-amber-500/10">
+                <Target className="h-6 w-6 text-amber-400" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                Goals
+              </h1>
+            </div>
+            <p className="text-slate-400 font-medium max-w-md">
+              Define your path. Every milestone brings you closer to the life you design.
+            </p>
+          </div>
+          
+          <Link
+            href="/goals/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:scale-105 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            New Goal
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -86,14 +116,27 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
 
       {/* Goals grid */}
       {filtered.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed p-12 text-center">
-          <p className="text-gray-500">No goals found.</p>
-          <Link href="/goals/new" className="mt-2 inline-block text-sm text-indigo-600 hover:underline">
+        <div className="rounded-3xl border-2 border-dashed border-white/10 bg-slate-900/30 p-16 text-center">
+          <div className="w-48 h-48 mx-auto mb-6 opacity-80">
+            <Image
+              src="/images/empty-state-illustration.png"
+              alt="No goals yet"
+              width={192}
+              height={192}
+              className="object-contain"
+            />
+          </div>
+          <p className="text-slate-400 text-lg mb-4">No goals found. Start designing your future.</p>
+          <Link 
+            href="/goals/new" 
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:scale-105 transition-all"
+          >
+            <Plus className="h-4 w-4" />
             Create your first goal
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((goal) => (
             <GoalCard key={goal.id} goal={goal} />
           ))}

@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.39.0';
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.21.0';
 
 const ANALYSIS_PROMPT = `You are a wellness data analyst. Analyze the user's check-in data and goals to generate actionable insights.
 
@@ -25,8 +25,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const anthropic = new Anthropic({
-      apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
+    const genAI = new GoogleGenerativeAI(Deno.env.get('GOOGLE_GENERATIVE_AI_API_KEY')!);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: { responseMimeType: 'application/json' }
     });
 
     // Get users who checked in within the last 7 days
@@ -95,22 +97,14 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1024,
-          system: ANALYSIS_PROMPT,
-          messages: [
-            {
-              role: 'user',
-              content: `Here is my check-in data from the past ${checkIns.length} days:\n${dataStr}${goalsContext}`,
-            },
-          ],
-        });
+        const result = await model.generateContent([
+          { text: ANALYSIS_PROMPT },
+          { text: `Here is my check-in data from the past ${checkIns.length} days:\n${dataStr}${goalsContext}` },
+        ]);
 
-        const textBlock = response.content.find((b: { type: string }) => b.type === 'text');
-        if (!textBlock || textBlock.type !== 'text') continue;
-
-        const insights = JSON.parse(textBlock.text);
+        const response = await result.response;
+        const text = response.text();
+        const insights = JSON.parse(text);
         if (!Array.isArray(insights)) continue;
 
         for (const insight of insights) {

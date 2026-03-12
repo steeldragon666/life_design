@@ -1,20 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Dimension } from '@life-design/core';
 
-const mockCreate = vi.fn();
-
+// Mock the client module
 vi.mock('../client', () => ({
-  getAnthropicClient: vi.fn(() => ({
-    messages: {
-      create: mockCreate,
-    },
-  })),
+  getGeminiClient: vi.fn(),
 }));
 
+import { getGeminiClient } from '../client';
 import { generateInsights } from '../insights';
+
+const mockGenerateContent = vi.fn();
+const mockGetGenerativeModel = vi.fn(() => ({
+  generateContent: mockGenerateContent,
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(getGeminiClient).mockReturnValue({
+    getGenerativeModel: mockGetGenerativeModel,
+  } as any);
 });
 
 describe('generateInsights', () => {
@@ -45,27 +49,24 @@ describe('generateInsights', () => {
     },
   ];
 
-  it('returns parsed insights from Claude response', async () => {
-    mockCreate.mockResolvedValue({
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify([
-            {
-              type: 'trend',
-              title: 'Health is improving',
-              body: 'Your health scores show an upward trend over the past 3 days.',
-              dimension: 'health',
-            },
-            {
-              type: 'suggestion',
-              title: 'Focus on career',
-              body: 'Career scores have been inconsistent. Consider setting daily goals.',
-              dimension: 'career',
-            },
-          ]),
-        },
-      ],
+  it('returns parsed insights from Gemini response', async () => {
+    mockGenerateContent.mockResolvedValue({
+      response: {
+        text: () => JSON.stringify([
+          {
+            type: 'trend',
+            title: 'Health is improving',
+            body: 'Your health scores show an upward trend over the past 3 days.',
+            dimension: 'health',
+          },
+          {
+            type: 'suggestion',
+            title: 'Focus on career',
+            body: 'Career scores have been inconsistent. Consider setting daily goals.',
+            dimension: 'career',
+          },
+        ]),
+      },
     });
 
     const insights = await generateInsights(sampleScores);
@@ -77,23 +78,24 @@ describe('generateInsights', () => {
     expect(insights[1].type).toBe('suggestion');
   });
 
-  it('sends check-in data to Claude with analysis prompt', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: '[]' }],
+  it('sends check-in data to Gemini with analysis prompt', async () => {
+    mockGenerateContent.mockResolvedValue({
+      response: {
+        text: () => '[]',
+      },
     });
 
     await generateInsights(sampleScores);
 
-    expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        model: 'claude-sonnet-4-20250514',
-        system: expect.stringContaining('Analyze'),
-      }),
-    );
+    expect(mockGetGenerativeModel).toHaveBeenCalledWith({
+      model: 'gemini-1.5-flash',
+      generationConfig: { responseMimeType: 'application/json' },
+    });
+    expect(mockGenerateContent).toHaveBeenCalled();
   });
 
   it('returns empty array on API failure', async () => {
-    mockCreate.mockRejectedValue(new Error('API error'));
+    mockGenerateContent.mockRejectedValue(new Error('API error'));
 
     const insights = await generateInsights(sampleScores);
 
@@ -101,8 +103,10 @@ describe('generateInsights', () => {
   });
 
   it('returns empty array on invalid JSON response', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: 'not valid json' }],
+    mockGenerateContent.mockResolvedValue({
+      response: {
+        text: () => 'not valid json',
+      },
     });
 
     const insights = await generateInsights(sampleScores);
@@ -114,6 +118,6 @@ describe('generateInsights', () => {
     const insights = await generateInsights([]);
 
     expect(insights).toEqual([]);
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockGenerateContent).not.toHaveBeenCalled();
   });
 });

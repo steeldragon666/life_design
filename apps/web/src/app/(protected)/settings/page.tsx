@@ -1,19 +1,370 @@
-import { createClient } from '@/lib/supabase/server';
-import { getUserIntegrations } from '@/lib/services/integration-service';
-import SettingsClient from './settings-client';
+'use client';
 
-export default async function SettingsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { 
+  Settings, 
+  Sparkles, 
+  Palette,
+  Instagram,
+  Music,
+  Dumbbell,
+  FileText,
+  MessageSquare,
+  Calendar,
+  Linkedin,
+  CheckCircle2,
+  X,
+  ExternalLink,
+  Volume2
+} from 'lucide-react';
+import ThemeSelector from '@/components/theme/theme-selector';
+import { ThemeSelectorCompact } from '@/components/theme/theme-selector';
+import VoiceSelector, { VOICE_OPTIONS } from '@/components/voice/voice-selector';
+import { useGuest } from '@/lib/guest-context';
 
-  const { data: integrations } = await getUserIntegrations(user!.id);
+const integrations = [
+  {
+    id: 'instagram',
+    name: 'Instagram',
+    description: 'Share your visual journey and creative moments',
+    icon: Instagram,
+    authUrl: '/api/auth/instagram',
+    color: 'from-pink-500 to-purple-500',
+    bgColor: 'bg-pink-500/10',
+    iconColor: 'text-pink-400',
+  },
+  {
+    id: 'spotify',
+    name: 'Spotify',
+    description: 'Connect your music and podcast listening habits',
+    icon: Music,
+    authUrl: '/api/auth/spotify',
+    color: 'from-green-500 to-emerald-500',
+    bgColor: 'bg-green-500/10',
+    iconColor: 'text-green-400',
+  },
+  {
+    id: 'strava',
+    name: 'Strava',
+    description: 'Track your fitness activities and outdoor adventures',
+    icon: Dumbbell,
+    authUrl: '/api/auth/strava',
+    color: 'from-orange-500 to-red-500',
+    bgColor: 'bg-orange-500/10',
+    iconColor: 'text-orange-400',
+  },
+  {
+    id: 'notion',
+    name: 'Notion',
+    description: 'Sync your notes, tasks, and knowledge base',
+    icon: FileText,
+    authUrl: '/api/auth/notion',
+    color: 'from-slate-400 to-slate-300',
+    bgColor: 'bg-slate-500/10',
+    iconColor: 'text-slate-300',
+  },
+  {
+    id: 'slack',
+    name: 'Slack',
+    description: 'Connect your work communication and team activity',
+    icon: MessageSquare,
+    authUrl: '/api/auth/slack',
+    color: 'from-purple-500 to-indigo-500',
+    bgColor: 'bg-purple-500/10',
+    iconColor: 'text-purple-400',
+  },
+  {
+    id: 'google',
+    name: 'Google Calendar',
+    description: 'Sync your schedule and time management',
+    icon: Calendar,
+    authUrl: '/api/auth/google',
+    color: 'from-blue-500 to-cyan-500',
+    bgColor: 'bg-blue-500/10',
+    iconColor: 'text-blue-400',
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    description: 'Connect your professional network and career insights',
+    icon: Linkedin,
+    authUrl: '/api/auth/linkedin',
+    color: 'from-blue-600 to-blue-700',
+    bgColor: 'bg-blue-600/10',
+    iconColor: 'text-blue-500',
+  },
+];
+
+export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const { 
+    integrations: connectedIntegrations, 
+    addIntegration, 
+    removeIntegration,
+    voicePreference,
+    setVoicePreference 
+  } = useGuest();
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const selectedVoice = VOICE_OPTIONS.find(v => v.id === voicePreference);
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const connected = searchParams.get('connected');
+    const tokenData = searchParams.get('token');
+    const error = searchParams.get('error');
+
+    if (connected && tokenData) {
+      try {
+        const tokenInfo = JSON.parse(decodeURIComponent(tokenData));
+        addIntegration({
+          provider: tokenInfo.provider,
+          access_token: tokenInfo.access_token,
+          refresh_token: tokenInfo.refresh_token,
+          expires_at: tokenInfo.expires_at,
+          metadata: tokenInfo,
+        });
+        setNotification(`Successfully connected ${connected}!`);
+      } catch (e) {
+        console.error('Failed to parse token data:', e);
+      }
+    }
+
+    if (error) {
+      const provider = error.split('_')[0];
+      setNotification(`Failed to connect ${provider}. Please try again.`);
+    }
+
+    // Clear notification after 5 seconds
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, addIntegration]);
+
+  const isConnected = (providerId: string) => {
+    return connectedIntegrations.some(i => i.provider === providerId);
+  };
+
+  const handleDisconnect = (providerId: string) => {
+    removeIntegration(providerId);
+    setNotification(`Disconnected ${providerId}`);
+  };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">Settings</h1>
-      <SettingsClient integrations={integrations ?? []} />
+    <div className="mx-auto max-w-4xl space-y-8">
+      {/* Notification Banner */}
+      {notification && (
+        <div className={`p-4 rounded-2xl flex items-center gap-3 animate-fade-in ${
+          notification.includes('Successfully') 
+            ? 'bg-emerald-500/10 border border-emerald-500/20' 
+            : 'bg-red-500/10 border border-red-500/20'
+        }`}>
+          {notification.includes('Successfully') ? (
+            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+          ) : (
+            <X className="h-5 w-5 text-red-400" />
+          )}
+          <p className={`text-sm ${notification.includes('Successfully') ? 'text-emerald-400' : 'text-red-400'}`}>
+            {notification}
+          </p>
+          <button 
+            onClick={() => setNotification(null)}
+            className="ml-auto text-slate-500 hover:text-slate-300"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="glass-card p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-50">
+          <Image
+            src="/images/life-dimensions-3d-icons.png"
+            alt="Life Dimensions"
+            width={256}
+            height={256}
+            className="object-contain"
+          />
+        </div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <Settings className="h-5 w-5 text-slate-300" />
+              </div>
+              <div>
+                <h1 className="text-[28px] font-bold text-white tracking-tight">
+                  Settings
+                </h1>
+                <p className="text-sm text-slate-500">Customize your experience</p>
+              </div>
+            </div>
+            <ThemeSelectorCompact />
+          </div>
+        </div>
+      </div>
+
+      {/* Theme Selection */}
+      <div className="glass-card p-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-pink-400/20 to-purple-400/20 flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-pink-300" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Aesthetic</h2>
+            <p className="text-sm text-slate-500">Personalize your visual experience</p>
+          </div>
+        </div>
+        
+        <div className="mt-6">
+          <ThemeSelector />
+        </div>
+      </div>
+
+      {/* Voice Companion Selection */}
+      <div className="glass-card p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-400/20 to-blue-400/20 flex items-center justify-center">
+            <Volume2 className="h-5 w-5 text-teal-300" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Voice Companion</h2>
+            <p className="text-sm text-slate-500">
+              Currently: <span className="text-teal-400">{selectedVoice?.name}</span> ({selectedVoice?.accent}, {selectedVoice?.gender})
+            </p>
+          </div>
+        </div>
+        
+        <VoiceSelector
+          selectedVoice={voicePreference}
+          onSelect={setVoicePreference}
+          showPreview={true}
+        />
+      </div>
+
+      {/* Integrations Section */}
+      <div className="glass-card p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+              <ExternalLink className="h-5 w-5 text-slate-300" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">Integrations</h2>
+              <p className="text-sm text-slate-500">
+                Connect your accounts for a richer experience
+              </p>
+            </div>
+          </div>
+          <div className="badge-theme">
+            {connectedIntegrations.length} Connected
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {integrations.map((integration) => {
+            const Icon = integration.icon;
+            const connected = isConnected(integration.id);
+
+            return (
+              <div
+                key={integration.id}
+                className={`p-5 rounded-2xl border transition-all ${
+                  connected
+                    ? 'bg-white/5 border-white/10'
+                    : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`h-12 w-12 rounded-xl ${integration.bgColor} flex items-center justify-center`}>
+                    <Icon className={`h-6 w-6 ${integration.iconColor}`} />
+                  </div>
+                  {connected ? (
+                    <div className="flex items-center gap-2">
+                      <span className="badge-green text-xs">Connected</span>
+                      <button
+                        onClick={() => handleDisconnect(integration.id)}
+                        className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-red-400 transition-colors"
+                        title="Disconnect"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <a
+                      href={integration.authUrl}
+                      className="btn-secondary py-2 px-4 text-sm"
+                    >
+                      Connect
+                    </a>
+                  )}
+                </div>
+
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  {integration.name}
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  {integration.description}
+                </p>
+
+                {connected && (
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    <p className="text-xs text-slate-500">
+                      Connected on {new Date(connectedIntegrations.find(i => i.provider === integration.id)?.connected_at || '').toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/5">
+          <p className="text-sm text-slate-400">
+            <span className="text-slate-300 font-medium">Privacy Note:</span> Your integration tokens are stored locally on your device. 
+            We never store your credentials on our servers. You can disconnect any integration at any time.
+          </p>
+        </div>
+      </div>
+
+      {/* About Section */}
+      <div className="glass-card p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+            <Palette className="h-5 w-5 text-slate-300" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-white">About Life Design</h2>
+            <p className="text-sm text-slate-500">Your personal intelligence platform</p>
+          </div>
+        </div>
+        
+        <div className="space-y-3 text-sm text-slate-400">
+          <p>
+            Life Design helps you track goals, gain AI-powered insights, and create meaningful progress 
+            across all dimensions of your life.
+          </p>
+          <div className="flex items-center gap-4 pt-2">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-teal-500" />
+              AI Voice Agent
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              Local Storage
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-purple-500" />
+              Privacy First
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

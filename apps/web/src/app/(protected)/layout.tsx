@@ -1,46 +1,39 @@
-import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
+'use client';
+
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { signOut } from '../(auth)/actions';
+import { usePathname } from 'next/navigation';
+import { useGuest } from '@/lib/guest-context';
+import { ThemeSelectorCompact } from '@/components/theme/theme-selector';
 import { 
   LayoutDashboard, 
   Target, 
   Lightbulb, 
   Users, 
-  Settings, 
-  LogOut,
-  Sparkles
+  Settings,
+  Sparkles,
+  ChevronRight,
+  UserCircle,
+  CheckCircle2,
+  Compass,
+  Palette
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-export default async function ProtectedLayout({
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const pathname = usePathname();
+  const { profile } = useGuest();
+  const [isMobile, setIsMobile] = useState(false);
 
-  if (!user) {
-    redirect('/login');
-  }
-
-  // Redirect un-onboarded users to onboarding (skip if already there)
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') ?? '';
-  if (!pathname.startsWith('/onboarding')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarded')
-      .eq('id', user.id)
-      .single();
-
-    if (profile && !profile.onboarded) {
-      redirect('/onboarding');
-    }
-  }
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -49,55 +42,133 @@ export default async function ProtectedLayout({
     { name: 'Mentors', href: '/mentors', icon: Users },
   ];
 
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
   return (
-    <div className="flex min-h-screen bg-[#0a0a0c]">
-      {/* Sidebar */}
-      <aside className="w-64 glass border-r border-white/5 flex flex-col fixed inset-y-0 z-50">
+    <div className="flex min-h-screen bg-[#0a0e17]">
+      {/* Desktop Sidebar - iOS Style Glass */}
+      <aside className="hidden lg:flex w-72 flex-col fixed inset-y-0 z-50 glass border-r border-white/5">
+        {/* Logo Section */}
         <div className="p-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/20">
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 rounded-2xl gradient-blue flex items-center justify-center shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gradient">Life Design</span>
+            <div>
+              <span className="text-lg font-bold text-gradient-blue tracking-tight">Life Design</span>
+              <p className="text-[10px] text-slate-500 font-medium tracking-wide">INTELLIGENCE PLATFORM</p>
+            </div>
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        {/* User Profile Preview */}
+        {profile?.name && (
+          <div className="px-4 mb-4">
+            <div className="glass-card p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                <span className="text-sm font-bold text-white">
+                  {profile.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{profile.name}</p>
+                <p className="text-xs text-slate-500 truncate">{profile.profession || 'Life Designer'}</p>
+              </div>
+              <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation - iOS Style */}
+        <nav className="flex-1 px-4 space-y-1">
+          <p className="section-subheader px-2">Platform</p>
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white"
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                isActive(item.href)
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
             >
-              <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">{item.name}</span>
+              <item.icon className={`h-5 w-5 transition-transform ${
+                isActive(item.href) ? 'text-blue-400' : 'group-hover:scale-110'
+              }`} />
+              <span className="font-medium text-sm">{item.name}</span>
+              {isActive(item.href) && (
+                <ChevronRight className="h-4 w-4 ml-auto text-slate-500" />
+              )}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 space-y-2">
+        {/* Bottom Section */}
+        <div className="p-4 space-y-3 border-t border-white/5">
+          {/* Theme Quick Switch */}
+          <div className="px-4 py-2">
+            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Theme</p>
+            <ThemeSelectorCompact />
+          </div>
+
+          {/* Daily Check-in CTA */}
+          <Link
+            href="/checkin"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-teal-500/10 to-transparent border border-teal-500/20 hover:border-teal-500/40 transition-all group"
+          >
+            <div className="h-8 w-8 rounded-lg bg-teal-500/20 flex items-center justify-center">
+              <Compass className="h-4 w-4 text-teal-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">Daily Check-in</p>
+              <p className="text-xs text-slate-500">Track your progress</p>
+            </div>
+          </Link>
+
           <Link
             href="/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              isActive('/settings') 
+                ? 'bg-white/10 text-white' 
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
           >
-            <Settings className="h-5 w-5" />
-            <span className="font-medium">Settings</span>
+            <Palette className="h-5 w-5" />
+            <span className="font-medium text-sm">Settings</span>
           </Link>
-          <form action={signOut}>
-            <button className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-red-500/10 text-slate-400 hover:text-red-400">
-              <LogOut className="h-5 w-5" />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </form>
         </div>
       </aside>
 
+      {/* Mobile Navigation - iOS Tab Bar Style */}
+      {isMobile && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 tab-bar">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`tab-item ${isActive(item.href) ? 'active' : ''}`}
+            >
+              <item.icon className="h-6 w-6" strokeWidth={isActive(item.href) ? 2.5 : 2} />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+          <Link href="/settings" className={`tab-item ${isActive('/settings') ? 'active' : ''}`}>
+            <UserCircle className="h-6 w-6" strokeWidth={isActive('/settings') ? 2.5 : 2} />
+            <span>Profile</span>
+          </Link>
+        </nav>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8 relative overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-0 right-0 h-[500px] w-[500px] bg-primary-500/5 rounded-full blur-[120px] -z-10" />
+      <main className={`flex-1 ${isMobile ? 'pb-24' : 'lg:ml-72'} relative overflow-hidden`}>
+        {/* Background Ambient Effects */}
+        <div className="fixed top-0 right-0 h-[600px] w-[600px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="fixed bottom-0 left-1/4 h-[400px] w-[400px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
         
-        <div className="max-w-6xl mx-auto pb-12">
+        {/* Content Container */}
+        <div className="relative z-10 p-4 lg:p-8 max-w-7xl mx-auto">
           {children}
         </div>
       </main>

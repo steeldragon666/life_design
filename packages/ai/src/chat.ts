@@ -1,7 +1,7 @@
 import { getGeminiClient } from './client';
 
 export interface ChatMessage {
-  role: 'user' | 'model';
+  role: 'user' | 'model' | 'assistant';
   content: string;
 }
 

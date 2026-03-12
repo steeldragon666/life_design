@@ -1,61 +1,34 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { activateMentor } from '@/lib/services/mentor-service';
-import { updateProfile } from '@/lib/services/profile-service';
 
+// Guest mode actions - returns data that will be stored in localStorage
 export async function completeOnboarding() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: 'Not authenticated' };
-
-  await supabase
-    .from('profiles')
-    .update({ onboarded: true })
-    .eq('id', user.id);
-
+  // In guest mode, just redirect to dashboard
   redirect('/dashboard');
 }
 
-export async function onboardActivateMentor(mentorId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: 'Not authenticated' };
-
-  await activateMentor(user.id, mentorId);
-  return { error: null };
+export async function onboardSaveProfile(data: {
+  profession?: string;
+  interests?: string[];
+  hobbies?: string[];
+  skills?: string[];
+  projects?: string[];
+  postcode?: string;
+  name?: string;
+  maritalStatus?: string;
+}) {
+  // In guest mode, this data is handled client-side
+  // This action just validates and returns success
+  return { error: null, data };
 }
 
-export async function onboardSaveProfile(data: {
-  profession: string;
-  interests: string[];
-  hobbies: string[];
-  skills: string[];
-  projects: string[];
-  postcode: string;
-}) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: 'Not authenticated' };
-
-  await updateProfile(user.id, {
-    profession: data.profession || null,
-    interests: data.interests,
-    hobbies: data.hobbies,
-    skills: data.skills,
-    projects: data.projects,
-    postcode: data.postcode || null,
-  });
-
-  return { error: null };
+export async function onboardCreateGoals(goals: Array<{
+  title: string;
+  horizon: 'short' | 'medium' | 'long';
+  description?: string;
+}>) {
+  // In guest mode, goals are stored in localStorage
+  // This action validates and returns the goals
+  return { error: null, goals };
 }

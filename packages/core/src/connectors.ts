@@ -15,7 +15,7 @@ export abstract class BaseLifeConnector implements LifeConnector {
   ) {}
 
   abstract fetchData(...args: any[]): Promise<any>;
-  async writeData(...args: any[]): Promise<any> {
+  async writeData(..._args: any[]): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
@@ -129,12 +129,116 @@ export async function getGranularContext(postcode: string, profession: string | 
   };
 }
 
+export class SpotifyConnector extends BaseLifeConnector {
+  constructor(accessToken: string) {
+    super(IntegrationProvider.Spotify, Dimension.Growth, accessToken);
+  }
+
+  async fetchData() {
+    // Fetch recently played tracks
+    const response = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+    return response.json();
+  }
+
+  async getTopTracks(timeRange: 'short_term' | 'medium_term' | 'long_term' = 'medium_term') {
+    const response = await fetch(
+      `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
+      { headers: { Authorization: `Bearer ${this.accessToken}` } },
+    );
+    return response.json();
+  }
+}
+
+export class SlackConnector extends BaseLifeConnector {
+  constructor(accessToken: string) {
+    super(IntegrationProvider.Slack, Dimension.Career, accessToken);
+  }
+
+  async fetchData() {
+    // Get channel list as basic data
+    const response = await fetch('https://slack.com/api/conversations.list', {
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+    return response.json();
+  }
+
+  async getUserPresence() {
+    const response = await fetch('https://slack.com/api/users.getPresence', {
+      headers: { Authorization: `Bearer ${this.accessToken}` },
+    });
+    return response.json();
+  }
+}
+
+export class InstagramConnector extends BaseLifeConnector {
+  constructor(accessToken: string) {
+    super(IntegrationProvider.Instagram, Dimension.Social, accessToken);
+  }
+
+  async fetchData() {
+    // Get basic user info and media count
+    const response = await fetch(
+      `https://graph.instagram.com/me?fields=id,username,media_count&access_token=${this.accessToken}`,
+    );
+    return response.json();
+  }
+
+  async getRecentMedia(limit: number = 25) {
+    const response = await fetch(
+      `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}&access_token=${this.accessToken}`,
+    );
+    return response.json();
+  }
+}
+
+export class NotionConnector extends BaseLifeConnector {
+  constructor(accessToken: string) {
+    super(IntegrationProvider.Notion, Dimension.Career, accessToken);
+  }
+
+  async fetchData() {
+    // List databases as basic data
+    const response = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filter: { value: 'database', property: 'object' } }),
+    });
+    return response.json();
+  }
+
+  async queryDatabase(databaseId: string) {
+    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  }
+}
+
 export function getConnector(provider: IntegrationProvider, accessToken: string): LifeConnector | null {
   switch (provider) {
     case IntegrationProvider.Strava:
       return new StravaConnector(accessToken);
     case IntegrationProvider.GoogleCalendar:
       return new GoogleCalendarConnector(accessToken);
+    case IntegrationProvider.Spotify:
+      return new SpotifyConnector(accessToken);
+    case IntegrationProvider.Slack:
+      return new SlackConnector(accessToken);
+    case IntegrationProvider.Instagram:
+      return new InstagramConnector(accessToken);
+    case IntegrationProvider.Notion:
+      return new NotionConnector(accessToken);
     default:
       return null;
   }

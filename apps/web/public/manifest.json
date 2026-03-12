@@ -1,0 +1,54 @@
+{
+  "name": "Life Design",
+  "short_name": "Life Design",
+  "description": "Your Personal Intelligence Platform - Track goals, gain insights, design your future.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#0a0e17",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/images/life-orb-3d-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/life-design-hero-illustration.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["lifestyle", "productivity", "health"],
+  "screenshots": [
+    {
+      "src": "/images/life-design-hero-illustration.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Life Design Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Check In",
+      "short_name": "Check In",
+      "description": "Log your daily check-in",
+      "url": "/checkin",
+      "icons": [{ "src": "/images/life-orb-3d-icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Goals",
+      "short_name": "Goals",
+      "description": "View your goals",
+      "url": "/goals",
+      "icons": [{ "src": "/images/goals-pathway-illustration.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

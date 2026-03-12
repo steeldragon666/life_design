@@ -8,22 +8,22 @@ import type { GoalFormData } from '@/components/goals/goal-form';
 export default function NewGoalPage() {
   const router = useRouter();
 
-  async function handleSubmit(data: GoalFormData) {
+  async function handleSubmit(formData: GoalFormData) {
     const result = await createGoalAction({
-      title: data.title,
-      description: data.description || undefined,
-      horizon: data.horizon,
-      trackingType: data.trackingType,
-      targetDate: data.targetDate,
-      metricTarget: data.metricTarget,
-      metricUnit: data.metricUnit,
-      dimensions: data.dimensions,
-      milestones: data.milestones.length > 0 ? data.milestones : undefined,
+      title: formData.title,
+      description: formData.description || undefined,
+      horizon: formData.horizon,
+      trackingType: formData.trackingType,
+      targetDate: formData.targetDate,
+      metricTarget: formData.metricTarget,
+      metricUnit: formData.metricUnit,
+      dimensions: formData.dimensions,
+      milestones: formData.milestones.length > 0 ? formData.milestones : undefined,
     });
 
     if (result.error) return { error: result.error };
 
-    if (result.goal?.id) {
+    if (result.success && result.goal?.id) {
       router.push(`/goals/${result.goal.id}`);
     } else {
       router.push('/goals');

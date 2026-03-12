@@ -4,6 +4,25 @@ import { createClient } from '@/lib/supabase/server';
 import { getIntegrationToken } from '@/lib/services/integration-service';
 import { GoogleCalendarConnector } from '@life-design/core';
 import { revalidatePath } from 'next/cache';
+import type { Goal, GoalMilestone } from '@life-design/core';
+
+export interface CreateGoalInput {
+  title: string;
+  description?: string;
+  horizon: string;
+  trackingType: string;
+  targetDate: string;
+  metricTarget?: number | null;
+  metricUnit?: string | null;
+  dimensions?: string[];
+  milestones?: string[];
+}
+
+export interface CreateGoalResult {
+  success: boolean;
+  goal?: Goal & { id: string };
+  error?: string;
+}
 
 export async function schedulePathwayStep(stepId: string, title: string, description: string) {
   const supabase = await createClient();
@@ -59,7 +78,7 @@ export async function schedulePathwayStep(stepId: string, title: string, descrip
   }
 }
 
-export async function createGoalAction(input: any) {
+export async function createGoalAction(input: CreateGoalInput): Promise<CreateGoalResult> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -93,14 +112,14 @@ export async function createGoalAction(input: any) {
     .select()
     .single();
 
-  if (goalError) return { error: goalError.message };
+  if (goalError) return { success: false, error: goalError.message };
 
   if (milestones && milestones.length > 0) {
     const { error: msError } = await supabase
       .from('milestones')
-      .insert(milestones.map((m: any, i: number) => ({
+      .insert(milestones.map((m: string, i: number) => ({
         goal_id: goal.id,
-        title: m.title || m,
+        title: m,
         position: i,
         completed: false
       })));
