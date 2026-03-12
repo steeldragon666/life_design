@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { MentorArchetype } from './mentor-archetypes';
 
 interface GuestProfile {
   id: string;
@@ -14,6 +15,24 @@ interface GuestProfile {
   maritalStatus?: string;
   onboarded?: boolean;
   voicePreference?: string;
+}
+
+export interface MentorProfile {
+  archetype: MentorArchetype;
+  characterName: string;
+  voiceId: string;
+  style: {
+    opening: string;
+    affirmation: string;
+    promptStyle: string;
+  };
+}
+
+export interface SoundscapePreferences {
+  enabled: boolean;
+  volume: number;
+  humEnabled: boolean;
+  humFrequency: number;
 }
 
 interface GuestGoals {
@@ -50,17 +69,39 @@ interface GuestContextType {
   checkins: GuestCheckins[];
   integrations: GuestIntegration[];
   voicePreference: string;
+  mentorProfile: MentorProfile;
+  soundscape: SoundscapePreferences;
   setProfile: (profile: GuestProfile) => void;
   addGoal: (goal: GuestGoals) => void;
   addCheckin: (checkin: GuestCheckins) => void;
   addIntegration: (integration: Omit<GuestIntegration, 'id' | 'connected_at'>) => void;
   removeIntegration: (provider: string) => void;
   setVoicePreference: (voiceId: string) => void;
+  setMentorProfile: (profile: Partial<MentorProfile>) => void;
+  setSoundscape: (prefs: Partial<SoundscapePreferences>) => void;
   clearGuestData: () => void;
   isGuest: boolean;
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined);
+
+const DEFAULT_MENTOR_PROFILE: MentorProfile = {
+  archetype: 'therapist',
+  characterName: 'Eleanor',
+  voiceId: 'calm-british-female',
+  style: {
+    opening: 'Take a gentle breath. We can go at your pace.',
+    affirmation: 'You are safe here, and your experience matters.',
+    promptStyle: 'Reflective, emotionally validating, and non-judgmental.',
+  },
+};
+
+const DEFAULT_SOUNDSCAPE: SoundscapePreferences = {
+  enabled: true,
+  volume: 0.18,
+  humEnabled: true,
+  humFrequency: 100,
+};
 
 export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<GuestProfile | null>(null);
@@ -68,6 +109,8 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [checkins, setCheckins] = useState<GuestCheckins[]>([]);
   const [integrations, setIntegrations] = useState<GuestIntegration[]>([]);
   const [voicePreference, setVoicePreferenceState] = useState<string>('calm-british-female');
+  const [mentorProfile, setMentorProfileState] = useState<MentorProfile>(DEFAULT_MENTOR_PROFILE);
+  const [soundscape, setSoundscapeState] = useState<SoundscapePreferences>(DEFAULT_SOUNDSCAPE);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Load from localStorage on mount
@@ -78,12 +121,16 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
       const savedCheckins = localStorage.getItem('life-design-guest-checkins');
       const savedIntegrations = localStorage.getItem('life-design-guest-integrations');
       const savedVoice = localStorage.getItem('life-design-voice-preference');
+      const savedMentor = localStorage.getItem('life-design-mentor-profile');
+      const savedSoundscape = localStorage.getItem('life-design-soundscape-preferences');
 
       if (savedProfile) setProfileState(JSON.parse(savedProfile));
       if (savedGoals) setGoals(JSON.parse(savedGoals));
       if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
       if (savedIntegrations) setIntegrations(JSON.parse(savedIntegrations));
       if (savedVoice) setVoicePreferenceState(savedVoice);
+      if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
+      if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
     } catch (error) {
       console.error('Failed to load guest data from localStorage:', error);
     }
@@ -103,10 +150,12 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('life-design-guest-checkins', JSON.stringify(checkins));
       localStorage.setItem('life-design-guest-integrations', JSON.stringify(integrations));
       localStorage.setItem('life-design-voice-preference', voicePreference);
+      localStorage.setItem('life-design-mentor-profile', JSON.stringify(mentorProfile));
+      localStorage.setItem('life-design-soundscape-preferences', JSON.stringify(soundscape));
     } catch (error) {
       console.error('Failed to save guest data to localStorage:', error);
     }
-  }, [profile, goals, checkins, integrations, voicePreference, isHydrated]);
+  }, [profile, goals, checkins, integrations, voicePreference, mentorProfile, soundscape, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {
     if (profile) {
@@ -147,6 +196,15 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     setVoicePreferenceState(voiceId);
     // Also update profile
     setProfileState((prev) => prev ? { ...prev, voicePreference: voiceId } : null);
+    setMentorProfileState((prev) => ({ ...prev, voiceId }));
+  };
+
+  const setMentorProfile = (next: Partial<MentorProfile>) => {
+    setMentorProfileState((prev) => ({ ...prev, ...next }));
+  };
+
+  const setSoundscape = (next: Partial<SoundscapePreferences>) => {
+    setSoundscapeState((prev) => ({ ...prev, ...next }));
   };
 
   const clearGuestData = () => {
@@ -154,10 +212,14 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('life-design-guest-goals');
     localStorage.removeItem('life-design-guest-checkins');
     localStorage.removeItem('life-design-guest-integrations');
+    localStorage.removeItem('life-design-mentor-profile');
+    localStorage.removeItem('life-design-soundscape-preferences');
     setProfileState(null);
     setGoals([]);
     setCheckins([]);
     setIntegrations([]);
+    setMentorProfileState(DEFAULT_MENTOR_PROFILE);
+    setSoundscapeState(DEFAULT_SOUNDSCAPE);
   };
 
   if (!isHydrated) {
@@ -170,12 +232,16 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           checkins: [],
           integrations: [],
           voicePreference: 'calm-british-female',
+          mentorProfile: DEFAULT_MENTOR_PROFILE,
+          soundscape: DEFAULT_SOUNDSCAPE,
           setProfile: () => {},
           addGoal: () => {},
           addCheckin: () => {},
           addIntegration: () => {},
           removeIntegration: () => {},
           setVoicePreference: () => {},
+          setMentorProfile: () => {},
+          setSoundscape: () => {},
           clearGuestData: () => {},
           isGuest: true,
         }}
@@ -193,12 +259,16 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         checkins,
         integrations,
         voicePreference,
+        mentorProfile,
+        soundscape,
         setProfile,
         addGoal,
         addCheckin,
         addIntegration,
         removeIntegration,
         setVoicePreference,
+        setMentorProfile,
+        setSoundscape,
         clearGuestData,
         isGuest: true,
       }}

@@ -23,6 +23,9 @@ import ThemeSelector from '@/components/theme/theme-selector';
 import { ThemeSelectorCompact } from '@/components/theme/theme-selector';
 import VoiceSelector, { VOICE_OPTIONS } from '@/components/voice/voice-selector';
 import { useGuest } from '@/lib/guest-context';
+import ArchetypeSelector from '@/components/mentor/archetype-selector';
+import SoundscapeControls from '@/components/audio/soundscape-controls';
+import { getArchetypeConfig, getRecommendedVoiceForArchetype, type MentorArchetype } from '@/lib/mentor-archetypes';
 
 const integrations = [
   {
@@ -104,11 +107,14 @@ export default function SettingsPage() {
     addIntegration, 
     removeIntegration,
     voicePreference,
-    setVoicePreference 
+    setVoicePreference,
+    mentorProfile,
+    setMentorProfile,
   } = useGuest();
   const [notification, setNotification] = useState<string | null>(null);
 
   const selectedVoice = VOICE_OPTIONS.find(v => v.id === voicePreference);
+  const archetypeConfig = getArchetypeConfig(mentorProfile.archetype);
 
   // Handle OAuth callback
   useEffect(() => {
@@ -153,6 +159,22 @@ export default function SettingsPage() {
   const handleDisconnect = (providerId: string) => {
     removeIntegration(providerId);
     setNotification(`Disconnected ${providerId}`);
+  };
+
+  const handleArchetypeSelect = (archetype: MentorArchetype) => {
+    const cfg = getArchetypeConfig(archetype);
+    const recommendedVoice = getRecommendedVoiceForArchetype(archetype);
+    setMentorProfile({
+      archetype,
+      characterName: cfg.characterName,
+      style: {
+        opening: cfg.openingStyle,
+        affirmation: cfg.affirmationStyle,
+        promptStyle: cfg.promptStyle,
+      },
+      voiceId: recommendedVoice,
+    });
+    setVoicePreference(recommendedVoice);
   };
 
   return (
@@ -248,6 +270,20 @@ export default function SettingsPage() {
           showPreview={true}
         />
       </div>
+
+      {/* Mentor Archetype */}
+      <div className="glass-card p-8 space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Mentor Archetype</h2>
+          <p className="text-sm text-slate-500">
+            Current archetype: <span className="text-cyan-300">{archetypeConfig.label}</span>
+          </p>
+        </div>
+        <ArchetypeSelector selected={mentorProfile.archetype} onSelect={handleArchetypeSelect} />
+      </div>
+
+      {/* Meditation Soundscape */}
+      <SoundscapeControls />
 
       {/* Integrations Section */}
       <div className="glass-card p-8">

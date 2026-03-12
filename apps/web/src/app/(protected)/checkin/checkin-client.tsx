@@ -6,6 +6,7 @@ import { useGuest } from '@/lib/guest-context';
 import { DurationType } from '@life-design/core';
 import CheckInForm from '@/components/checkin/checkin-form';
 import type { CheckInFormData } from '@/components/checkin/checkin-form';
+import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 
 interface CheckInClientProps {
   date: string;
@@ -13,9 +14,29 @@ interface CheckInClientProps {
 
 export default function CheckInClient({ date }: CheckInClientProps) {
   const router = useRouter();
-  const { addCheckin } = useGuest();
+  const { addCheckin, mentorProfile } = useGuest();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [groundingStarted, setGroundingStarted] = useState(false);
+
+  async function startGrounding() {
+    const prompt = buildMentorSystemPrompt(mentorProfile, 'checkin');
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `${prompt}\nCreate a 3-line grounding check-in opener with one breath cue and one reflective question.`,
+      }),
+    });
+    const data = await response.json();
+    const opener = data.text || 'Take one deep breath in, and exhale slowly. What feels most present in your body right now?';
+    const utterance = new SpeechSynthesisUtterance(opener);
+    utterance.rate = 0.88;
+    utterance.pitch = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setGroundingStarted(true);
+  }
 
   async function handleSubmit(data: CheckInFormData) {
     setLoading(true);
@@ -64,6 +85,14 @@ export default function CheckInClient({ date }: CheckInClientProps) {
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
+      <div className="glass-card p-4 mb-4">
+        <p className="text-sm text-slate-300 mb-3">
+          {mentorProfile.characterName} can lead a brief grounding moment before your check-in.
+        </p>
+        <button onClick={startGrounding} className="btn-secondary" type="button">
+          {groundingStarted ? 'Replay grounding intro' : 'Start 30-second grounding'}
+        </button>
+      </div>
       <CheckInForm onSubmit={handleSubmit} loading={loading} />
     </>
   );

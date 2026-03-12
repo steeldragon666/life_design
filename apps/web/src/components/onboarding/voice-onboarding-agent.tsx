@@ -8,6 +8,9 @@ import { VOICE_OPTIONS, getSelectedVoice } from '@/components/voice/voice-select
 import { useFlowState } from './flow-state';
 import GlassContainer, { GlassCard, WaveDivider } from './glass-container';
 import { cn } from '@/lib/utils';
+import ArchetypeSelector from '@/components/mentor/archetype-selector';
+import { getArchetypeConfig, getRecommendedVoiceForArchetype, type MentorArchetype } from '@/lib/mentor-archetypes';
+import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 
 interface ExtractedProfile {
   name?: string;
@@ -61,8 +64,8 @@ export default function VoiceOnboardingAgent({
   onCreateGoals,
 }: VoiceOnboardingAgentProps) {
   const { theme: currentTheme, setTheme } = useTheme();
-  const { voicePreference, setVoicePreference } = useGuest();
-  const { currentStep, setTheme: setFlowTheme, setVoice: setFlowVoice, nextStep, goBack } = useFlowState();
+  const { voicePreference, setVoicePreference, mentorProfile, setMentorProfile } = useGuest();
+  const { currentStep, setTheme: setFlowTheme, setArchetype: setFlowArchetype, setVoice: setFlowVoice, nextStep, goBack } = useFlowState();
   
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -208,6 +211,7 @@ export default function VoiceOnboardingAgent({
   const handleVoiceSelection = (voiceId: string) => {
     setVoicePreference(voiceId);
     setFlowVoice(voiceId);
+    setMentorProfile({ voiceId });
     
     const voice = VOICE_OPTIONS.find(v => v.id === voiceId);
     const voiceResponses: Record<string, string> = {
@@ -225,6 +229,29 @@ export default function VoiceOnboardingAgent({
     
     nextStep();
     setTimeout(() => speakMessage(response), 300);
+  };
+
+  const handleArchetypeSelection = (archetype: MentorArchetype) => {
+    const cfg = getArchetypeConfig(archetype);
+    const recommendedVoice = getRecommendedVoiceForArchetype(archetype);
+    setFlowArchetype(archetype);
+    setMentorProfile({
+      archetype,
+      characterName: cfg.characterName,
+      style: {
+        opening: cfg.openingStyle,
+        affirmation: cfg.affirmationStyle,
+        promptStyle: cfg.promptStyle,
+      },
+      voiceId: recommendedVoice,
+    });
+    setVoicePreference(recommendedVoice);
+
+    setMessages((prev) => [
+      ...prev,
+      { role: 'assistant', content: `Beautiful. I'll guide you as your ${cfg.label}.` },
+    ]);
+    nextStep();
   };
 
   const startRecording = async () => {
@@ -274,22 +301,8 @@ export default function VoiceOnboardingAgent({
         content: m.content,
       }));
 
-      const selectedVoice = VOICE_OPTIONS.find(v => v.id === voicePreference);
-      const voiceName = selectedVoice?.name || 'Your companion';
-
-      const systemPrompt = `You are ${voiceName}, a warm and calming Life Design companion. Your voice is gentle, patient, and non-judgmental. You create a safe space for reflection.
-
-Your speaking style:
-- Use a conversational, friendly tone—like a trusted friend
-- Speak warmly and validate emotions without judgment  
-- Ask open, thoughtful questions that encourage reflection
-- Keep responses brief (2-3 sentences) for a natural pace
-- Acknowledge the user's courage in sharing
-- Use phrases like "I'm here with you," "Take your time," "That makes sense"
-- Avoid robotic or clinical language
-- Be genuinely curious about their experiences
-
-Remember: This is their safe space. Your role is to listen deeply and guide gently.`;
+      const voiceName = mentorProfile.characterName || 'your guide';
+      const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'onboarding');
 
       const fullPrompt = `${systemPrompt}\n\nConversation:\n${JSON.stringify(conversationContext)}\n\nUser: "${userMessage}"\n\nRespond warmly and naturally, as ${voiceName}:`;
 
@@ -489,7 +502,7 @@ Remember: This is their safe space. Your role is to listen deeply and guide gent
           {/* Voice option hint */}
           <div className="mt-8 text-center">
             <p className="text-cyan-200/50 text-sm">
-              Next, you&apos;ll choose your voice companion
+              Next, choose the mentor archetype that fits your journey
             </p>
           </div>
         </GlassContainer>
@@ -609,6 +622,27 @@ Remember: This is their safe space. Your role is to listen deeply and guide gent
               );
             })}
           </div>
+        </GlassContainer>
+      </div>
+    );
+  }
+
+  // Archetype Selection Step
+  if (currentStep === 'archetype') {
+    return (
+      <div className="animate-step-enter">
+        <GlassContainer size="xl" variant="ocean">
+          <button
+            onClick={goBack}
+            className="flex items-center gap-2 text-cyan-300/70 hover:text-cyan-300 transition-colors mb-6 text-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to themes
+          </button>
+          <ArchetypeSelector
+            selected={mentorProfile.archetype}
+            onSelect={handleArchetypeSelection}
+          />
         </GlassContainer>
       </div>
     );

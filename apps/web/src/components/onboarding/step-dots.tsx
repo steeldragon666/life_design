@@ -11,6 +11,7 @@ interface StepDotsProps {
 const steps: { id: OnboardingStep; label: string }[] = [
   { id: 'video', label: 'Welcome' },
   { id: 'theme', label: 'Theme' },
+  { id: 'archetype', label: 'Mentor' },
   { id: 'voice', label: 'Voice' },
   { id: 'conversation', label: 'Begin' },
 ];

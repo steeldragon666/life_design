@@ -15,7 +15,8 @@ import {
   UserCircle,
   CheckCircle2,
   Compass,
-  Palette
+  Palette,
+  Waves
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -38,6 +39,7 @@ export default function ProtectedLayout({
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Goals', href: '/goals', icon: Target },
+    { name: 'Meditations', href: '/meditations', icon: Waves },
     { name: 'Insights', href: '/insights', icon: Lightbulb },
     { name: 'Mentors', href: '/mentors', icon: Users },
   ];

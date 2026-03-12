@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 export type OnboardingStep = 
   | 'video'
   | 'theme' 
+  | 'archetype'
   | 'voice' 
   | 'conversation' 
   | 'complete';
@@ -14,6 +15,7 @@ interface FlowState {
   isVideoComplete: boolean;
   hasSkippedVideo: boolean;
   selectedTheme: string | null;
+  selectedArchetype: string | null;
   selectedVoice: string | null;
   canSkipVideo: boolean;
   isTransitioning: boolean;
@@ -32,6 +34,7 @@ interface FlowContextType extends FlowState {
   
   // Selections
   setTheme: (theme: string) => void;
+  setArchetype: (archetype: string) => void;
   setVoice: (voice: string) => void;
   
   // Reset
@@ -44,7 +47,7 @@ interface FlowContextType extends FlowState {
 
 const STORAGE_KEY = 'life-design-onboarding-progress';
 
-const stepOrder: OnboardingStep[] = ['video', 'theme', 'voice', 'conversation', 'complete'];
+const stepOrder: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'complete'];
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -61,6 +64,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     isVideoComplete: false,
     hasSkippedVideo: false,
     selectedTheme: null,
+    selectedArchetype: null,
     selectedVoice: null,
     canSkipVideo: false,
     isTransitioning: false,
@@ -88,6 +92,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
       isVideoComplete: state.isVideoComplete,
       hasSkippedVideo: state.hasSkippedVideo,
       selectedTheme: state.selectedTheme,
+      selectedArchetype: state.selectedArchetype,
       selectedVoice: state.selectedVoice,
     }));
   }, [state, mounted]);
@@ -156,6 +161,10 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     setState(prev => ({ ...prev, selectedVoice: voice }));
   }, []);
 
+  const setArchetype = useCallback((archetype: string) => {
+    setState(prev => ({ ...prev, selectedArchetype: archetype }));
+  }, []);
+
   const resetFlow = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setState({
@@ -163,6 +172,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
       isVideoComplete: false,
       hasSkippedVideo: false,
       selectedTheme: null,
+      selectedArchetype: null,
       selectedVoice: null,
       canSkipVideo: false,
       isTransitioning: false,
@@ -182,6 +192,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     skipVideo,
     enableVideoSkip,
     setTheme,
+    setArchetype,
     setVoice,
     resetFlow,
     canGoBack,
