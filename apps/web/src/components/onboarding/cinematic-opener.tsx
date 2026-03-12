@@ -9,12 +9,14 @@ import { cn } from '@/lib/utils';
 interface CinematicOpenerProps {
   onVideoComplete: () => void;
   onVideoSkip: () => void;
+  onExitOnboarding?: () => void;
   enableSkipAfter?: number; // seconds
 }
 
 export default function CinematicOpener({ 
   onVideoComplete, 
   onVideoSkip,
+  onExitOnboarding,
   enableSkipAfter = 3 
 }: CinematicOpenerProps) {
   const { canSkipVideo, enableVideoSkip } = useFlowState();
@@ -200,22 +202,37 @@ export default function CinematicOpener({
 
         {/* Top controls */}
         <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-10">
-          {/* Skip button */}
-          <button
-            onClick={handleSkip}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
-              'bg-white/5 backdrop-blur-md border border-white/10',
-              'text-white/60 hover:text-white hover:bg-white/10',
-              'transition-all duration-500 ease-out',
-              showSkip || canSkipVideo
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 -translate-y-4 pointer-events-none'
+          <div className="flex items-center gap-2">
+            {/* Skip button */}
+            <button
+              onClick={handleSkip}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium',
+                'bg-white/5 backdrop-blur-md border border-white/10',
+                'text-white/60 hover:text-white hover:bg-white/10',
+                'transition-all duration-500 ease-out',
+                showSkip || canSkipVideo
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 -translate-y-4 pointer-events-none'
+              )}
+            >
+              <SkipForward className="w-4 h-4" />
+              <span>Skip intro</span>
+            </button>
+            {onExitOnboarding && (
+              <button
+                onClick={onExitOnboarding}
+                className={cn(
+                  'px-4 py-2 rounded-full text-sm font-medium',
+                  'bg-white/5 backdrop-blur-md border border-white/10',
+                  'text-white/70 hover:text-white hover:bg-white/10',
+                  'transition-all duration-300'
+                )}
+              >
+                Exit onboarding
+              </button>
             )}
-          >
-            <SkipForward className="w-4 h-4" />
-            <span>Skip intro</span>
-          </button>
+          </div>
 
           {/* Mute toggle */}
           <button

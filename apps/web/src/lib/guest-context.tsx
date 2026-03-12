@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { MentorArchetype } from './mentor-archetypes';
+import { decryptLocalStorageString, encryptLocalStorageString } from './local-storage-crypto';
 
 interface GuestProfile {
   id: string;
@@ -103,6 +104,19 @@ const DEFAULT_SOUNDSCAPE: SoundscapePreferences = {
   humFrequency: 100,
 };
 
+const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
+const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
+
+function parseIntegrations(rawValue: string): GuestIntegration[] {
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn('Failed to parse guest integrations payload.', error);
+    return [];
+  }
+}
+
 export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<GuestProfile | null>(null);
   const [goals, setGoals] = useState<GuestGoals[]>([]);
@@ -115,46 +129,109 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem('life-design-guest-profile');
-      const savedGoals = localStorage.getItem('life-design-guest-goals');
-      const savedCheckins = localStorage.getItem('life-design-guest-checkins');
-      const savedIntegrations = localStorage.getItem('life-design-guest-integrations');
-      const savedVoice = localStorage.getItem('life-design-voice-preference');
-      const savedMentor = localStorage.getItem('life-design-mentor-profile');
-      const savedSoundscape = localStorage.getItem('life-design-soundscape-preferences');
+    let isCancelled = false;
 
-      if (savedProfile) setProfileState(JSON.parse(savedProfile));
-      if (savedGoals) setGoals(JSON.parse(savedGoals));
-      if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
-      if (savedIntegrations) setIntegrations(JSON.parse(savedIntegrations));
-      if (savedVoice) setVoicePreferenceState(savedVoice);
-      if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
-      if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
-    } catch (error) {
-      console.error('Failed to load guest data from localStorage:', error);
-    }
-    
-    setIsHydrated(true);
+    const hydrateGuestData = async () => {
+      try {
+        const savedProfile = localStorage.getItem('life-design-guest-profile');
+        const savedGoals = localStorage.getItem('life-design-guest-goals');
+        const savedCheckins = localStorage.getItem('life-design-guest-checkins');
+        const savedIntegrations = localStorage.getItem(GUEST_INTEGRATIONS_STORAGE_KEY);
+        const savedVoice = localStorage.getItem('life-design-voice-preference');
+        const savedMentor = localStorage.getItem('life-design-mentor-profile');
+        const savedSoundscape = localStorage.getItem('life-design-soundscape-preferences');
+
+        if (savedProfile) setProfileState(JSON.parse(savedProfile));
+        if (savedGoals) setGoals(JSON.parse(savedGoals));
+        if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
+        if (savedVoice) setVoicePreferenceState(savedVoice);
+        if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
+        if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
+
+        if (savedIntegrations) {
+          const result = await decryptLocalStorageString(savedIntegrations, GUEST_INTEGRATIONS_CRYPTO_SCOPE);
+          if (isCancelled) return;
+
+          if (result.plaintext) {
+            const parsedIntegrations = parseIntegrations(result.plaintext);
+            setIntegrations(parsedIntegrations);
+
+            if (result.shouldMigrate) {
+              try {
+                const migrated = await encryptLocalStorageString(result.plaintext, GUEST_INTEGRATIONS_CRYPTO_SCOPE);
+                if (!isCancelled) {
+                  localStorage.setItem(GUEST_INTEGRATIONS_STORAGE_KEY, migrated);
+                }
+              } catch (migrationError) {
+                console.warn('Failed to migrate guest integrations to encrypted storage.', migrationError);
+              }
+            }
+          } else if (result.wasEncrypted) {
+            console.warn('Guest integrations are encrypted but could not be decrypted on this device/browser.');
+            setIntegrations([]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load guest data from localStorage:', error);
+      } finally {
+        if (!isCancelled) {
+          setIsHydrated(true);
+        }
+      }
+    };
+
+    void hydrateGuestData();
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
     if (!isHydrated) return;
     
-    try {
-      if (profile) {
-        localStorage.setItem('life-design-guest-profile', JSON.stringify(profile));
+    let isCancelled = false;
+
+    const saveGuestData = async () => {
+      try {
+        if (profile) {
+          localStorage.setItem('life-design-guest-profile', JSON.stringify(profile));
+        }
+        localStorage.setItem('life-design-guest-goals', JSON.stringify(goals));
+        localStorage.setItem('life-design-guest-checkins', JSON.stringify(checkins));
+        localStorage.setItem('life-design-voice-preference', voicePreference);
+        localStorage.setItem('life-design-mentor-profile', JSON.stringify(mentorProfile));
+        localStorage.setItem('life-design-soundscape-preferences', JSON.stringify(soundscape));
+      } catch (error) {
+        console.error('Failed to save guest data to localStorage:', error);
       }
-      localStorage.setItem('life-design-guest-goals', JSON.stringify(goals));
-      localStorage.setItem('life-design-guest-checkins', JSON.stringify(checkins));
-      localStorage.setItem('life-design-guest-integrations', JSON.stringify(integrations));
-      localStorage.setItem('life-design-voice-preference', voicePreference);
-      localStorage.setItem('life-design-mentor-profile', JSON.stringify(mentorProfile));
-      localStorage.setItem('life-design-soundscape-preferences', JSON.stringify(soundscape));
-    } catch (error) {
-      console.error('Failed to save guest data to localStorage:', error);
-    }
+
+      try {
+        const serializedIntegrations = JSON.stringify(integrations);
+        const storedIntegrations = await encryptLocalStorageString(
+          serializedIntegrations,
+          GUEST_INTEGRATIONS_CRYPTO_SCOPE
+        );
+
+        if (!isCancelled) {
+          localStorage.setItem(GUEST_INTEGRATIONS_STORAGE_KEY, storedIntegrations);
+        }
+      } catch (error) {
+        console.error('Failed to save encrypted guest integrations to localStorage:', error);
+        try {
+          if (!isCancelled) {
+            localStorage.setItem(GUEST_INTEGRATIONS_STORAGE_KEY, JSON.stringify(integrations));
+          }
+        } catch (fallbackError) {
+          console.error('Failed to save plaintext guest integrations fallback.', fallbackError);
+        }
+      }
+    };
+
+    void saveGuestData();
+    return () => {
+      isCancelled = true;
+    };
   }, [profile, goals, checkins, integrations, voicePreference, mentorProfile, soundscape, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {
@@ -211,7 +288,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('life-design-guest-profile');
     localStorage.removeItem('life-design-guest-goals');
     localStorage.removeItem('life-design-guest-checkins');
-    localStorage.removeItem('life-design-guest-integrations');
+    localStorage.removeItem(GUEST_INTEGRATIONS_STORAGE_KEY);
     localStorage.removeItem('life-design-mentor-profile');
     localStorage.removeItem('life-design-soundscape-preferences');
     setProfileState(null);

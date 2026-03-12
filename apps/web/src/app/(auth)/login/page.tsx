@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ import { useGuest } from '@/lib/guest-context';
 export default function LoginPage() {
   const router = useRouter();
   const { profile, clearGuestData } = useGuest();
+  const [hasOnboardingProgress, setHasOnboardingProgress] = useState(false);
 
   useEffect(() => {
     if (profile?.onboarded) {
@@ -17,8 +18,18 @@ export default function LoginPage() {
     }
   }, [profile, router]);
 
+  useEffect(() => {
+    const savedFlow = localStorage.getItem('life-design-onboarding-progress');
+    setHasOnboardingProgress(Boolean(savedFlow));
+  }, []);
+
   const startGuestMode = () => {
+    router.push('/onboarding');
+  };
+
+  const restartOnboarding = () => {
     clearGuestData();
+    localStorage.removeItem('life-design-onboarding-progress');
     router.push('/onboarding');
   };
 
@@ -113,7 +124,7 @@ export default function LoginPage() {
                   className="group flex w-full items-center justify-center gap-3 btn-coral py-5 text-[17px]"
                 >
                   <Mic className="h-5 w-5" />
-                  Start Your Journey
+                  {hasOnboardingProgress || profile ? 'Resume Your Journey' : 'Start Your Journey'}
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               ) : (
@@ -130,6 +141,15 @@ export default function LoginPage() {
               <p className="text-center text-[13px] text-slate-500">
                 No account needed. Start with a voice conversation.
               </p>
+
+              {!profile?.onboarded && (hasOnboardingProgress || profile) && (
+                <button
+                  onClick={restartOnboarding}
+                  className="w-full text-center text-[13px] text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Start over instead
+                </button>
+              )}
             </div>
 
             {/* Feature Cards - iOS Style */}

@@ -9,6 +9,7 @@ import StreakCounter from '@/components/dashboard/streak-counter';
 import InsightCard from '@/components/insights/insight-card';
 import LifeOrb from '@/components/dashboard/life-orb';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
+import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import { 
   Target, 
   Lightbulb, 
@@ -50,6 +51,8 @@ interface DashboardClientProps {
     profession?: string;
   };
 }
+
+const ErrorBoundary = ResilientErrorBoundary as any;
 
 export default function DashboardClient({
   latestScores,
@@ -189,8 +192,30 @@ export default function DashboardClient({
         <div className="lg:col-span-7 space-y-6">
           {/* Life Orb & Wheel */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <LifeOrb scores={latestScores} overallScore={overallScore} />
-            <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
+            <ErrorBoundary
+              fallback={
+                <GlassErrorFallbackCard
+                  title="Life Orb unavailable"
+                  description="The 3D visualization hit an issue. You can still use the rest of your dashboard."
+                  className="h-[400px]"
+                />
+              }
+              resetKeys={[latestScores.length, overallScore]}
+            >
+              <LifeOrb scores={latestScores} overallScore={overallScore} />
+            </ErrorBoundary>
+            <ErrorBoundary
+              fallback={
+                <GlassErrorFallbackCard
+                  title="Wheel unavailable"
+                  description="This chart encountered an error. Try refreshing after your next check-in."
+                  className="h-[400px]"
+                />
+              }
+              resetKeys={[latestScores.length]}
+            >
+              <WheelOfLife scores={latestScores as { dimension: Dimension; score: number }[]} />
+            </ErrorBoundary>
           </div>
 
           {/* Voice Checkin - iOS Style Card */}

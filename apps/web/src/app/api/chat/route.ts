@@ -1,13 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  applyChatRateLimit,
+  normalizeAndSanitizeOutputText,
+  validateAndNormalizeChatPayload,
+  ValidationError,
+} from '@/lib/chat-security';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, history = [] } = await request.json();
-
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    const rateLimit = applyChatRateLimit(request);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many chat requests. Please retry shortly.',
+          code: 'RATE_LIMITED',
+          retryAfterSeconds: rateLimit.retryAfterSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+            'X-RateLimit-Limit': String(rateLimit.limit),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+          },
+        }
+      );
     }
+
+    const payload = await request.json();
+    const { message, history = [] } = validateAndNormalizeChatPayload(payload);
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) {
@@ -33,10 +55,28 @@ export async function POST(request: NextRequest) {
 
     const result = await chat.sendMessage(message);
     const response = await result.response;
-    const text = response.text();
+    const text = normalizeAndSanitizeOutputText(response.text());
 
-    return NextResponse.json({ text });
+    return NextResponse.json(
+      { text },
+      {
+        headers: {
+          'X-RateLimit-Limit': String(rateLimit.limit),
+          'X-RateLimit-Remaining': String(rateLimit.remaining),
+        },
+      }
+    );
   } catch (error) {
+    if (error && typeof error === 'object' && 'status' in error && (error as ValidationError).status === 400) {
+      return NextResponse.json(
+        {
+          error: (error as ValidationError).message,
+          code: 'VALIDATION_ERROR',
+        },
+        { status: 400 }
+      );
+    }
+
     console.error('Chat API error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error' },

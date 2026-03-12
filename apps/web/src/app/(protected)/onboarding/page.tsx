@@ -7,7 +7,10 @@ import { FlowStateProvider, useFlowState } from '@/components/onboarding/flow-st
 import StepDots, { StepDotsCompact } from '@/components/onboarding/step-dots';
 import CinematicOpener, { BeachBackground } from '@/components/onboarding/cinematic-opener';
 import VoiceOnboardingAgent from '@/components/onboarding/voice-onboarding-agent';
+import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import { cn } from '@/lib/utils';
+
+const ErrorBoundary = ResilientErrorBoundary as any;
 
 // Main content component that uses flow state
 function OnboardingContent() {
@@ -24,6 +27,11 @@ function OnboardingContent() {
 
   const handleComplete = useCallback(() => {
     router.push('/dashboard');
+  }, [router]);
+
+  const handleExitOnboarding = useCallback(() => {
+    // Route to login so onboarding can be resumed later without forcing completion.
+    router.push('/login');
   }, [router]);
 
   const handleSaveProfile = async (data: any) => {
@@ -65,6 +73,7 @@ function OnboardingContent() {
       <CinematicOpener
         onVideoComplete={handleVideoComplete}
         onVideoSkip={handleVideoSkip}
+        onExitOnboarding={handleExitOnboarding}
         enableSkipAfter={3}
       />
     );
@@ -101,10 +110,10 @@ function OnboardingContent() {
 
               {/* Exit option */}
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={handleExitOnboarding}
                 className="text-cyan-300/60 hover:text-cyan-300 text-sm transition-colors"
               >
-                Skip
+                Exit
               </button>
             </div>
           </div>
@@ -113,11 +122,22 @@ function OnboardingContent() {
         {/* Main content area */}
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
-            <VoiceOnboardingAgent
-              onComplete={handleComplete}
-              onSaveProfile={handleSaveProfile}
-              onCreateGoals={handleCreateGoals}
-            />
+            <ErrorBoundary
+              fallback={
+                <GlassErrorFallbackCard
+                  title="Onboarding paused"
+                  description="Your guide ran into an issue. Refresh to continue your onboarding journey."
+                  className="min-h-[360px]"
+                />
+              }
+              resetKeys={[currentStep]}
+            >
+              <VoiceOnboardingAgent
+                onComplete={handleComplete}
+                onSaveProfile={handleSaveProfile}
+                onCreateGoals={handleCreateGoals}
+              />
+            </ErrorBoundary>
           </div>
         </main>
 

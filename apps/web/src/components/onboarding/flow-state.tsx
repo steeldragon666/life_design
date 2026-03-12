@@ -46,8 +46,57 @@ interface FlowContextType extends FlowState {
 }
 
 const STORAGE_KEY = 'life-design-onboarding-progress';
+const STORAGE_VERSION = 1;
 
 const stepOrder: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'complete'];
+
+interface PersistedFlowState {
+  v?: number;
+  currentStep?: unknown;
+  isVideoComplete?: unknown;
+  hasSkippedVideo?: unknown;
+  selectedTheme?: unknown;
+  selectedArchetype?: unknown;
+  selectedVoice?: unknown;
+}
+
+const isStep = (value: unknown): value is OnboardingStep =>
+  typeof value === 'string' && stepOrder.includes(value as OnboardingStep);
+
+const asStringOrNull = (value: unknown): string | null =>
+  typeof value === 'string' && value.length > 0 ? value : null;
+
+const sanitizePersistedState = (raw: PersistedFlowState): FlowState => {
+  const selectedTheme = asStringOrNull(raw.selectedTheme);
+  const selectedArchetype = asStringOrNull(raw.selectedArchetype);
+  const selectedVoice = asStringOrNull(raw.selectedVoice);
+  const isVideoComplete = Boolean(raw.isVideoComplete);
+  const hasSkippedVideo = Boolean(raw.hasSkippedVideo);
+
+  let currentStep: OnboardingStep = isStep(raw.currentStep) ? raw.currentStep : 'video';
+
+  // Ensure resumed state never lands on a broken step dependency chain.
+  if (!isVideoComplete && currentStep !== 'video') {
+    currentStep = 'video';
+  } else if (stepOrder.indexOf(currentStep) >= stepOrder.indexOf('archetype') && !selectedTheme) {
+    currentStep = 'theme';
+  } else if (stepOrder.indexOf(currentStep) >= stepOrder.indexOf('voice') && !selectedArchetype) {
+    currentStep = 'archetype';
+  } else if (stepOrder.indexOf(currentStep) >= stepOrder.indexOf('conversation') && !selectedVoice) {
+    currentStep = 'voice';
+  }
+
+  return {
+    currentStep,
+    isVideoComplete,
+    hasSkippedVideo,
+    selectedTheme,
+    selectedArchetype,
+    selectedVoice,
+    canSkipVideo: false,
+    isTransitioning: false,
+  };
+};
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -75,10 +124,12 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setState(prev => ({ ...prev, ...parsed }));
+        const parsed = JSON.parse(saved) as PersistedFlowState;
+        const nextState = sanitizePersistedState(parsed);
+        setState(nextState);
       } catch {
-        // Invalid saved state, start fresh
+        // Invalid saved state, reset gracefully and continue with defaults.
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
     setMounted(true);
@@ -88,6 +139,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
   useEffect(() => {
     if (!mounted) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      v: STORAGE_VERSION,
       currentStep: state.currentStep,
       isVideoComplete: state.isVideoComplete,
       hasSkippedVideo: state.hasSkippedVideo,

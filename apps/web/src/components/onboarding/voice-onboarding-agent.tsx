@@ -77,6 +77,8 @@ export default function VoiceOnboardingAgent({
   const [error, setError] = useState<string | null>(null);
   const [textInput, setTextInput] = useState('');
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [supportsSpeechRecognition, setSupportsSpeechRecognition] = useState(false);
+  const [supportsSpeechSynthesis, setSupportsSpeechSynthesis] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -89,6 +91,13 @@ export default function VoiceOnboardingAgent({
 
   // Load available voices
   useEffect(() => {
+    if (!('speechSynthesis' in window)) {
+      setSupportsSpeechSynthesis(false);
+      return;
+    }
+
+    setSupportsSpeechSynthesis(true);
+
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
@@ -108,6 +117,7 @@ export default function VoiceOnboardingAgent({
     const SpeechRecognitionAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
     
     if (SpeechRecognitionAPI) {
+      setSupportsSpeechRecognition(true);
       const recognition = new SpeechRecognitionAPI();
       recognitionRef.current = recognition;
       recognition.continuous = true;
@@ -150,7 +160,7 @@ export default function VoiceOnboardingAgent({
         }
       };
     } else {
-      setError('Speech recognition not supported. Please use Chrome or Edge browser.');
+      setSupportsSpeechRecognition(false);
     }
 
     return () => {
@@ -166,7 +176,7 @@ export default function VoiceOnboardingAgent({
   };
 
   const speakMessage = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
+    if (!supportsSpeechSynthesis) return;
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -255,8 +265,8 @@ export default function VoiceOnboardingAgent({
   };
 
   const startRecording = async () => {
-    if (!recognitionRef.current) {
-      setError('Speech recognition not available. Please use Chrome or Edge.');
+    if (!supportsSpeechRecognition || !recognitionRef.current) {
+      setError('Voice input is unavailable in this browser. You can continue with text input below.');
       return;
     }
 
@@ -371,7 +381,9 @@ export default function VoiceOnboardingAgent({
   };
 
   const stopSpeaking = () => {
-    window.speechSynthesis.cancel();
+    if (supportsSpeechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     setIsSpeaking(false);
   };
 
@@ -586,6 +598,10 @@ export default function VoiceOnboardingAgent({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!supportsSpeechSynthesis) {
+                          setError('Voice preview is unavailable in this browser, but you can still continue.');
+                          return;
+                        }
                         // Preview voice
                         const utterance = new SpeechSynthesisUtterance(voice.previewText);
                         const voices = window.speechSynthesis.getVoices();
@@ -602,6 +618,7 @@ export default function VoiceOnboardingAgent({
                         window.speechSynthesis.speak(utterance);
                       }}
                       className="flex-1 py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-200/80 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      disabled={!supportsSpeechSynthesis}
                     >
                       <Play className="w-4 h-4" />
                       Preview
@@ -719,11 +736,16 @@ export default function VoiceOnboardingAgent({
 
               {/* Input Controls */}
               <div className="space-y-4">
+                {!supportsSpeechRecognition && (
+                  <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-200/80">
+                    Voice input is unavailable here. You can complete onboarding by typing your responses below.
+                  </div>
+                )}
                 {/* Voice recording button */}
                 <div className="flex flex-col items-center">
                   <button
                     onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !supportsSpeechRecognition}
                     className={cn(
                       'relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300',
                       isRecording
@@ -754,7 +776,7 @@ export default function VoiceOnboardingAgent({
                     {isRecording ? 'Listening... Tap to stop' : 
                      isProcessing ? 'Thinking...' : 
                      isSpeaking ? 'Speaking... Tap mic to pause' : 
-                     'Tap to share your thoughts'}
+                     supportsSpeechRecognition ? 'Tap to share your thoughts' : 'Type your thoughts below'}
                   </p>
                   
                   {transcript && (
