@@ -25,6 +25,7 @@ export default function CinematicOpener({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [hasVideoError, setHasVideoError] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const skipTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -55,6 +56,23 @@ export default function CinematicOpener({
 
     return () => clearTimeout(timer);
   }, [hasVideoError, isTransitioning, onVideoComplete]);
+
+  // Safety timeout: if browser never loads/errors the video, continue onboarding anyway.
+  useEffect(() => {
+    if (isLoaded || hasVideoError || isTransitioning) return;
+
+    const timeout = setTimeout(() => {
+      setHasTimedOut(true);
+      setShowSkip(true);
+      enableVideoSkip();
+      setIsTransitioning(true);
+      setTimeout(() => {
+        onVideoComplete();
+      }, 500);
+    }, 7000);
+
+    return () => clearTimeout(timeout);
+  }, [isLoaded, hasVideoError, isTransitioning, enableVideoSkip, onVideoComplete]);
 
   // Update progress bar while video is playing
   useEffect(() => {
@@ -139,6 +157,7 @@ export default function CinematicOpener({
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           playsInline
+          preload="auto"
           muted={isMuted}
           onLoadedData={handleVideoLoaded}
           onError={handleVideoError}
@@ -151,7 +170,7 @@ export default function CinematicOpener({
         </video>
 
         {/* Fallback gradient animation when video not available */}
-        {(!isLoaded || hasVideoError) && (
+        {(!isLoaded || hasVideoError || hasTimedOut) && (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900">
             {/* Animated gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-teal-500/10 animate-pulse-subtle" />
@@ -167,7 +186,7 @@ export default function CinematicOpener({
                 <div className="relative flex flex-col items-center gap-4">
                   <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" />
                   <p className="text-cyan-300/70 text-sm font-light tracking-wider">
-                    {hasVideoError ? 'Setting the scene...' : 'Preparing your experience...'}
+                    {hasVideoError || hasTimedOut ? 'Setting the scene...' : 'Preparing your experience...'}
                   </p>
                 </div>
               </div>

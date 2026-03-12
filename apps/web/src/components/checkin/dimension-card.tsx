@@ -20,8 +20,8 @@ export default function DimensionCard({
   onNoteChange,
 }: DimensionCardProps) {
   return (
-    <div className="rounded-lg border p-4 space-y-3">
-      <h3 className="font-medium text-sm">{DIMENSION_LABELS[dimension]}</h3>
+    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+      <h3 className="font-medium text-sm text-white">{DIMENSION_LABELS[dimension]}</h3>
 
       <div className="flex gap-1 flex-wrap">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
@@ -33,7 +33,7 @@ export default function DimensionCard({
             className={`w-8 h-8 rounded text-sm font-medium ${
               n === score
                 ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
+                : 'bg-gray-100 text-slate-900 hover:bg-gray-200'
             }`}
           >
             {n}
@@ -46,7 +46,7 @@ export default function DimensionCard({
           placeholder="Add a note..."
           value={note ?? ''}
           onChange={(e) => onNoteChange?.(dimension, e.target.value)}
-          className="w-full rounded border px-2 py-1 text-sm"
+          className="w-full rounded border border-white/15 bg-white/95 text-slate-900 placeholder:text-slate-500 px-2 py-1 text-sm"
           rows={2}
         />
       )}
