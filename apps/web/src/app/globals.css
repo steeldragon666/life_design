@@ -52,7 +52,6 @@
   }
 }
 
-@layer components {
 @utility glass {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
@@ -61,32 +60,31 @@
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-  .glass-card {
-    @apply glass rounded-2xl p-6 transition-all duration-300;
-  }
+.glass-card {
+  @apply glass rounded-2xl p-6 transition-all duration-300;
+}
 
-  .glass-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-  }
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
 
-  .btn-premium {
-    @apply relative overflow-hidden rounded-xl px-6 py-2.5 font-medium transition-all duration-300;
-    background: linear-gradient(135deg, hsl(var(--primary)), #4f46e5);
-    color: white;
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-  }
+.btn-premium {
+  @apply relative overflow-hidden rounded-xl px-6 py-2.5 font-medium transition-all duration-300;
+  background: linear-gradient(135deg, hsl(var(--primary)), #4f46e5);
+  color: white;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
 
-  .btn-premium:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-  }
+.btn-premium:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
 
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-  }
+.text-gradient {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
 }
 
 @keyframes float {
