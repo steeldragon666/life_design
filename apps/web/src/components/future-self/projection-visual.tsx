@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import LifeOrb from '@/components/dashboard/life-orb';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 
@@ -16,7 +16,7 @@ const ErrorBoundary = ResilientErrorBoundary as unknown as (props: {
   children: ReactNode;
   fallback?: ReactNode;
   resetKeys?: unknown[];
-}) => ReactElement;
+}) => any;
 
 function SoftProjectionFallback({ targetHarmony }: { targetHarmony: number }) {
   return (
