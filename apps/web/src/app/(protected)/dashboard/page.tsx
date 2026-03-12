@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGuest } from '@/lib/guest-context';
 import DashboardClient from './dashboard-client';
@@ -17,6 +18,7 @@ import { getDeterministicNextNudgeSuggestion } from '@/lib/micro-moments';
 export default function DashboardPage() {
   const router = useRouter();
   const { profile, goals, checkins, mentorProfile, conversationMemory, microMoments } = useGuest();
+  const [remoteNudges, setRemoteNudges] = useState<Array<{ title: string; body: string }>>([]);
 
   // Redirect to onboarding if not onboarded
   useEffect(() => {
@@ -24,6 +26,39 @@ export default function DashboardPage() {
       router.push('/onboarding');
     }
   }, [profile, router]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadRemoteNudges() {
+      if (!profile?.id) {
+        if (!isCancelled) setRemoteNudges([]);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/nudges?userId=${encodeURIComponent(profile.id)}`);
+        if (!response.ok) return;
+        const data = (await response.json()) as {
+          nudges?: Array<{ title?: string; body?: string }>;
+        };
+        const normalized = (data.nudges ?? [])
+          .filter((item) => typeof item.title === 'string' && typeof item.body === 'string')
+          .map((item) => ({ title: item.title as string, body: item.body as string }));
+        if (!isCancelled) {
+          setRemoteNudges(normalized);
+        }
+      } catch {
+        if (!isCancelled) {
+          setRemoteNudges([]);
+        }
+      }
+    }
+
+    void loadRemoteNudges();
+    return () => {
+      isCancelled = true;
+    };
+  }, [profile?.id]);
 
   if (!profile?.onboarded) {
     return null;
@@ -79,6 +114,10 @@ export default function DashboardPage() {
       body: `Based on your interest in ${profile.interests[0]}, consider setting a related goal.`,
     },
   ] : [];
+  const combinedNudges = useMemo(
+    () => [...remoteNudges, ...nudges],
+    [remoteNudges, nudges],
+  );
 
   const nextMicroMomentNudge = getDeterministicNextNudgeSuggestion({
     now: new Date(),
@@ -131,7 +170,7 @@ export default function DashboardPage() {
       streak={streak}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
-      nudges={nudges}
+      nudges={combinedNudges}
       nextMicroMomentNudge={nextMicroMomentNudge}
       profile={profile}
       digestContext={{
