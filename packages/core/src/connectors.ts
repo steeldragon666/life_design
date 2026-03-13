@@ -114,7 +114,7 @@ export class WeatherConnector extends BaseLifeConnector {
 
   async fetchData(postcode: string) {
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?zip=${postcode}&appid=${process.env.WEATHER_API_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?zip=${postcode}&appid=${process.env.OPENWEATHER_API_KEY ?? process.env.WEATHER_API_KEY}&units=metric`
     );
     return response.json();
   }
