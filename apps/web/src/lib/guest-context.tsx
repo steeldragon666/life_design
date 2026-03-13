@@ -135,6 +135,8 @@ const MENTOR_PROFILE_STORAGE_KEY = 'life-design-mentor-profile';
 const SOUNDSCAPE_STORAGE_KEY = 'life-design-soundscape-preferences';
 const MICRO_MOMENTS_STORAGE_KEY = 'life-design-micro-moments-preferences';
 const ONBOARDING_PROGRESS_STORAGE_KEY = 'life-design-onboarding-progress';
+const ONBOARDING_CHECKPOINT_STORAGE_KEY = 'life-design-onboarding-checkpoint';
+const ONBOARDING_SESSION_STORAGE_KEY = 'life-design-onboarding-session';
 const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
 const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
 const GUEST_ONBOARDED_COOKIE = 'life-design-guest-onboarded';
@@ -375,6 +377,8 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(SOUNDSCAPE_STORAGE_KEY);
     localStorage.removeItem(MICRO_MOMENTS_STORAGE_KEY);
     localStorage.removeItem(ONBOARDING_PROGRESS_STORAGE_KEY);
+    localStorage.removeItem(ONBOARDING_CHECKPOINT_STORAGE_KEY);
+    localStorage.removeItem(ONBOARDING_SESSION_STORAGE_KEY);
     document.cookie = `${GUEST_ONBOARDED_COOKIE}=0; Path=/; Max-Age=0; SameSite=Lax`;
     setProfileState(null);
     setGoals([]);

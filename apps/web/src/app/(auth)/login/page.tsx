@@ -20,7 +20,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     const savedFlow = localStorage.getItem('life-design-onboarding-progress');
-    setHasOnboardingProgress(Boolean(savedFlow));
+    const savedCheckpoint = localStorage.getItem('life-design-onboarding-checkpoint');
+    const savedSession = localStorage.getItem('life-design-onboarding-session');
+    setHasOnboardingProgress(Boolean(savedFlow || savedCheckpoint || savedSession));
   }, []);
 
   const startGuestMode = () => {
@@ -30,6 +32,8 @@ export default function LoginPage() {
   const restartOnboarding = () => {
     clearGuestData();
     localStorage.removeItem('life-design-onboarding-progress');
+    localStorage.removeItem('life-design-onboarding-checkpoint');
+    localStorage.removeItem('life-design-onboarding-session');
     router.push('/onboarding');
   };
 

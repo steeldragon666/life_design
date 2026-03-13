@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { computeAllPairCorrelations, detectSignificantPatterns } from '@life-design/core';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
@@ -11,6 +11,11 @@ import {
   parseExtractedProfileFromText,
   type ExtractedProfile,
 } from '@/lib/onboarding-extraction';
+import {
+  clearOnboardingSessionInStorage,
+  loadOnboardingSessionFromStorage,
+  patchOnboardingSessionInStorage,
+} from '@/lib/onboarding-session';
 
 export type { ExtractedProfile };
 
@@ -112,6 +117,36 @@ export function useOnboardingConversation({
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [extractedProfile, setExtractedProfile] = useState<ExtractedProfile>({});
   const [error, setError] = useState<string | null>(null);
+  const hydratedCheckpointRef = useRef(false);
+  const restoredSessionRef = useRef(false);
+
+  useEffect(() => {
+    if (hydratedCheckpointRef.current) return;
+    hydratedCheckpointRef.current = true;
+    try {
+      const session = loadOnboardingSessionFromStorage(localStorage);
+      if (session.messages.length > 0) setMessages(session.messages);
+      if (Object.keys(session.extractedProfile).length > 0) {
+        setExtractedProfile(session.extractedProfile);
+      }
+    } catch {
+      // Ignore malformed checkpoint and continue gracefully.
+    } finally {
+      restoredSessionRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!restoredSessionRef.current) return;
+    try {
+      patchOnboardingSessionInStorage(localStorage, {
+        messages,
+        extractedProfile,
+      });
+    } catch {
+      // Ignore persistence failures in constrained storage contexts.
+    }
+  }, [messages, extractedProfile]);
 
   const extractAndUpdateProfile = useCallback(async (conversation: ConversationMessage[]) => {
     try {
@@ -258,6 +293,7 @@ export function useOnboardingConversation({
         await onCreateGoals(extractedProfile.goals);
       }
 
+      clearOnboardingSessionInStorage(localStorage);
       onComplete(extractedProfile);
     } catch {
       setError('Failed to save. Please try again.');
