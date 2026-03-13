@@ -12,6 +12,24 @@ export type SanitizedChatPayload = {
   history: SanitizedChatHistoryItem[];
 };
 
+export type SanitizedCorrelationInsight = {
+  dimensionA?: string;
+  dimensionB?: string;
+  coefficient?: number;
+  lagDays?: number;
+  confidence?: number;
+};
+
+export type SanitizedChatMetadata = {
+  stream?: boolean;
+  systemPrompt?: string;
+  correlationInsights?: SanitizedCorrelationInsight[];
+  persistConversation?: boolean;
+  includePersistedMemory?: boolean;
+  userId?: string;
+  source?: string;
+};
+
 export type ValidationError = {
   status: 400;
   message: string;
@@ -30,6 +48,9 @@ const RATE_LIMIT_PRUNE_MULTIPLIER = 2;
 const MAX_MESSAGE_LENGTH = 4_000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_ITEM_LENGTH = 4_000;
+const MAX_METADATA_STRING_LENGTH = 128;
+const MAX_SYSTEM_PROMPT_LENGTH = 2_000;
+const MAX_CORRELATION_INSIGHTS = 5;
 
 type RateLimitEntry = {
   count: number;
@@ -212,6 +233,61 @@ export function validateAndNormalizeChatPayload(payload: unknown): SanitizedChat
 
   const history = historyInput.map((item, index) => validateHistoryItem(item, index));
   return { message, history };
+}
+
+function sanitizeOptionalString(value: unknown, maxLength = MAX_METADATA_STRING_LENGTH): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const sanitized = normalizeInputText(value).trim();
+  if (!sanitized) return undefined;
+  return sanitized.slice(0, maxLength);
+}
+
+function sanitizeOptionalFiniteNumber(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+  return value;
+}
+
+function sanitizeCorrelationInsights(value: unknown): SanitizedCorrelationInsight[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(0, MAX_CORRELATION_INSIGHTS)
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+      const source = item as Record<string, unknown>;
+      const coefficient = sanitizeOptionalFiniteNumber(source.coefficient);
+      const lagDays = sanitizeOptionalFiniteNumber(source.lagDays);
+      const confidence = sanitizeOptionalFiniteNumber(source.confidence);
+      const normalized: SanitizedCorrelationInsight = {
+        dimensionA: sanitizeOptionalString(source.dimensionA),
+        dimensionB: sanitizeOptionalString(source.dimensionB),
+        coefficient:
+          coefficient === undefined ? undefined : Math.max(-1, Math.min(1, coefficient)),
+        lagDays:
+          lagDays === undefined ? undefined : Math.round(Math.max(-30, Math.min(30, lagDays))),
+        confidence:
+          confidence === undefined ? undefined : Math.max(0, Math.min(1, confidence)),
+      };
+      const hasAnyValue = Object.values(normalized).some((entry) => entry !== undefined);
+      if (!hasAnyValue) return null;
+      return normalized;
+    })
+    .filter((item): item is SanitizedCorrelationInsight => Boolean(item));
+}
+
+export function validateAndNormalizeChatMetadata(payload: unknown): SanitizedChatMetadata {
+  if (!payload || typeof payload !== 'object') return {};
+  const source = payload as Record<string, unknown>;
+  return {
+    stream: typeof source.stream === 'boolean' ? source.stream : undefined,
+    systemPrompt: sanitizeOptionalString(source.systemPrompt, MAX_SYSTEM_PROMPT_LENGTH),
+    correlationInsights: sanitizeCorrelationInsights(source.correlationInsights),
+    persistConversation:
+      typeof source.persistConversation === 'boolean' ? source.persistConversation : undefined,
+    includePersistedMemory:
+      typeof source.includePersistedMemory === 'boolean' ? source.includePersistedMemory : undefined,
+    userId: sanitizeOptionalString(source.userId),
+    source: sanitizeOptionalString(source.source),
+  };
 }
 
 export function normalizeAndSanitizeOutputText(text: string): string {

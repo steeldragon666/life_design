@@ -4,28 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 import {
   applyChatRateLimit,
   normalizeAndSanitizeOutputText,
+  SanitizedChatMetadata,
+  validateAndNormalizeChatMetadata,
   validateAndNormalizeChatPayload,
   ValidationError,
 } from '@/lib/chat-security';
 
-type OptionalChatMetadata = {
-  stream?: boolean;
-  systemPrompt?: string;
-  correlationInsights?: Array<{
-    dimensionA?: string;
-    dimensionB?: string;
-    coefficient?: number;
-    lagDays?: number;
-    confidence?: number;
-  }>;
-  persistConversation?: boolean;
-  includePersistedMemory?: boolean;
-  userId?: string;
-  source?: string;
-};
-
 function buildCorrelationContext(
-  insights?: OptionalChatMetadata['correlationInsights']
+  insights?: SanitizedChatMetadata['correlationInsights']
 ): string {
   if (!insights || insights.length === 0) return '';
   const lines = insights
@@ -124,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     const payload = await request.json();
     const { message, history = [] } = validateAndNormalizeChatPayload(payload);
-    const metadata = (payload ?? {}) as OptionalChatMetadata;
+    const metadata = validateAndNormalizeChatMetadata(payload);
     const wantsStream = metadata.stream === true;
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
