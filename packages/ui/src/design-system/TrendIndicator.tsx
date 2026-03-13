@@ -1,7 +1,5 @@
 'use client';
 
-import React from 'react';
-
 interface TrendIndicatorProps {
   direction: 'up' | 'down' | 'neutral';
   percent: number;

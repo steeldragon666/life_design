@@ -11,6 +11,9 @@
   "dependencies": {
     "@life-design/core": "workspace:*"
   },
+  "devDependencies": {
+    "@types/react": "^19.1.4"
+  },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
