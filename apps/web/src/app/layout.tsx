@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import AppProviders from '@/components/app-providers';
 
 export const metadata: Metadata = {
   title: 'Life Design — Your entire life, intelligently connected',
@@ -67,7 +68,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased selection:bg-indigo-500/30">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
