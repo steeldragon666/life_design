@@ -25,7 +25,7 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { profile } = useGuest();
+  const { profile, isHydrated } = useGuest();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -34,6 +34,19 @@ export default function ProtectedLayout({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="glass-card max-w-md w-full text-center space-y-3">
+          <p className="text-sm text-slate-400">Preparing your companion space...</p>
+          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full w-1/2 bg-gradient-to-r from-blue-400 to-cyan-400 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const currentHour = new Date().getHours();
   const ritualWindow = currentHour < 12 ? 'Morning' : 'Evening';

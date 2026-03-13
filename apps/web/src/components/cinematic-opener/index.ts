@@ -1,7 +1,7 @@
 // Cinematic Opener - Full-screen immersive video experience
 // Components for Life Design app onboarding flow
 
-export { CinematicOpener, CinematicOpenerLite } from '../cinematic-opener';
+export { default as CinematicOpener, BeachBackground } from '../onboarding/cinematic-opener';
 export { BeachHero, ParallaxLayer, BeachParticles } from '../beach-hero';
 export {
   VideoTransition,

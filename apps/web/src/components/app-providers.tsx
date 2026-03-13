@@ -1,0 +1,29 @@
+'use client';
+
+import type { ReactNode } from 'react';
+import { GuestProvider } from '@/lib/guest-context';
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
+import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+
+export default function AppProviders({ children }: { children: ReactNode }) {
+  return (
+    <ResilientErrorBoundary
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <GlassErrorFallbackCard
+            title="Companion space recovering"
+            description="A provider failed to initialize. Refresh to continue your journey."
+            className="max-w-xl w-full"
+          />
+        </div>
+      }
+    >
+      <ThemeProvider>
+        <GuestProvider>
+          <SoundscapeProvider>{children}</SoundscapeProvider>
+        </GuestProvider>
+      </ThemeProvider>
+    </ResilientErrorBoundary>
+  );
+}

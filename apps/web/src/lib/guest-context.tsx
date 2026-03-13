@@ -99,6 +99,7 @@ interface GuestContextType {
   setMicroMoments: (prefs: Partial<MicroMomentsPreferences>) => void;
   clearGuestData: () => void;
   isGuest: boolean;
+  isHydrated: boolean;
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined);
@@ -130,13 +131,13 @@ const GUEST_PROFILE_STORAGE_KEY = 'life-design-guest-profile';
 const GUEST_GOALS_STORAGE_KEY = 'life-design-guest-goals';
 const GUEST_CHECKINS_STORAGE_KEY = 'life-design-guest-checkins';
 const CONVERSATION_MEMORY_STORAGE_KEY = 'life-design-conversation-memory';
-const VOICE_PREFERENCE_STORAGE_KEY = 'life-design-voice-preference';
 const MENTOR_PROFILE_STORAGE_KEY = 'life-design-mentor-profile';
 const SOUNDSCAPE_STORAGE_KEY = 'life-design-soundscape-preferences';
 const MICRO_MOMENTS_STORAGE_KEY = 'life-design-micro-moments-preferences';
 const ONBOARDING_PROGRESS_STORAGE_KEY = 'life-design-onboarding-progress';
 const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
 const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
+const GUEST_ONBOARDED_COOKIE = 'life-design-guest-onboarded';
 
 function parseIntegrations(rawValue: string): GuestIntegration[] {
   try {
@@ -154,11 +155,11 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [checkins, setCheckins] = useState<GuestCheckins[]>([]);
   const [conversationMemory, setConversationMemory] = useState<ConversationMemoryEntry[]>([]);
   const [integrations, setIntegrations] = useState<GuestIntegration[]>([]);
-  const [voicePreference, setVoicePreferenceState] = useState<string>('calm-british-female');
   const [mentorProfile, setMentorProfileState] = useState<MentorProfile>(DEFAULT_MENTOR_PROFILE);
   const [soundscape, setSoundscapeState] = useState<SoundscapePreferences>(DEFAULT_SOUNDSCAPE);
   const [microMoments, setMicroMomentsState] = useState<MicroMomentsPreferences>(DEFAULT_MICRO_MOMENTS);
   const [isHydrated, setIsHydrated] = useState(false);
+  const voicePreference = profile?.voicePreference ?? mentorProfile.voiceId ?? DEFAULT_MENTOR_PROFILE.voiceId;
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -171,16 +172,17 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         const savedCheckins = localStorage.getItem(GUEST_CHECKINS_STORAGE_KEY);
         const savedConversationMemory = localStorage.getItem(CONVERSATION_MEMORY_STORAGE_KEY);
         const savedIntegrations = localStorage.getItem(GUEST_INTEGRATIONS_STORAGE_KEY);
-        const savedVoice = localStorage.getItem(VOICE_PREFERENCE_STORAGE_KEY);
         const savedMentor = localStorage.getItem(MENTOR_PROFILE_STORAGE_KEY);
         const savedSoundscape = localStorage.getItem(SOUNDSCAPE_STORAGE_KEY);
         const savedMicroMoments = localStorage.getItem(MICRO_MOMENTS_STORAGE_KEY);
 
-        if (savedProfile) setProfileState(JSON.parse(savedProfile));
+        const parsedProfile: GuestProfile | null = savedProfile ? JSON.parse(savedProfile) : null;
+        if (parsedProfile) {
+          setProfileState(parsedProfile);
+        }
         if (savedGoals) setGoals(JSON.parse(savedGoals));
         if (savedCheckins) setCheckins(JSON.parse(savedCheckins));
         if (savedConversationMemory) setConversationMemory(JSON.parse(savedConversationMemory));
-        if (savedVoice) setVoicePreferenceState(savedVoice);
         if (savedMentor) setMentorProfileState({ ...DEFAULT_MENTOR_PROFILE, ...JSON.parse(savedMentor) });
         if (savedSoundscape) setSoundscapeState({ ...DEFAULT_SOUNDSCAPE, ...JSON.parse(savedSoundscape) });
         if (savedMicroMoments) {
@@ -209,6 +211,17 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
             console.warn('Guest integrations are encrypted but could not be decrypted on this device/browser.');
             setIntegrations([]);
           }
+        }
+
+        // Backward compatibility: migrate legacy standalone voice preference into profile.
+        const legacyVoicePreference = localStorage.getItem('life-design-voice-preference');
+        if (legacyVoicePreference && !parsedProfile?.voicePreference) {
+          setProfileState((prev) =>
+            prev
+              ? { ...prev, voicePreference: legacyVoicePreference }
+              : { id: 'guest-user', voicePreference: legacyVoicePreference }
+          );
+          localStorage.removeItem('life-design-voice-preference');
         }
       } catch (error) {
         console.error('Failed to load guest data from localStorage:', error);
@@ -239,7 +252,6 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(GUEST_GOALS_STORAGE_KEY, JSON.stringify(goals));
         localStorage.setItem(GUEST_CHECKINS_STORAGE_KEY, JSON.stringify(checkins));
         localStorage.setItem(CONVERSATION_MEMORY_STORAGE_KEY, JSON.stringify(conversationMemory));
-        localStorage.setItem(VOICE_PREFERENCE_STORAGE_KEY, voicePreference);
         localStorage.setItem(MENTOR_PROFILE_STORAGE_KEY, JSON.stringify(mentorProfile));
         localStorage.setItem(SOUNDSCAPE_STORAGE_KEY, JSON.stringify(soundscape));
         localStorage.setItem(MICRO_MOMENTS_STORAGE_KEY, JSON.stringify(microMoments));
@@ -279,12 +291,17 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     checkins,
     conversationMemory,
     integrations,
-    voicePreference,
     mentorProfile,
     soundscape,
     microMoments,
     isHydrated,
   ]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    const isOnboarded = Boolean(profile?.onboarded);
+    document.cookie = `${GUEST_ONBOARDED_COOKIE}=${isOnboarded ? '1' : '0'}; Path=/; Max-Age=2592000; SameSite=Lax`;
+  }, [profile?.onboarded, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {
     if (profile) {
@@ -330,9 +347,8 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setVoicePreference = (voiceId: string) => {
-    setVoicePreferenceState(voiceId);
-    // Also update profile
-    setProfileState((prev) => prev ? { ...prev, voicePreference: voiceId } : null);
+    // Single source of truth: store in profile.
+    setProfileState((prev) => (prev ? { ...prev, voicePreference: voiceId } : { id: 'guest-user', voicePreference: voiceId }));
     setMentorProfileState((prev) => ({ ...prev, voiceId }));
   };
 
@@ -353,12 +369,13 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(GUEST_GOALS_STORAGE_KEY);
     localStorage.removeItem(GUEST_CHECKINS_STORAGE_KEY);
     localStorage.removeItem(CONVERSATION_MEMORY_STORAGE_KEY);
-    localStorage.removeItem(VOICE_PREFERENCE_STORAGE_KEY);
+    localStorage.removeItem('life-design-voice-preference');
     localStorage.removeItem(GUEST_INTEGRATIONS_STORAGE_KEY);
     localStorage.removeItem(MENTOR_PROFILE_STORAGE_KEY);
     localStorage.removeItem(SOUNDSCAPE_STORAGE_KEY);
     localStorage.removeItem(MICRO_MOMENTS_STORAGE_KEY);
     localStorage.removeItem(ONBOARDING_PROGRESS_STORAGE_KEY);
+    document.cookie = `${GUEST_ONBOARDED_COOKIE}=0; Path=/; Max-Age=0; SameSite=Lax`;
     setProfileState(null);
     setGoals([]);
     setCheckins([]);
@@ -396,6 +413,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
           setMicroMoments: () => {},
           clearGuestData: () => {},
           isGuest: true,
+          isHydrated: false,
         }}
       >
         {children}
@@ -428,6 +446,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         setMicroMoments,
         clearGuestData,
         isGuest: true,
+        isHydrated: true,
       }}
     >
       {children}

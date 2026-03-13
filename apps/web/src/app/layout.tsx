@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { GuestProvider } from '@/lib/guest-context';
-import { ThemeProvider } from '@/components/theme/theme-provider';
-import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
+import AppProviders from '@/components/app-providers';
 
 export const metadata: Metadata = {
   title: 'Life Design | Your Personal Intelligence Platform',
@@ -86,15 +84,9 @@ export default function RootLayout({
           <div className="absolute inset-0 bg-[#0a0e17]" />
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
         </div>
-        <ThemeProvider>
-          <GuestProvider>
-            <SoundscapeProvider>
-              <div className="relative z-10 min-h-screen">
-                {children}
-              </div>
-            </SoundscapeProvider>
-          </GuestProvider>
-        </ThemeProvider>
+        <AppProviders>
+          <div className="relative z-10 min-h-screen">{children}</div>
+        </AppProviders>
       </body>
     </html>
   );

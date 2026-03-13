@@ -4,20 +4,15 @@ import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
 import type { MentorProfile } from '@/lib/guest-context';
 import type { ConversationMemoryEntry } from '@/lib/conversation-memory';
+import { createAssistantFallbackMessage, fetchWithTimeout } from '@/lib/chat-resilience';
+import {
+  extractProfileDeterministically,
+  mergeExtractedProfiles,
+  parseExtractedProfileFromText,
+  type ExtractedProfile,
+} from '@/lib/onboarding-extraction';
 
-export interface ExtractedProfile {
-  name?: string;
-  location?: string;
-  profession?: string;
-  interests?: string[];
-  hobbies?: string[];
-  maritalStatus?: string;
-  goals?: Array<{
-    title: string;
-    horizon: 'short' | 'medium' | 'long';
-    description?: string;
-  }>;
-}
+export type { ExtractedProfile };
 
 export interface ConversationMessage {
   role: 'user' | 'assistant';
@@ -67,11 +62,11 @@ export function useOnboardingConversation({
 
   const getStreamingResponse = useCallback(
     async (payload: Record<string, unknown>) => {
-      const response = await fetch('/api/chat', {
+      const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...payload, stream: true }),
-      });
+      }, 20_000);
       if (!response.ok) {
         throw new Error('Failed to get AI response');
       }
@@ -79,7 +74,7 @@ export function useOnboardingConversation({
         const fallback = await response.json();
         return typeof fallback.text === 'string'
           ? fallback.text
-          : "I'm here with you. Tell me more when you're ready.";
+          : createAssistantFallbackMessage('default');
       }
 
       const reader = response.body.getReader();
@@ -108,7 +103,7 @@ export function useOnboardingConversation({
           }
         }
       }
-      return fullText || "I'm here with you. Tell me more when you're ready.";
+      return fullText || createAssistantFallbackMessage('default');
     },
     []
   );
@@ -123,13 +118,13 @@ export function useOnboardingConversation({
       const extractPrompt =
         'Extract profile data from this conversation. Return JSON with: name, location, profession, interests (array), hobbies (array), maritalStatus, goals (array with title, horizon, description). Only include what was explicitly shared.';
 
-      const response = await fetch('/api/chat', {
+      const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: `${extractPrompt}\n\nConversation: ${JSON.stringify(conversation)}`,
         }),
-      });
+      }, 12_000);
 
       if (!response.ok) return;
 
@@ -137,42 +132,36 @@ export function useOnboardingConversation({
       const extractedText = data.text || '{}';
 
       try {
-        const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const extracted = JSON.parse(jsonMatch[0]) as ExtractedProfile;
-          if (typeof extracted.name === 'string' && extracted.name.trim()) {
-            appendConversationKeyFact(
-              `User prefers to be called ${extracted.name.trim()}.`,
-              'onboarding'
-            );
-          }
-          if (typeof extracted.profession === 'string' && extracted.profession.trim()) {
-            appendConversationKeyFact(
-              `User profession: ${extracted.profession.trim()}.`,
-              'onboarding'
-            );
-          }
-          if (typeof extracted.location === 'string' && extracted.location.trim()) {
-            appendConversationKeyFact(
-              `User location context: ${extracted.location.trim()}.`,
-              'onboarding'
-            );
-          }
-          setExtractedProfile((prev) => ({
-            ...prev,
-            ...extracted,
-            interests: [...new Set([...(prev.interests || []), ...(extracted.interests || [])])],
-            hobbies: [...new Set([...(prev.hobbies || []), ...(extracted.hobbies || [])])],
-            goals: extracted.goals?.length
-              ? [...(prev.goals || []), ...extracted.goals]
-              : prev.goals,
-          }));
+        const extracted =
+          parseExtractedProfileFromText(extractedText) ??
+          extractProfileDeterministically(conversation);
+
+        if (typeof extracted.name === 'string' && extracted.name.trim()) {
+          appendConversationKeyFact(
+            `User prefers to be called ${extracted.name.trim()}.`,
+            'onboarding'
+          );
         }
+        if (typeof extracted.profession === 'string' && extracted.profession.trim()) {
+          appendConversationKeyFact(
+            `User profession: ${extracted.profession.trim()}.`,
+            'onboarding'
+          );
+        }
+        if (typeof extracted.location === 'string' && extracted.location.trim()) {
+          appendConversationKeyFact(
+            `User location context: ${extracted.location.trim()}.`,
+            'onboarding'
+          );
+        }
+        setExtractedProfile((prev) => mergeExtractedProfiles(prev, extracted));
       } catch (parseErr) {
         console.error('Failed to parse extraction:', parseErr);
+        setExtractedProfile((prev) => mergeExtractedProfiles(prev, extractProfileDeterministically(conversation)));
       }
     } catch (err) {
       console.error('Extraction error:', err);
+      setExtractedProfile((prev) => mergeExtractedProfiles(prev, extractProfileDeterministically(conversation)));
     }
   }, [appendConversationKeyFact]);
 
@@ -220,12 +209,17 @@ export function useOnboardingConversation({
           { role: 'user', content: userMessage },
           { role: 'assistant', content: aiResponse },
         ]);
-      } catch {
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message.includes('timed out')
+            ? 'Connection was slow. I switched to a gentle fallback response.'
+            : 'Conversation interrupted. We can continue when you are ready.');
+        }
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            content: 'Take your time. I am here whenever you are ready to continue.',
+            content: createAssistantFallbackMessage('onboarding'),
           },
         ]);
       } finally {

@@ -1,13 +1,22 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { hasBillingAccess, requiresBillingGate } from '@/lib/stripe';
+import { isAssetOrInternalPath, isGuestProtectedPath, isPublicGuestPath } from '@/lib/route-guard';
+
+const GUEST_ONBOARDED_COOKIE = 'life-design-guest-onboarded';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next({ request });
   response.headers.set('x-pathname', pathname);
 
-  if (!requiresBillingGate(pathname) || pathname.startsWith('/paywall')) {
+  if (isAssetOrInternalPath(pathname)) {
+    return response;
+  }
+
+  const isGuestProtected = !isPublicGuestPath(pathname) && isGuestProtectedPath(pathname);
+  const requiresBilling = requiresBillingGate(pathname) && !pathname.startsWith('/paywall');
+  if (!isGuestProtected && !requiresBilling) {
     return response;
   }
 
@@ -37,6 +46,15 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
+    if (isGuestProtected && request.cookies.get(GUEST_ONBOARDED_COOKIE)?.value !== '1') {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
+  }
+
+  if (!requiresBilling) {
     return response;
   }
 
