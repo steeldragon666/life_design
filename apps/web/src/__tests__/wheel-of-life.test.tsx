@@ -1,7 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Dimension, DIMENSION_LABELS } from '@life-design/core';
 import WheelOfLife from '@/components/dashboard/wheel-of-life';
+
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: any }) => (
+      <div style={{ width: 800, height: 600 }}>{children}</div>
+    ),
+  };
+});
 
 // Recharts uses ResizeObserver internally
 class ResizeObserverMock {
