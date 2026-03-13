@@ -7,6 +7,7 @@ import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
 import { buildBoundedHistory, type ChatHistoryItem } from '@/lib/chat-history';
+import { fetchWithTimeout } from '@/lib/chat-resilience';
 
 interface GoalDraft {
   title: string;
@@ -24,6 +25,7 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
   const [response, setResponse] = useState('');
   const [draft, setDraft] = useState<GoalDraft | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
 
   const intro = useMemo(
@@ -90,6 +92,7 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
     const normalizedInput = userInput.trim();
     if (!normalizedInput) return;
     setLoading(true);
+    setError(null);
     try {
       const mood = inferMoodAdaptation(checkins);
       const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'goals', {
@@ -106,7 +109,7 @@ Respond in two sections:
         [...history, { role: 'user', content: normalizedInput }],
         9000,
       );
-      const chatRes = await fetch('/api/chat', {
+      const chatRes = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -136,6 +139,14 @@ Respond in two sections:
           setDraft(parsed);
         }
       }
+    } catch (err) {
+      const fallback = 'Let us shape this with one small next step.';
+      setResponse(fallback);
+      setError(
+        err instanceof Error && err.message.includes('timed out')
+          ? 'Connection was slow. I switched to a concise fallback guidance message.'
+          : 'Goal guidance was interrupted. Please try again in a moment.',
+      );
     } finally {
       setLoading(false);
     }
@@ -169,6 +180,12 @@ Respond in two sections:
       {response && (
         <div className="glass-card p-5">
           <p className="text-slate-200 whitespace-pre-wrap text-sm">{response}</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="glass-card p-4 border-l-4 border-amber-500">
+          <p className="text-sm text-amber-300">{error}</p>
         </div>
       )}
 

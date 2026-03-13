@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Play, Pause, Sparkles } from 'lucide-react';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt } from '@/lib/mentor-orchestrator';
+import { requestChatText } from '@/lib/chat-client';
 
 const MEDITATION_THEMES = [
   { id: 'grounding', label: 'Grounding Reset', minutes: 4 },
@@ -30,24 +31,25 @@ export default function MeditationsPage() {
         selectedTheme.label,
         selectedTheme.minutes
       );
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await requestChatText({
+        payload: {
           message: `Generate a guided meditation script for ${selectedTheme.label} lasting around ${selectedTheme.minutes} minutes.`,
           systemPrompt,
           includePersistedMemory: true,
           userId: profile?.id,
           source: 'meditations',
-        }),
+        },
+        fallbackText: fallbackScript,
+        timeoutMs: 25_000,
       });
-
-      if (!response.ok) {
-        throw new Error('Meditation generation failed');
+      setScript(result.text);
+      if (result.degraded) {
+        setError(
+          result.reason === 'timeout'
+            ? 'Meditation generation was slow, so a calming fallback script is ready.'
+            : 'Could not generate a custom script right now. A calming fallback script is ready instead.',
+        );
       }
-
-      const data = await response.json();
-      setScript(data.text || fallbackScript);
     } catch {
       setScript(fallbackScript);
       setError('Could not generate a custom script right now. A calming fallback script is ready instead.');

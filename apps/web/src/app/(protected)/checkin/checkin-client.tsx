@@ -8,6 +8,7 @@ import CheckInForm from '@/components/checkin/checkin-form';
 import type { CheckInFormData } from '@/components/checkin/checkin-form';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
+import { requestChatText } from '@/lib/chat-client';
 
 interface CheckInClientProps {
   date: string;
@@ -46,22 +47,24 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         mood,
         memory: conversationMemory,
       });
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await requestChatText({
+        payload: {
           message: 'Create a 3-line grounding check-in opener with one breath cue and one reflective question.',
           systemPrompt,
           includePersistedMemory: true,
           userId: profile?.id,
           source: 'checkin',
-        }),
+        },
+        fallbackText: fallbackOpener,
+        timeoutMs: 18_000,
       });
-
-      let opener = fallbackOpener;
-      if (response.ok) {
-        const data = await response.json();
-        opener = data.text || fallbackOpener;
+      const opener = result.text;
+      if (result.degraded) {
+        setError(
+          result.reason === 'timeout'
+            ? 'Grounding response was slow, so I started with a gentle fallback.'
+            : 'Could not load a custom grounding opener. Using a calming fallback.',
+        );
       }
 
       const utterance = new SpeechSynthesisUtterance(opener);
