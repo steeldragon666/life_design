@@ -70,6 +70,23 @@ export default async function PaywallPage() {
       </div>
 
       <div className="flex gap-3">
+        <form action="/api/billing/checkout" method="POST">
+          <input type="hidden" name="plan" value="annual" />
+          <button
+            type="submit"
+            className="inline-flex rounded-lg border border-emerald-500/40 bg-emerald-500/20 px-4 py-2 text-sm text-emerald-100 hover:bg-emerald-500/30"
+          >
+            Start annual plan
+          </button>
+        </form>
+        <form action="/api/billing/portal" method="POST">
+          <button
+            type="submit"
+            className="inline-flex rounded-lg border border-blue-500/40 bg-blue-500/20 px-4 py-2 text-sm text-blue-100 hover:bg-blue-500/30"
+          >
+            Manage billing
+          </button>
+        </form>
         <Link
           href="/pricing"
           className="inline-flex rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-500/30"

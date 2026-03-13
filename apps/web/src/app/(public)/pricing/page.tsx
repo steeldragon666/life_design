@@ -5,14 +5,17 @@ const PLAN_COPY = {
   monthly: {
     title: 'Monthly',
     description: 'Flexible month-to-month access.',
+    price: '$9.99 / month',
   },
   annual: {
     title: 'Annual',
     description: 'Best value for long-term consistency.',
+    price: '$99 / year',
   },
   lifetime: {
     title: 'Lifetime',
     description: 'One-time access without renewal.',
+    price: '$249 one-time',
   },
 } as const;
 
@@ -48,9 +51,20 @@ export default function PricingPage() {
             >
               <h2 className="text-xl font-medium text-white">{plan.title}</h2>
               <p className="mt-2 text-sm text-slate-400">{plan.description}</p>
+              <p className="mt-4 text-2xl font-semibold text-white">{plan.price}</p>
               <p className="mt-4 text-xs text-slate-500">
                 {isAvailable ? 'Configured' : 'Not configured'}
               </p>
+              <form action="/api/billing/checkout" method="POST" className="mt-4">
+                <input type="hidden" name="plan" value={product.key} />
+                <button
+                  type="submit"
+                  disabled={!isConfigured || !isAvailable}
+                  className="w-full rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {product.key === 'annual' ? 'Start annual trial' : 'Start trial'}
+                </button>
+              </form>
             </article>
           );
         })}

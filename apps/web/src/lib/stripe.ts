@@ -4,6 +4,8 @@ export const STRIPE_PRODUCTS = {
   lifetime: process.env.STRIPE_PRICE_LIFETIME_ID ?? '',
 } as const;
 
+export type StripePlanType = keyof typeof STRIPE_PRODUCTS;
+
 export type BillingStatus =
   | 'trialing'
   | 'active'
@@ -37,6 +39,11 @@ export function getAvailablePriceEntries() {
     { key: 'annual', priceId: STRIPE_PRODUCTS.annual },
     { key: 'lifetime', priceId: STRIPE_PRODUCTS.lifetime },
   ] as const;
+}
+
+export function getPriceIdForPlan(plan: StripePlanType): string | null {
+  const priceId = STRIPE_PRODUCTS[plan];
+  return priceId && priceId.length > 0 ? priceId : null;
 }
 
 function isFutureDate(isoDate?: string | null): boolean {
