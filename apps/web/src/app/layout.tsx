@@ -1,60 +1,24 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
-import AppProviders from '@/components/app-providers';
 
 export const metadata: Metadata = {
-  title: 'Life Design | Your Personal Intelligence Platform',
-  description: 'Synthesize your life context, track goals across all dimensions, and design your future with AI-powered insights.',
-  keywords: ['life design', 'goal tracking', 'personal development', 'AI coaching', 'life balance'],
-  authors: [{ name: 'Life Design' }],
-  creator: 'Life Design',
-  publisher: 'Life Design',
-  metadataBase: new URL('https://life-design-brown.vercel.app'),
+  title: 'Life Design — Your entire life, intelligently connected',
+  description:
+    'Discover hidden patterns across health, career, relationships and growth. AI-powered insights that connect all 8 dimensions of your life.',
   openGraph: {
-    title: 'Life Design | Your Personal Intelligence Platform',
-    description: 'Transform your life data into actionable wisdom. Track goals, gain insights, design your future.',
+    title: 'Life Design — Your entire life, intelligently connected',
+    description:
+      'Discover hidden patterns across health, career, relationships and growth.',
     type: 'website',
-    locale: 'en_US',
-    siteName: 'Life Design',
-    images: [{
-      url: '/images/life-design-hero-illustration.png',
-      width: 1200,
-      height: 630,
-      alt: 'Life Design - Your Personal Intelligence Platform',
-    }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Life Design | Your Personal Intelligence Platform',
-    description: 'Transform your life data into actionable wisdom.',
-    images: ['/images/life-design-hero-illustration.png'],
+    title: 'Life Design — Your entire life, intelligently connected',
+    description:
+      'Discover hidden patterns across health, career, relationships and growth.',
+    images: ['/og-image.png'],
   },
-  icons: {
-    icon: [
-      { url: '/images/life-orb-3d-icon.png', type: 'image/png', sizes: '512x512' },
-    ],
-    apple: [
-      { url: '/images/life-orb-3d-icon.png', sizes: '512x512' },
-    ],
-  },
-  appleWebApp: {
-    capable: true,
-    title: 'Life Design',
-    statusBarStyle: 'black-translucent',
-  },
-  manifest: '/manifest.json',
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0a0e17' },
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-  ],
 };
 
 export default function RootLayout({
@@ -63,30 +27,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="dark">
       <head>
-        {/* iOS Touch Icon */}
-        <link rel="apple-touch-icon" href="/images/life-orb-3d-icon.png" />
-        {/* iOS Startup Image */}
-        <link rel="apple-touch-startup-image" href="/images/life-design-hero-illustration.png" />
-        {/* Prevent text size adjustment on orientation change */}
-        <meta name="format-detection" content="telephone=no" />
-        {/* Apple Mobile Web App */}
+        {/* PWA manifest */}
+        <link rel="manifest" href="/manifest.json" />
+
+        {/* Theme colour for browser chrome and mobile status bar */}
+        <meta name="theme-color" content="#6366f1" />
+
+        {/* iOS PWA support */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Life Design" />
-        {/* iOS Smart App Banner */}
-        <meta name="apple-itunes-app" content="app-id=123456789, app-argument=life-design-brown.vercel.app" />
+        <link rel="apple-touch-icon" href="/icons/icon-512.png" />
+
+        {/* Cabinet Grotesk — Headings */}
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&display=swap"
+        />
+        {/* Erode — Body text */}
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=erode@300,400,500&display=swap"
+        />
+        {/* JetBrains Mono — Data/Numbers */}
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+        />
       </head>
-      <body className="antialiased min-h-screen bg-[#0a0e17] text-white overflow-x-hidden">
-        {/* iOS Safe Area Support */}
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute inset-0 bg-[#0a0e17]" />
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
-        </div>
-        <AppProviders>
-          <div className="relative z-10 min-h-screen">{children}</div>
-        </AppProviders>
+      <body className="antialiased selection:bg-indigo-500/30">
+        {children}
       </body>
     </html>
   );

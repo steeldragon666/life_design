@@ -37,3 +37,4 @@ npm-debug.log*
 pnpm-debug.log*
 .vercel
 .env*.local
+life_design/

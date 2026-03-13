@@ -1,87 +1,79 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useGuest } from '@/lib/guest-context';
-import DashboardClient from './dashboard-client';
+import { createClient } from '@/lib/supabase/server';
 import {
-  Dimension,
-  ALL_DIMENSIONS,
-  computeOverallScore,
-  computeStreak,
-  computeAllPairCorrelations,
-  detectSignificantPatterns,
-} from '@life-design/core';
-import { getDeterministicNextNudgeSuggestion } from '@/lib/micro-moments';
-import { buildGoalInsights } from '@/lib/goal-correlation';
-import { buildDashboardInsights } from '@/lib/dashboard-insights';
+  getLatestScores,
+  getScoreHistory,
+  getStreakData,
+} from '@/lib/services/dashboard-service';
+import { getInsights } from '@/lib/services/insights-service';
+import { getGoals } from '@/lib/services/goal-service';
+import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension, GoalStatus } from '@life-design/core';
+import DashboardClient from './dashboard-client';
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const { profile, goals, checkins, mentorProfile, conversationMemory, microMoments } = useGuest();
-  const [remoteNudges, setRemoteNudges] = useState<Array<{ title: string; body: string }>>([]);
+import { getGranularContext } from '@life-design/core';
+import { generateNudges } from '@/lib/services/nudge-engine';
 
-  // Redirect to onboarding if not onboarded
-  useEffect(() => {
-    if (!profile?.onboarded) {
-      router.push('/onboarding');
-    }
-  }, [profile, router]);
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    let isCancelled = false;
-
-    async function loadRemoteNudges() {
-      if (!profile?.id) {
-        if (!isCancelled) setRemoteNudges([]);
-        return;
-      }
-      try {
-        const response = await fetch(`/api/nudges?userId=${encodeURIComponent(profile.id)}`);
-        if (!response.ok) return;
-        const data = (await response.json()) as {
-          nudges?: Array<{ title?: string; body?: string }>;
-        };
-        const normalized = (data.nudges ?? [])
-          .filter((item) => typeof item.title === 'string' && typeof item.body === 'string')
-          .map((item) => ({ title: item.title as string, body: item.body as string }));
-        if (!isCancelled) {
-          setRemoteNudges(normalized);
-        }
-      } catch {
-        if (!isCancelled) {
-          setRemoteNudges([]);
-        }
-      }
-    }
-
-    void loadRemoteNudges();
-    return () => {
-      isCancelled = true;
-    };
-  }, [profile?.id]);
-
-  if (!profile?.onboarded) {
-    return null;
+  if (!user) {
+    return <p>Loading...</p>;
   }
 
-  // Build latest scores from most recent checkin
-  const latestCheckin = checkins[checkins.length - 1];
-  const latestScores = latestCheckin?.dimension_scores || [];
+  // Fetch profile for context (including first_name for personalised greeting)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('postcode, profession, interests, first_name')
+    .eq('id', user.id)
+    .single();
 
-  // Compute overall score
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [latestResult, historyResult, streakResult, insightsResult, goalsResult, worldContext] = await Promise.all([
+    getLatestScores(user.id),
+    getScoreHistory(user.id, 30),
+    getStreakData(user.id),
+    getInsights(user.id, 3),
+    getGoals(user.id, { status: GoalStatus.Active }),
+    profile?.postcode ? getGranularContext(profile.postcode, profile.profession, profile.interests ?? []) : Promise.resolve(null),
+  ]);
+
+  const latestScores = latestResult.data ?? [];
+  const history = historyResult.data ?? [];
+  const streakDates = streakResult.data ?? [];
+
+  const streak = computeStreak(streakDates, today);
   const overallScore = latestScores.length > 0
     ? computeOverallScore(latestScores as { dimension: Dimension; score: number }[])
     : 0;
 
-  // Compute streak
-  const today = new Date().toISOString().slice(0, 10);
-  const streakDates = checkins.map((c) => c.date);
-  const streak = computeStreak(streakDates, today);
+  // Build per-dimension trend data from history
+  const dimensionTrends: Record<string, { date: string; score: number }[]> = {};
+  for (const checkin of history) {
+    const scores = (checkin as { date: string; dimension_scores: { dimension: string; score: number }[] }).dimension_scores ?? [];
+    for (const ds of scores) {
+      if (!dimensionTrends[ds.dimension]) {
+        dimensionTrends[ds.dimension] = [];
+      }
+      dimensionTrends[ds.dimension].push({
+        date: (checkin as { date: string }).date,
+        score: ds.score,
+      });
+    }
+  }
+
+  const recentInsights = (insightsResult.data ?? []) as {
+    id: string;
+    type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
+    title: string;
+    body: string;
+    dimension: string | null;
+  }[];
 
   // Build goals summary
-  const activeGoals = goals.filter((g) => g.status === 'active');
+  const activeGoals = (goalsResult.data ?? []) as Array<Record<string, unknown>>;
   const goalsSummary = {
     total: activeGoals.length,
     byHorizon: {
@@ -91,114 +83,33 @@ export default function DashboardPage() {
     },
     nearestDeadline: activeGoals.length > 0
       ? activeGoals.reduce((nearest, g) => {
-          const gDate = new Date(g.target_date).getTime();
-          const nDate = nearest ? new Date(nearest.target_date).getTime() : Infinity;
+          const gDate = new Date(g.target_date as string).getTime();
+          const nDate = nearest ? new Date(nearest.target_date as string).getTime() : Infinity;
           return gDate < nDate ? g : nearest;
-        }, null as any)
+        }, null as Record<string, unknown> | null)
       : null,
   };
-  const goalInsights = buildGoalInsights(
-    goals.map((goal) => ({
-      id: goal.id,
-      title: goal.title,
-      horizon: goal.horizon,
-      status: goal.status,
-      target_date: goal.target_date,
-      description: goal.description,
-    })),
-    checkins.map((checkin) => ({
-      date: checkin.date,
-      mood: checkin.mood,
-      dimension_scores: checkin.dimension_scores,
-    })),
-  );
 
-  // Mock nudges based on profile
-  const nudges = profile.interests?.length ? [
-    {
-      title: 'Personalized for you',
-      body: `Based on your interest in ${profile.interests[0]}, consider setting a related goal.`,
-    },
-  ] : [];
-  const combinedNudges = useMemo(
-    () => [...remoteNudges, ...nudges],
-    [remoteNudges, nudges],
-  );
+  const nudges = worldContext 
+    ? await generateNudges(latestScores, activeGoals, worldContext)
+    : [];
 
-  const nextMicroMomentNudge = getDeterministicNextNudgeSuggestion({
-    now: new Date(),
-    profile,
-    goals,
-    checkins,
-    mentorArchetype: mentorProfile.archetype,
-    preferences: microMoments,
-  });
-
-  const correlationSeriesByDimension = ALL_DIMENSIONS.reduce<Record<string, number[]>>((acc, dimension) => {
-    acc[dimension] = [];
-    return acc;
-  }, {});
-
-  checkins
-    .slice()
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .forEach((checkin) => {
-      const scoreMap = new Map(checkin.dimension_scores.map((s) => [s.dimension, s.score] as const));
-      ALL_DIMENSIONS.forEach((dimension) => {
-        const score = scoreMap.get(dimension);
-        correlationSeriesByDimension[dimension].push(typeof score === 'number' ? score : Number.NaN);
-      });
-    });
-
-  const pairCorrelations = computeAllPairCorrelations(correlationSeriesByDimension);
-  const significantPatterns = detectSignificantPatterns(pairCorrelations, 0.55).slice(0, 4);
-  const correlationInsights = significantPatterns.map((pattern) => ({
-    dimensionA: pattern.keyA,
-    dimensionB: pattern.keyB,
-    coefficient: pattern.correlation,
-    lagDays: pattern.bestLag,
-    confidence: pattern.confidence,
-    insightText:
-      pattern.direction === 'positive'
-        ? `${pattern.keyA} and ${pattern.keyB} tend to rise together in your recent check-ins.`
-        : `${pattern.keyA} and ${pattern.keyB} tend to move in opposite directions in your recent check-ins.`,
-  }));
-  const highlightedCorrelationPair =
-    correlationInsights.length > 0
-      ? ([correlationInsights[0].dimensionA, correlationInsights[0].dimensionB] as const)
-      : null;
-  const daysUntilFirstCorrelation = Math.max(0, 14 - checkins.length);
-  const recentInsights = buildDashboardInsights({
-    checkins,
-    latestScores,
-    streak,
-    goalProgress: goalInsights.progress,
-    goalCorrelations: goalInsights.correlations,
-    crossDomainCorrelations: correlationInsights,
-  });
+  // Derive firstName: prefer profile field, fall back to email prefix
+  const firstName =
+    (profile as { first_name?: string } | null)?.first_name ??
+    user.email?.split('@')[0] ??
+    undefined;
 
   return (
     <DashboardClient
-      latestScores={latestScores}
+      latestScores={latestScores as { dimension: string; score: number }[]}
       overallScore={overallScore}
       streak={streak}
+      dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
-      nudges={combinedNudges}
-      nextMicroMomentNudge={nextMicroMomentNudge}
-      profile={profile}
-      digestContext={{
-        profile,
-        goals,
-        checkins,
-        mentorProfile,
-        conversationMemory,
-      }}
-      correlationInsights={correlationInsights}
-      highlightedCorrelationPair={highlightedCorrelationPair}
-      daysUntilFirstCorrelation={daysUntilFirstCorrelation}
-      goalProgress={goalInsights.progress}
-      goalCorrelationInsights={goalInsights.correlations}
+      nudges={nudges}
+      firstName={firstName}
     />
   );
 }

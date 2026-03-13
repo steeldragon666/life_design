@@ -5,18 +5,71 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "life-design",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0a1a"
+    },
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lifedesign.app"
+      "bundleIdentifier": "com.lifedesign.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "Life Design reads health data (sleep, heart rate, HRV, steps, and activity) to surface cross-domain insights connecting your health to other areas of your life.",
+        "NSHealthUpdateUsageDescription": "Life Design does not write health data.",
+        "NSMotionUsageDescription": "Life Design uses motion data to estimate your activity level as part of your fitness dimension.",
+        "NSSpeechRecognitionUsageDescription": "Life Design uses your voice to detect tone and sentiment during optional voice check-ins. Audio is processed on-device and raw recordings are never uploaded.",
+        "NSMicrophoneUsageDescription": "Life Design needs microphone access to record optional voice check-ins. Audio is processed on-device only.",
+        "NSCalendarsUsageDescription": "Life Design reads your calendar to analyse work patterns such as meeting hours and focus blocks. Event titles and descriptions are never stored.",
+        "NSRemindersUsageDescription": "Life Design can optionally read reminders to surface task-completion patterns in your growth dimension."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": [],
+        "com.apple.developer.healthkit.background-delivery": true
+      }
     },
+
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0a1a"
       },
-      "package": "com.lifedesign.app"
+      "package": "com.lifedesign.app",
+      "permissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.BODY_SENSORS",
+        "android.permission.READ_CALL_LOG",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CALENDAR",
+        "com.google.android.gms.permission.ACTIVITY_RECOGNITION",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_SLEEP",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_OXYGEN_SATURATION",
+        "android.permission.health.READ_RESPIRATORY_RATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ]
     },
-    "plugins": ["expo-router", "expo-secure-store"]
+
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-health",
+      "expo-notifications",
+      "expo-web-browser"
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    }
   }
 }
