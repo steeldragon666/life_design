@@ -14,6 +14,7 @@ export function buildBoundedHistory(
   items: ChatHistoryItem[],
   maxChars = 10_000,
 ): ChatApiHistoryItem[] {
+  const safeMaxChars = Math.max(1, Math.floor(maxChars));
   const normalized = items
     .map((item): ChatApiHistoryItem => ({
       role: item.role === 'user' ? 'user' : 'model',
@@ -26,7 +27,15 @@ export function buildBoundedHistory(
   for (let i = normalized.length - 1; i >= 0; i -= 1) {
     const next = normalized[i];
     const nextTotal = total + next.content.length;
-    if (nextTotal > maxChars) break;
+    if (nextTotal > safeMaxChars) {
+      if (result.length === 0) {
+        result.unshift({
+          role: next.role,
+          content: next.content.slice(-safeMaxChars),
+        });
+      }
+      break;
+    }
     result.unshift(next);
     total = nextTotal;
   }

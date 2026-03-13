@@ -42,7 +42,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
 
     try {
       const mood = inferMoodAdaptation(checkins);
-      const prompt = buildMentorSystemPrompt(mentorProfile, 'checkin', {
+      const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'checkin', {
         mood,
         memory: conversationMemory,
       });
@@ -50,7 +50,8 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `${prompt}\nCreate a 3-line grounding check-in opener with one breath cue and one reflective question.`,
+          message: 'Create a 3-line grounding check-in opener with one breath cue and one reflective question.',
+          systemPrompt,
           includePersistedMemory: true,
           userId: profile?.id,
           source: 'checkin',

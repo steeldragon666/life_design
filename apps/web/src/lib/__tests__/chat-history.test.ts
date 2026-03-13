@@ -25,4 +25,18 @@ describe('chat-history', () => {
     expect(bounded[0].role).toBe('model');
     expect(bounded[1].role).toBe('user');
   });
+
+  it('keeps latest turn by truncating when single turn exceeds budget', () => {
+    const bounded = buildBoundedHistory(
+      [
+        { role: 'user', content: 'first short turn' },
+        { role: 'assistant', content: 'y'.repeat(2000) },
+      ],
+      300,
+    );
+
+    expect(bounded.length).toBe(1);
+    expect(bounded[0].role).toBe('model');
+    expect(bounded[0].content.length).toBe(300);
+  });
 });

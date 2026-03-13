@@ -25,7 +25,7 @@ export default function MeditationsPage() {
     setError(null);
     const fallbackScript = 'Take a deep breath, and let your shoulders soften.';
     try {
-      const prompt = buildGuidedMeditationPrompt(
+      const systemPrompt = buildGuidedMeditationPrompt(
         mentorProfile,
         selectedTheme.label,
         selectedTheme.minutes
@@ -34,7 +34,8 @@ export default function MeditationsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: prompt,
+          message: `Generate a guided meditation script for ${selectedTheme.label} lasting around ${selectedTheme.minutes} minutes.`,
+          systemPrompt,
           includePersistedMemory: true,
           userId: profile?.id,
           source: 'meditations',

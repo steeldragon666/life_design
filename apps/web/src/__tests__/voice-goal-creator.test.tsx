@@ -55,4 +55,23 @@ describe('VoiceGoalCreator', () => {
     expect(Array.isArray(secondBody.history)).toBe(true);
     expect((secondBody.history ?? []).length).toBeGreaterThan(0);
   });
+
+  it('shows graceful error message when chat request times out', async () => {
+    (fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('Request timed out after 20000ms'),
+    );
+
+    render(<VoiceGoalCreator onCreateGoal={vi.fn()} />);
+    const input = screen.getByPlaceholderText(/speak or type your goal intention/i);
+    const guideButton = screen.getByRole('button', { name: /guide/i });
+
+    fireEvent.change(input, { target: { value: 'A difficult goal prompt' } });
+    fireEvent.click(guideButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/connection was slow/i),
+      ).toBeInTheDocument();
+    });
+  });
 });
