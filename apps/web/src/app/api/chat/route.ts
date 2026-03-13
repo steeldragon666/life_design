@@ -19,6 +19,7 @@ type OptionalChatMetadata = {
     confidence?: number;
   }>;
   persistConversation?: boolean;
+  includePersistedMemory?: boolean;
   userId?: string;
   source?: string;
 };
@@ -62,18 +63,42 @@ async function persistConversationSummary(params: {
   userMessage: string;
   responseText: string;
 }) {
-  if (!params.userId) return;
-  const supabase = getServiceRoleClient();
-  if (!supabase) return;
-  const summary = `User: "${params.userMessage.slice(0, 250)}" | Mentor: "${params.responseText.slice(0, 350)}"`;
-  await supabase.from('mentor_conversation_summaries').insert({
-    user_id: params.userId,
-    source: params.source ?? 'chat',
-    user_message: params.userMessage.slice(0, 4000),
-    mentor_response: params.responseText.slice(0, 8000),
-    summary,
-    created_at: new Date().toISOString(),
-  });
+  try {
+    if (!params.userId) return;
+    const supabase = getServiceRoleClient();
+    if (!supabase) return;
+    const summary = `User: "${params.userMessage.slice(0, 250)}" | Mentor: "${params.responseText.slice(0, 350)}"`;
+    await supabase.from('mentor_conversation_summaries').insert({
+      user_id: params.userId,
+      source: params.source ?? 'chat',
+      user_message: params.userMessage.slice(0, 4000),
+      mentor_response: params.responseText.slice(0, 8000),
+      summary,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Do not fail chat delivery when persistence layer is unavailable.
+  }
+}
+
+async function fetchRecentConversationSummaries(userId?: string): Promise<string[]> {
+  try {
+    if (!userId) return [];
+    const supabase = getServiceRoleClient();
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from('mentor_conversation_summaries')
+      .select('summary')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (error) return [];
+    return (data ?? [])
+      .map((item: { summary?: string }) => item.summary)
+      .filter((value): value is string => typeof value === 'string' && value.length > 0);
+  } catch {
+    return [];
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -122,7 +147,15 @@ export async function POST(request: NextRequest) {
     });
 
     const correlationContext = buildCorrelationContext(metadata.correlationInsights);
-    const finalMessage = `${message}${correlationContext}`;
+    const memoryContext =
+      metadata.includePersistedMemory && metadata.userId
+        ? await fetchRecentConversationSummaries(metadata.userId)
+        : [];
+    const memorySuffix =
+      memoryContext.length > 0
+        ? `\n\nRecent conversation memory:\n${memoryContext.map((item) => `- ${item}`).join('\n')}`
+        : '';
+    const finalMessage = `${message}${correlationContext}${memorySuffix}`;
 
     // Build the conversation
     const chat = model.startChat({

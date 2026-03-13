@@ -202,6 +202,7 @@ export function useOnboardingConversation({
         const aiResponse = await getStreamingResponse({
           message: fullPrompt,
           correlationInsights: getCorrelationInsights(),
+          includePersistedMemory: true,
           persistConversation: true,
           userId,
           source: 'onboarding',

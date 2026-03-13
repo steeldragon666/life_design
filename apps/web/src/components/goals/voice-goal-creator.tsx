@@ -109,6 +109,7 @@ Respond in two sections:
           message,
           stream: true,
           correlationInsights,
+          includePersistedMemory: true,
           persistConversation: true,
           userId: profile?.id,
           source: 'goals',

@@ -53,6 +53,7 @@ export interface UserContext {
     confidence?: number;
     narrative?: string;
   }>;
+  recentConversationSummaries?: string[];
 }
 
 export function buildSystemPrompt(
@@ -140,6 +141,13 @@ export function buildSystemPrompt(
         if (insight.narrative) {
           prompt += `\n  narrative: ${insight.narrative}`;
         }
+      }
+    }
+
+    if (context.recentConversationSummaries && context.recentConversationSummaries.length > 0) {
+      prompt += '\n\nRecent conversation memory (for continuity):';
+      for (const summary of context.recentConversationSummaries.slice(0, 5)) {
+        prompt += `\n- ${summary}`;
       }
     }
   }

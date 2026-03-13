@@ -15,7 +15,7 @@ interface CheckInClientProps {
 
 export default function CheckInClient({ date }: CheckInClientProps) {
   const router = useRouter();
-  const { addCheckin, mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
+  const { profile, addCheckin, mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [groundingStarted, setGroundingStarted] = useState(false);
@@ -51,6 +51,9 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: `${prompt}\nCreate a 3-line grounding check-in opener with one breath cue and one reflective question.`,
+          includePersistedMemory: true,
+          userId: profile?.id,
+          source: 'checkin',
         }),
       });
 

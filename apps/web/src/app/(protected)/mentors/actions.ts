@@ -123,6 +123,43 @@ export async function sendMessage(
   const integrationResults = await Promise.all(integrationPromises);
   userContext.integrationContexts = integrationResults.filter((ctx): ctx is string => ctx !== null);
 
+  const [{ data: persistedSummaries }, { data: persistedCorrelations }] = await Promise.all([
+    supabase
+      .from('mentor_conversation_summaries')
+      .select('summary')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('correlation_results')
+      .select('dimension_a, dimension_b, correlation_coefficient, lag_days, confidence, insight_text')
+      .eq('user_id', user.id)
+      .order('computed_at', { ascending: false })
+      .limit(5),
+  ]);
+
+  userContext.recentConversationSummaries = (persistedSummaries ?? [])
+    .map((item: { summary?: string }) => item.summary)
+    .filter((summary): summary is string => typeof summary === 'string' && summary.length > 0);
+
+  userContext.correlationInsights = (persistedCorrelations ?? []).map(
+    (item: {
+      dimension_a: string;
+      dimension_b: string;
+      correlation_coefficient: number;
+      lag_days: number;
+      confidence: number;
+      insight_text: string | null;
+    }) => ({
+      dimensionA: item.dimension_a,
+      dimensionB: item.dimension_b,
+      coefficient: item.correlation_coefficient,
+      lagDays: item.lag_days,
+      confidence: item.confidence,
+      narrative: item.insight_text ?? undefined,
+    }),
+  );
+
   // Get granular real-world context (Search, Maps, etc.)
   const worldContext = profile?.postcode 
     ? await getGranularContext(profile.postcode, profile.profession, profile.interests ?? [])

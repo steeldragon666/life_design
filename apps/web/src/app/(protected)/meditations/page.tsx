@@ -13,7 +13,7 @@ const MEDITATION_THEMES = [
 ];
 
 export default function MeditationsPage() {
-  const { mentorProfile } = useGuest();
+  const { profile, mentorProfile } = useGuest();
   const [selectedTheme, setSelectedTheme] = useState(MEDITATION_THEMES[0]);
   const [script, setScript] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,12 @@ export default function MeditationsPage() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt }),
+        body: JSON.stringify({
+          message: prompt,
+          includePersistedMemory: true,
+          userId: profile?.id,
+          source: 'meditations',
+        }),
       });
 
       if (!response.ok) {
