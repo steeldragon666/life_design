@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import type { GlassIntensity } from './tokens';
 import { designTokens } from './tokens';
 

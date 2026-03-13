@@ -1,6 +1,5 @@
 'use client';
 
-
 interface TrendIndicatorProps {
   direction: 'up' | 'down' | 'neutral';
   percent: number;
