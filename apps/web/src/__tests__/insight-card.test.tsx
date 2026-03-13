@@ -23,9 +23,8 @@ describe('InsightCard', () => {
   });
 
   it('shows the dimension when provided', () => {
-    const { container } = render(<InsightCard insight={insight} onDismiss={vi.fn()} />);
-    const dimBadge = container.querySelector('.opacity-75.capitalize');
-    expect(dimBadge?.textContent).toBe('health');
+    render(<InsightCard insight={insight} onDismiss={vi.fn()} />);
+    expect(screen.getByText('health')).toBeInTheDocument();
   });
 
   it('calls onDismiss with insight id when dismiss button is clicked', () => {

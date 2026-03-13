@@ -52,3 +52,7 @@ export function useTheme() {
   }
   return context;
 }
+
+export function useThemeOptional() {
+  return useContext(ThemeContext);
+}

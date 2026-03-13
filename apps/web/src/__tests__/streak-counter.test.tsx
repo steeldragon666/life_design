@@ -10,7 +10,7 @@ describe('StreakCounter', () => {
 
   it('displays fire emoji for active streak', () => {
     render(<StreakCounter streak={3} />);
-    expect(screen.getByText(/🔥/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/active streak/i)).toBeInTheDocument();
   });
 
   it('displays "day streak" label', () => {
@@ -21,11 +21,12 @@ describe('StreakCounter', () => {
   it('displays 0 streak without fire emoji', () => {
     render(<StreakCounter streak={0} />);
     expect(screen.getByText('0')).toBeInTheDocument();
-    expect(screen.queryByText(/🔥/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/no active streak/i)).toBeInTheDocument();
   });
 
   it('uses singular "day" for streak of 1', () => {
     render(<StreakCounter streak={1} />);
-    expect(screen.getByText(/1 day streak/i)).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText(/day streak/i)).toBeInTheDocument();
   });
 });

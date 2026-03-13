@@ -1,6 +1,6 @@
 'use client';
 
-import { useTheme } from './theme-provider';
+import { useTheme, useThemeOptional } from './theme-provider';
 import { Sparkles, Waves, Crown, Check, Palette } from 'lucide-react';
 import { useState } from 'react';
 
@@ -123,21 +123,12 @@ export default function ThemeSelector() {
 
 // Inline compact selector for navigation
 export function ThemeSelectorCompact() {
-  // Check if we're on client-side and have access to context
-  let theme: 'botanical' | 'ocean' | 'modern' = 'botanical';
-  let setTheme: ((theme: 'botanical' | 'ocean' | 'modern') => void) | null = null;
-  
-  try {
-    const themeContext = useTheme();
-    theme = themeContext.theme;
-    setTheme = themeContext.setTheme;
-  } catch (error) {
-    // Context not available during SSR
-    console.warn('ThemeSelector: Context not available');
+  const themeContext = useThemeOptional();
+  if (!themeContext) {
     return null;
   }
 
-  if (!setTheme) return null;
+  const { theme, setTheme } = themeContext;
 
   return (
     <div className="flex items-center gap-2 p-1 rounded-xl bg-white/5 border border-white/10">
@@ -146,7 +137,7 @@ export function ThemeSelectorCompact() {
         return (
           <button
             key={t.id}
-            onClick={() => setTheme!(t.id)}
+            onClick={() => setTheme(t.id)}
             className={`p-2 rounded-lg transition-all ${
               theme === t.id 
                 ? 'bg-white/10 shadow-sm' 

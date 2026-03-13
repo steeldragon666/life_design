@@ -14,6 +14,8 @@ import {
   detectSignificantPatterns,
 } from '@life-design/core';
 import { getDeterministicNextNudgeSuggestion } from '@/lib/micro-moments';
+import { buildGoalInsights } from '@/lib/goal-correlation';
+import { buildDashboardInsights } from '@/lib/dashboard-insights';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -95,17 +97,21 @@ export default function DashboardPage() {
         }, null as any)
       : null,
   };
-
-  // Mock insights (in production, these would come from AI analysis)
-  const recentInsights = checkins.length > 2 ? [
-    {
-      id: '1',
-      type: 'suggestion' as const,
-      title: 'Keep up the momentum!',
-      body: `You've checked in ${checkins.length} times. Consistency is key to achieving your goals.`,
-      dimension: null,
-    },
-  ] : [];
+  const goalInsights = buildGoalInsights(
+    goals.map((goal) => ({
+      id: goal.id,
+      title: goal.title,
+      horizon: goal.horizon,
+      status: goal.status,
+      target_date: goal.target_date,
+      description: goal.description,
+    })),
+    checkins.map((checkin) => ({
+      date: checkin.date,
+      mood: checkin.mood,
+      dimension_scores: checkin.dimension_scores,
+    })),
+  );
 
   // Mock nudges based on profile
   const nudges = profile.interests?.length ? [
@@ -162,6 +168,14 @@ export default function DashboardPage() {
       ? ([correlationInsights[0].dimensionA, correlationInsights[0].dimensionB] as const)
       : null;
   const daysUntilFirstCorrelation = Math.max(0, 14 - checkins.length);
+  const recentInsights = buildDashboardInsights({
+    checkins,
+    latestScores,
+    streak,
+    goalProgress: goalInsights.progress,
+    goalCorrelations: goalInsights.correlations,
+    crossDomainCorrelations: correlationInsights,
+  });
 
   return (
     <DashboardClient
@@ -183,6 +197,8 @@ export default function DashboardPage() {
       correlationInsights={correlationInsights}
       highlightedCorrelationPair={highlightedCorrelationPair}
       daysUntilFirstCorrelation={daysUntilFirstCorrelation}
+      goalProgress={goalInsights.progress}
+      goalCorrelationInsights={goalInsights.correlations}
     />
   );
 }

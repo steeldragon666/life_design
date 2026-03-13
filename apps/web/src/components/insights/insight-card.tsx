@@ -60,6 +60,7 @@ export default function InsightCard({ insight, onDismiss }: InsightCardProps) {
         </div>
         <button
           onClick={() => onDismiss(insight.id)}
+          aria-label="Dismiss insight"
           className="p-1 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all text-slate-500 hover:text-white"
         >
           <ChevronRight className="h-4 w-4" />

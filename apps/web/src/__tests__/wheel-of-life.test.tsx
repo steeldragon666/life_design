@@ -40,6 +40,6 @@ describe('WheelOfLife', () => {
 
   it('shows "No data" message when scores are empty', () => {
     render(<WheelOfLife scores={[]} />);
-    expect(screen.getByText(/no data/i)).toBeInTheDocument();
+    expect(screen.getByText(/complete a check-in to visualize your dimensions/i)).toBeInTheDocument();
   });
 });

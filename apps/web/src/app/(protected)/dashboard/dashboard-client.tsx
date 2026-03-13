@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Dimension } from '@life-design/core';
 import WheelOfLife from '@/components/dashboard/wheel-of-life';
@@ -12,6 +12,7 @@ import CorrelationCards, { type CorrelationInsight } from '@/components/dashboar
 import TrendCharts from '@/components/dashboard/trend-charts';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import type { MicroMomentNudge } from '@/lib/micro-moments';
+import type { GoalCorrelationInsight, GoalProgressInsight } from '@/lib/goal-correlation';
 import type { ConversationMemoryEntry } from '@/lib/conversation-memory';
 import type { MentorProfile } from '@/lib/guest-context';
 import type {
@@ -77,9 +78,12 @@ interface DashboardClientProps {
   correlationInsights?: CorrelationInsight[];
   highlightedCorrelationPair?: readonly [string, string] | null;
   daysUntilFirstCorrelation?: number;
+  goalProgress?: GoalProgressInsight[];
+  goalCorrelationInsights?: GoalCorrelationInsight[];
 }
 
 const ErrorBoundary = ResilientErrorBoundary as any;
+const DISMISSED_INSIGHTS_STORAGE_KEY = 'life-design-dismissed-dashboard-insights';
 
 export default function DashboardClient({
   latestScores,
@@ -94,10 +98,31 @@ export default function DashboardClient({
   correlationInsights = [],
   highlightedCorrelationPair = null,
   daysUntilFirstCorrelation = 0,
+  goalProgress = [],
+  goalCorrelationInsights = [],
 }: DashboardClientProps) {
   const [digestLoading, setDigestLoading] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
   const [weeklyDigest, setWeeklyDigest] = useState<WeeklyDigestResponse | null>(null);
+  const [dismissedInsightIds, setDismissedInsightIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(DISMISSED_INSIGHTS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+    } catch {
+      return [];
+    }
+  });
+  const visibleInsights = recentInsights.filter((insight) => !dismissedInsightIds.includes(insight.id));
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DISMISSED_INSIGHTS_STORAGE_KEY, JSON.stringify(dismissedInsightIds));
+    } catch {
+      // Ignore localStorage write failures.
+    }
+  }, [dismissedInsightIds]);
 
   const greeting = profile?.name
     ? `Good ${getTimeOfDay()}, ${profile.name.split(' ')[0]}`
@@ -289,10 +314,13 @@ export default function DashboardClient({
             </div>
           )}
 
-          {recentInsights.length > 0 ? (
+          {visibleInsights.length > 0 ? (
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-wide text-slate-500">Mentor insight</p>
-              <InsightCard insight={recentInsights[0]} onDismiss={() => {}} />
+              <InsightCard
+                insight={visibleInsights[0]}
+                onDismiss={(id) => setDismissedInsightIds((prev) => (prev.includes(id) ? prev : [...prev, id]))}
+              />
             </div>
           ) : (
             <p className="text-sm text-slate-500">Insights will appear as you check in.</p>
@@ -388,25 +416,56 @@ export default function DashboardClient({
                 <span className="badge-blue">{goalsSummary?.total ?? 0}</span>
               </div>
               {goalsSummary && goalsSummary.total > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  <HorizonBadge
-                    count={goalsSummary.byHorizon.short}
-                    label="Short"
-                    color="amber"
-                    period="1-6 mo"
-                  />
-                  <HorizonBadge
-                    count={goalsSummary.byHorizon.medium}
-                    label="Medium"
-                    color="blue"
-                    period="6-18 mo"
-                  />
-                  <HorizonBadge
-                    count={goalsSummary.byHorizon.long}
-                    label="Long"
-                    color="purple"
-                    period="1.5-5 yr"
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <HorizonBadge
+                      count={goalsSummary.byHorizon.short}
+                      label="Short"
+                      color="amber"
+                      period="1-6 mo"
+                    />
+                    <HorizonBadge
+                      count={goalsSummary.byHorizon.medium}
+                      label="Medium"
+                      color="blue"
+                      period="6-18 mo"
+                    />
+                    <HorizonBadge
+                      count={goalsSummary.byHorizon.long}
+                      label="Long"
+                      color="purple"
+                      period="1.5-5 yr"
+                    />
+                  </div>
+
+                  {goalProgress.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Goal timeline momentum</p>
+                      {goalProgress.slice(0, 3).map((item) => (
+                        <div key={item.goalId} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                          <div className="flex items-center justify-between text-xs text-slate-400">
+                            <span className="truncate pr-2">{item.title}</span>
+                            <span>{item.daysRemaining}d left</span>
+                          </div>
+                          <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                            <div
+                              className={`h-full ${
+                                item.momentumLabel === 'completed'
+                                  ? 'bg-emerald-400'
+                                  : item.momentumLabel === 'at_risk'
+                                    ? 'bg-amber-400'
+                                    : 'bg-cyan-400'
+                              }`}
+                              style={{ width: `${item.timelineProgressPct}%` }}
+                            />
+                          </div>
+                          <p className="mt-1 text-[11px] text-slate-500">
+                            {item.inferredDimension} focus · {item.timelineProgressPct}% timeline elapsed
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <p className="text-sm text-slate-500">No active goals yet.</p>
@@ -421,18 +480,37 @@ export default function DashboardClient({
                   </div>
                   <h3 className="section-header mb-0">Insights and suggestions</h3>
                 </div>
-                <span className="badge-purple">{recentInsights.length}</span>
+                <span className="badge-purple">{visibleInsights.length}</span>
               </div>
 
-              {recentInsights.length > 0 ? (
+              {visibleInsights.length > 0 ? (
                 <div className="space-y-3">
-                  {recentInsights.slice(0, 3).map((insight) => (
-                    <InsightCard key={insight.id} insight={insight} onDismiss={() => {}} />
+                  {visibleInsights.slice(0, 3).map((insight) => (
+                    <InsightCard
+                      key={insight.id}
+                      insight={insight}
+                      onDismiss={(id) => setDismissedInsightIds((prev) => (prev.includes(id) ? prev : [...prev, id]))}
+                    />
                   ))}
                 </div>
               ) : (
                 <p className="text-sm text-slate-500">Analyzing your patterns...</p>
               )}
+
+              {goalCorrelationInsights.length > 0 ? (
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Goal ↔ dimension patterns</p>
+                  {goalCorrelationInsights.slice(0, 2).map((insight) => (
+                    <div key={insight.goalId} className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                      <p className="text-sm font-medium text-blue-300">{insight.title}</p>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">{insight.insightText}</p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        r={insight.coefficient.toFixed(2)} · confidence {Math.round(insight.confidence * 100)}%
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
 
               {nudges.length > 0 && (
                 <div className="space-y-3 pt-1">
