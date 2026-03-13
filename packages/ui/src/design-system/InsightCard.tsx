@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dimension } from '@life-design/core';
 import { dimensionColor } from './tokens';
 import DimensionBadge from './DimensionBadge';

@@ -29,16 +29,24 @@ export async function GET(request: NextRequest) {
     }
 
     const tokens = await response.json();
-    
-    const tokenData = encodeURIComponent(JSON.stringify({
+
+    const tokenPayload = {
       provider: 'strava',
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expires_at: tokens.expires_at * 1000,
       athlete: tokens.athlete,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=strava&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=strava`);
+    redirectResponse.cookies.set('life-design-oauth-strava', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    return redirectResponse;
   } catch (err) {
     console.error('Strava callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=strava_failed`);

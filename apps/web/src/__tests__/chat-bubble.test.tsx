@@ -10,13 +10,13 @@ describe('ChatBubble', () => {
 
   it('applies user styling for user messages', () => {
     const { container } = render(<ChatBubble role="user" content="My message" />);
-    const bubble = container.querySelector('[class*="bg-indigo"]');
+    const bubble = container.querySelector('[style*="linear-gradient"]');
     expect(bubble).not.toBeNull();
   });
 
   it('applies assistant styling for assistant messages', () => {
     const { container } = render(<ChatBubble role="assistant" content="AI response" />);
-    const bubble = container.querySelector('[class*="bg-gray"]');
+    const bubble = container.querySelector('[class*="bg-white/5"]');
     expect(bubble).not.toBeNull();
   });
 

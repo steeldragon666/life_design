@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
 import { Dimension, DIMENSION_LABELS } from '@life-design/core';
-import { dimensionColor, DIMENSION_TW_COLORS } from './tokens';
+import { dimensionColor } from './tokens';
 
 interface DimensionBadgeProps {
   dimension: Dimension | string;

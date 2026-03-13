@@ -158,21 +158,44 @@ export default function SettingsPage() {
     const tokenData = searchParams.get('token');
     const error = searchParams.get('error');
 
-    if (connected && tokenData) {
+    async function resolveOAuthToken() {
+      if (!connected) return;
+      if (tokenData) {
+        return JSON.parse(decodeURIComponent(tokenData)) as Record<string, unknown>;
+      }
+      const response = await fetch(`/api/integrations/oauth/pending?provider=${encodeURIComponent(connected)}`, {
+        cache: 'no-store',
+      });
+      if (!response.ok) return null;
+      const data = (await response.json()) as { token?: Record<string, unknown> | null };
+      return data.token ?? null;
+    }
+
+    async function handleOAuthCallback() {
+      if (!connected) return;
       try {
-        const tokenInfo = JSON.parse(decodeURIComponent(tokenData));
+        const tokenInfo = await resolveOAuthToken();
+        if (!tokenInfo) return;
+        const accessToken =
+          typeof tokenInfo.access_token === 'string' ? tokenInfo.access_token : '';
+        if (!accessToken) {
+          setNotification(`Failed to connect ${connected}. Please try again.`);
+          return;
+        }
         addIntegration({
-          provider: tokenInfo.provider,
-          access_token: tokenInfo.access_token,
-          refresh_token: tokenInfo.refresh_token,
-          expires_at: tokenInfo.expires_at,
+          provider: String(tokenInfo.provider ?? connected),
+          access_token: accessToken,
+          refresh_token: tokenInfo.refresh_token ? String(tokenInfo.refresh_token) : undefined,
+          expires_at: tokenInfo.expires_at ? Number(tokenInfo.expires_at) : undefined,
           metadata: tokenInfo,
         });
         setNotification(`Successfully connected ${connected}!`);
       } catch (e) {
         console.error('Failed to parse token data:', e);
+        setNotification(`Failed to connect ${connected}. Please try again.`);
       }
     }
+    void handleOAuthCallback();
 
     if (error) {
       const provider = error.split('_')[0];
@@ -212,7 +235,7 @@ export default function SettingsPage() {
 
   const handleDisconnect = (providerId: string) => {
     removeIntegration(providerId);
-    setNotification(`Disconnected ${providerId}`);
+    setNotification(`Successfully disconnected ${providerId}.`);
   };
 
   const handleArchetypeSelect = (archetype: MentorArchetype) => {

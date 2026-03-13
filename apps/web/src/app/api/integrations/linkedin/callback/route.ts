@@ -33,14 +33,22 @@ export async function GET(request: NextRequest) {
     }
 
     const tokens = await response.json();
-    
-    const tokenData = encodeURIComponent(JSON.stringify({
+
+    const tokenPayload = {
       provider: 'linkedin',
       access_token: tokens.access_token,
       expires_at: Date.now() + (tokens.expires_in * 1000),
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=linkedin&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=linkedin`);
+    redirectResponse.cookies.set('life-design-oauth-linkedin', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    return redirectResponse;
   } catch (err) {
     console.error('LinkedIn callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=linkedin_failed`);
