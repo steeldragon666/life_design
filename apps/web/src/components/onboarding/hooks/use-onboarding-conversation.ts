@@ -5,6 +5,7 @@ import { inferMoodAdaptation } from '@/lib/mood-adapter';
 import type { MentorProfile } from '@/lib/guest-context';
 import type { ConversationMemoryEntry } from '@/lib/conversation-memory';
 import { createAssistantFallbackMessage, fetchWithTimeout } from '@/lib/chat-resilience';
+import { buildBoundedHistory } from '@/lib/chat-history';
 import {
   extractProfileDeterministically,
   mergeExtractedProfiles,
@@ -178,12 +179,13 @@ export function useOnboardingConversation({
     try {
       const extractPrompt =
         'Extract profile data from this conversation. Return JSON with: name, location, profession, interests (array), hobbies (array), maritalStatus, goals (array with title, horizon, description). Only include what was explicitly shared.';
+      const boundedConversation = buildBoundedHistory(conversation, 2500);
 
       const response = await fetchWithTimeout('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `${extractPrompt}\n\nConversation: ${JSON.stringify(conversation)}`,
+          message: `${extractPrompt}\n\nConversation: ${JSON.stringify(boundedConversation)}`,
         }),
       }, 12_000);
 
@@ -239,18 +241,20 @@ export function useOnboardingConversation({
           content: message.content,
         }));
 
-        const voiceName = mentorProfile.characterName || 'your guide';
         const mood = inferMoodAdaptation(checkins);
         const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'onboarding', {
           mood,
           memory: conversationMemory,
         });
-        const fullPrompt = `${systemPrompt}\n\nConversation:\n${JSON.stringify(
-          conversationContext
-        )}\n\nUser: "${userMessage}"\n\nRespond warmly and naturally, as ${voiceName}:`;
+        const boundedHistory = buildBoundedHistory(
+          [...conversationContext, { role: 'user', content: userMessage }],
+          9000,
+        );
 
         const aiResponse = await getStreamingResponse({
-          message: fullPrompt,
+          message: userMessage,
+          history: boundedHistory,
+          systemPrompt,
           correlationInsights: getCorrelationInsights(),
           includePersistedMemory: true,
           persistConversation: true,

@@ -48,9 +48,11 @@ const RATE_LIMIT_PRUNE_MULTIPLIER = 2;
 const MAX_MESSAGE_LENGTH = 4_000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_ITEM_LENGTH = 4_000;
+const MAX_TOTAL_HISTORY_CHARS = 12_000;
 const MAX_METADATA_STRING_LENGTH = 128;
 const MAX_SYSTEM_PROMPT_LENGTH = 2_000;
 const MAX_CORRELATION_INSIGHTS = 5;
+const MAX_FINAL_PROMPT_LENGTH = 12_000;
 
 type RateLimitEntry = {
   count: number;
@@ -232,6 +234,13 @@ export function validateAndNormalizeChatPayload(payload: unknown): SanitizedChat
   }
 
   const history = historyInput.map((item, index) => validateHistoryItem(item, index));
+  const totalHistoryChars = history.reduce((sum, item) => sum + item.content.length, 0);
+  if (totalHistoryChars > MAX_TOTAL_HISTORY_CHARS) {
+    throw {
+      status: 400,
+      message: `history total size exceeds max length of ${MAX_TOTAL_HISTORY_CHARS}`,
+    } satisfies ValidationError;
+  }
   return { message, history };
 }
 
@@ -288,6 +297,25 @@ export function validateAndNormalizeChatMetadata(payload: unknown): SanitizedCha
     userId: sanitizeOptionalString(source.userId),
     source: sanitizeOptionalString(source.source),
   };
+}
+
+export function composeBoundedChatMessage(
+  baseMessage: string,
+  contextBlocks: string[],
+  maxChars = MAX_FINAL_PROMPT_LENGTH,
+): string {
+  const normalizedBase = normalizeInputText(baseMessage).trim();
+  if (!contextBlocks.length) return normalizedBase;
+  const normalizedBlocks = contextBlocks
+    .map((block) => (typeof block === 'string' ? normalizeInputText(block) : ''))
+    .map((block) => block.trim())
+    .filter(Boolean);
+  if (!normalizedBlocks.length) return normalizedBase;
+
+  const suffix = normalizedBlocks.join('');
+  const availableForSuffix = Math.max(0, maxChars - normalizedBase.length);
+  const boundedSuffix = suffix.slice(0, availableForSuffix);
+  return `${normalizedBase}${boundedSuffix}`;
 }
 
 export function normalizeAndSanitizeOutputText(text: string): string {

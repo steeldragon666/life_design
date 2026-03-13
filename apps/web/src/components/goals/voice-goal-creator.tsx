@@ -93,20 +93,18 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
         mood,
         memory: conversationMemory,
       });
-      const message = `${systemPrompt}
-
-User intent: "${userInput}"
+      const message = `User intent: "${userInput}"
 
 Respond in two sections:
 1) short supportive coaching reply
 2) JSON object exactly:
-{"title":"...","description":"...","horizon":"short|medium|long"}
-`;
+{"title":"...","description":"...","horizon":"short|medium|long"}`;
       const chatRes = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message,
+          systemPrompt,
           stream: true,
           correlationInsights,
           includePersistedMemory: true,

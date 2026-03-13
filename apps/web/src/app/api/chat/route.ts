@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 import {
   applyChatRateLimit,
+  composeBoundedChatMessage,
   normalizeAndSanitizeOutputText,
   SanitizedChatMetadata,
   validateAndNormalizeChatMetadata,
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest) {
       memoryContext.length > 0
         ? `\n\nRecent conversation memory:\n${memoryContext.map((item) => `- ${item}`).join('\n')}`
         : '';
-    const finalMessage = `${message}${correlationContext}${memorySuffix}`;
+    const finalMessage = composeBoundedChatMessage(message, [correlationContext, memorySuffix]);
 
     // Build the conversation
     const chat = model.startChat({

@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import {
+  composeBoundedChatMessage,
   __unsafeGetChatRateLimitStoreSize,
   __unsafeResetChatRateLimitStore,
   applyChatRateLimit,
@@ -54,6 +55,24 @@ describe('chat-security', () => {
     expect(payload.history[0].role).toBe('model');
   });
 
+  it('rejects payload when total history characters exceed budget', () => {
+    const oversizedHistory = Array.from({ length: 4 }, () => ({
+      role: 'user',
+      content: 'x'.repeat(4000),
+    }));
+
+    try {
+      validateAndNormalizeChatPayload({
+        message: 'hello',
+        history: oversizedHistory,
+      });
+      throw new Error('expected validation error');
+    } catch (error) {
+      expect((error as { status?: number }).status).toBe(400);
+      expect((error as { message?: string }).message).toMatch(/history total size/i);
+    }
+  });
+
   it('sanitizes metadata and caps correlation insights', () => {
     const metadata = validateAndNormalizeChatMetadata({
       stream: true,
@@ -98,5 +117,22 @@ describe('chat-security', () => {
     expect(metadata.source).toBeUndefined();
     expect(metadata.systemPrompt).toBeUndefined();
     expect(metadata.correlationInsights).toEqual([]);
+  });
+
+  it('caps composed chat prompt length while preserving base message', () => {
+    const base = 'Primary user prompt';
+    const composed = composeBoundedChatMessage(
+      base,
+      [`\n\nInsights:\n${'i'.repeat(3000)}`, `\n\nMemory:\n${'m'.repeat(3000)}`],
+      1200,
+    );
+
+    expect(composed.startsWith(base)).toBe(true);
+    expect(composed.length).toBeLessThanOrEqual(1200);
+  });
+
+  it('returns base message when no extra context is provided', () => {
+    const base = 'Hello mentor';
+    expect(composeBoundedChatMessage(base, [])).toBe(base);
   });
 });
