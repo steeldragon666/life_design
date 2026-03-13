@@ -13,8 +13,10 @@ import {
 } from '@/lib/onboarding-extraction';
 import {
   clearOnboardingSessionInStorage,
+  createOnboardingSessionPatchQueue,
   loadOnboardingSessionFromStorage,
-  patchOnboardingSessionInStorage,
+  ONBOARDING_SESSION_STORAGE_KEY,
+  parseOnboardingSession,
 } from '@/lib/onboarding-session';
 
 export type { ExtractedProfile };
@@ -119,10 +121,12 @@ export function useOnboardingConversation({
   const [error, setError] = useState<string | null>(null);
   const hydratedCheckpointRef = useRef(false);
   const restoredSessionRef = useRef(false);
+  const patchQueueRef = useRef<ReturnType<typeof createOnboardingSessionPatchQueue> | null>(null);
 
   useEffect(() => {
     if (hydratedCheckpointRef.current) return;
     hydratedCheckpointRef.current = true;
+    patchQueueRef.current = createOnboardingSessionPatchQueue(localStorage);
     try {
       const session = loadOnboardingSessionFromStorage(localStorage);
       if (session.messages.length > 0) setMessages(session.messages);
@@ -134,12 +138,17 @@ export function useOnboardingConversation({
     } finally {
       restoredSessionRef.current = true;
     }
+    return () => {
+      patchQueueRef.current?.flush();
+      patchQueueRef.current?.dispose();
+      patchQueueRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
-    if (!restoredSessionRef.current) return;
+    if (!restoredSessionRef.current || !patchQueueRef.current) return;
     try {
-      patchOnboardingSessionInStorage(localStorage, {
+      patchQueueRef.current.schedule({
         messages,
         extractedProfile,
       });
@@ -147,6 +156,18 @@ export function useOnboardingConversation({
       // Ignore persistence failures in constrained storage contexts.
     }
   }, [messages, extractedProfile]);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== ONBOARDING_SESSION_STORAGE_KEY || !event.newValue) return;
+      const session = parseOnboardingSession(event.newValue);
+      if (!session) return;
+      setMessages(session.messages);
+      setExtractedProfile(session.extractedProfile);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const extractAndUpdateProfile = useCallback(async (conversation: ConversationMessage[]) => {
     try {
@@ -293,6 +314,7 @@ export function useOnboardingConversation({
         await onCreateGoals(extractedProfile.goals);
       }
 
+      patchQueueRef.current?.dispose();
       clearOnboardingSessionInStorage(localStorage);
       onComplete(extractedProfile);
     } catch {

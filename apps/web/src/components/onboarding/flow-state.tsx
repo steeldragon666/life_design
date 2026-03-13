@@ -2,9 +2,11 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import {
+  ONBOARDING_SESSION_STORAGE_KEY,
   clearOnboardingSessionInStorage,
+  createOnboardingSessionPatchQueue,
   loadOnboardingSessionFromStorage,
-  patchOnboardingSessionInStorage,
+  parseOnboardingSession,
 } from '@/lib/onboarding-session';
 
 export type OnboardingStep = 
@@ -61,6 +63,7 @@ interface FlowStateProviderProps {
 
 export function FlowStateProvider({ children, onComplete }: FlowStateProviderProps) {
   const [mounted, setMounted] = useState(false);
+  const patchQueueRef = React.useRef<ReturnType<typeof createOnboardingSessionPatchQueue> | null>(null);
   
   const [state, setState] = useState<FlowState>({
     currentStep: 'video',
@@ -75,6 +78,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
 
   // Hydrate from localStorage
   useEffect(() => {
+    patchQueueRef.current = createOnboardingSessionPatchQueue(localStorage);
     const session = loadOnboardingSessionFromStorage(localStorage);
     setState((prev) => ({
       ...prev,
@@ -88,12 +92,36 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
       isTransitioning: false,
     }));
     setMounted(true);
+    return () => {
+      patchQueueRef.current?.flush();
+      patchQueueRef.current?.dispose();
+      patchQueueRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== ONBOARDING_SESSION_STORAGE_KEY || !event.newValue) return;
+      const session = parseOnboardingSession(event.newValue);
+      if (!session) return;
+      setState((prev) => ({
+        ...prev,
+        currentStep: session.flow.currentStep,
+        isVideoComplete: session.flow.isVideoComplete,
+        hasSkippedVideo: session.flow.hasSkippedVideo,
+        selectedTheme: session.flow.selectedTheme,
+        selectedArchetype: session.flow.selectedArchetype,
+        selectedVoice: session.flow.selectedVoice,
+      }));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   // Persist to localStorage
   useEffect(() => {
-    if (!mounted) return;
-    patchOnboardingSessionInStorage(localStorage, {
+    if (!mounted || !patchQueueRef.current) return;
+    patchQueueRef.current.schedule({
       flow: {
         currentStep: state.currentStep,
         isVideoComplete: state.isVideoComplete,
@@ -174,7 +202,9 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
   }, []);
 
   const resetFlow = useCallback(() => {
+    patchQueueRef.current?.dispose();
     clearOnboardingSessionInStorage(localStorage);
+    patchQueueRef.current = createOnboardingSessionPatchQueue(localStorage);
     setState({
       currentStep: 'video',
       isVideoComplete: false,
