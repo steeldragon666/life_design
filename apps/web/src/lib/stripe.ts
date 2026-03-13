@@ -33,6 +33,10 @@ export function isStripeConfiguredForCheckout(): boolean {
   );
 }
 
+export function isStripeConfiguredForServerCheckout(): boolean {
+  return Boolean(process.env.STRIPE_SECRET_KEY && STRIPE_PRODUCTS.monthly && STRIPE_PRODUCTS.annual);
+}
+
 export function getAvailablePriceEntries() {
   return [
     { key: 'monthly', priceId: STRIPE_PRODUCTS.monthly },

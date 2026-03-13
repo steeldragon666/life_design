@@ -6,7 +6,25 @@ export default async function PaywallPage() {
   const supabase = await createClient();
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
+
+  if (userError) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-amber-400/30 bg-amber-500/10 p-8 text-center">
+        <h1 className="text-2xl font-semibold text-white">Temporary auth issue</h1>
+        <p className="mt-3 text-amber-100/90">
+          We could not verify your account right now. Please refresh and try again in a moment.
+        </p>
+        <Link
+          href="/login"
+          className="mt-6 inline-flex rounded-lg border border-white/20 px-4 py-2 text-sm text-white hover:bg-white/10"
+        >
+          Re-open login
+        </Link>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -25,11 +43,28 @@ export default async function PaywallPage() {
     );
   }
 
-  const { data: subscription } = await supabase
+  const { data: subscription, error: subscriptionError } = await supabase
     .from('subscriptions')
     .select('status, trial_end, current_period_end, lifetime_access')
     .eq('user_id', user.id)
     .maybeSingle();
+
+  if (subscriptionError) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-amber-400/30 bg-amber-500/10 p-8 text-center">
+        <h1 className="text-2xl font-semibold text-white">Billing data unavailable</h1>
+        <p className="mt-3 text-amber-100/90">
+          We could not load your subscription status. Please try again shortly.
+        </p>
+        <Link
+          href="/dashboard"
+          className="mt-6 inline-flex rounded-lg border border-white/20 px-4 py-2 text-sm text-white hover:bg-white/10"
+        >
+          Back to dashboard
+        </Link>
+      </div>
+    );
+  }
 
   const hasAccess = hasBillingAccess(subscription ?? null);
 

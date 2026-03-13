@@ -34,8 +34,7 @@ export default function PricingPage() {
 
       {!isConfigured && (
         <div className="mb-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200">
-          Stripe checkout is not configured yet. Add the Stripe environment variables to enable
-          purchasing. Existing app flows will continue to work.
+          Checkout is temporarily unavailable. Please try again later or continue exploring the app.
         </div>
       )}
 
@@ -52,9 +51,9 @@ export default function PricingPage() {
               <h2 className="text-xl font-medium text-white">{plan.title}</h2>
               <p className="mt-2 text-sm text-slate-400">{plan.description}</p>
               <p className="mt-4 text-2xl font-semibold text-white">{plan.price}</p>
-              <p className="mt-4 text-xs text-slate-500">
-                {isAvailable ? 'Configured' : 'Not configured'}
-              </p>
+              {!isAvailable && (
+                <p className="mt-4 text-xs text-slate-500">Plan is temporarily unavailable.</p>
+              )}
               <form action="/api/billing/checkout" method="POST" className="mt-4">
                 <input type="hidden" name="plan" value={product.key} />
                 <button
