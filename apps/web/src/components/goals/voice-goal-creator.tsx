@@ -6,6 +6,7 @@ import { Mic, Loader2, MessageSquare, Sparkles } from 'lucide-react';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
+import { buildBoundedHistory, type ChatHistoryItem } from '@/lib/chat-history';
 
 interface GoalDraft {
   title: string;
@@ -23,6 +24,7 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
   const [response, setResponse] = useState('');
   const [draft, setDraft] = useState<GoalDraft | null>(null);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<ChatHistoryItem[]>([]);
 
   const intro = useMemo(
     () => `${mentorProfile.characterName}: Tell me what matters most right now, and I will help shape it into a clear goal.`,
@@ -85,7 +87,8 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
   }
 
   async function processInput() {
-    if (!userInput.trim()) return;
+    const normalizedInput = userInput.trim();
+    if (!normalizedInput) return;
     setLoading(true);
     try {
       const mood = inferMoodAdaptation(checkins);
@@ -93,18 +96,23 @@ export default function VoiceGoalCreator({ onCreateGoal }: VoiceGoalCreatorProps
         mood,
         memory: conversationMemory,
       });
-      const message = `User intent: "${userInput}"
+      const message = `User intent: "${normalizedInput}"
 
 Respond in two sections:
 1) short supportive coaching reply
 2) JSON object exactly:
 {"title":"...","description":"...","horizon":"short|medium|long"}`;
+      const boundedHistory = buildBoundedHistory(
+        [...history, { role: 'user', content: normalizedInput }],
+        9000,
+      );
       const chatRes = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message,
           systemPrompt,
+          history: boundedHistory,
           stream: true,
           correlationInsights,
           includePersistedMemory: true,
@@ -117,8 +125,9 @@ Respond in two sections:
         throw new Error('Unable to generate goal guidance right now.');
       }
       const text = (await readSseCompletion(chatRes)) || 'Let us shape this with one small next step.';
+      setHistory((prev) => [...prev, { role: 'user', content: normalizedInput }, { role: 'assistant', content: text }]);
       setResponse(text);
-      appendConversationSummary(`Goal discussion: "${userInput}"`, 'goals');
+      appendConversationSummary(`Goal discussion: "${normalizedInput}"`, 'goals');
 
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {

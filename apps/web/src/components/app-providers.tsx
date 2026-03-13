@@ -6,9 +6,11 @@ import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 
+const AppProviderErrorBoundary = ResilientErrorBoundary as any;
+
 export default function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ResilientErrorBoundary
+    <AppProviderErrorBoundary
       fallback={
         <div className="min-h-screen flex items-center justify-center p-6">
           <GlassErrorFallbackCard
@@ -24,6 +26,6 @@ export default function AppProviders({ children }: { children: ReactNode }) {
           <SoundscapeProvider>{children}</SoundscapeProvider>
         </GuestProvider>
       </ThemeProvider>
-    </ResilientErrorBoundary>
+    </AppProviderErrorBoundary>
   );
 }
