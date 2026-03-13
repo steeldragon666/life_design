@@ -36,7 +36,7 @@ export default function DimensionBadge({
   size = 'md',
   className = '',
 }: DimensionBadgeProps) {
-  const key = typeof dimension === 'string' ? dimension : dimension.valueOf();
+  const key = typeof dimension === 'string' ? dimension : String(dimension);
   const color = dimensionColor(dimension);
   const label = DIMENSION_LABELS[dimension as Dimension] ?? key;
   const icon = DIMENSION_ICONS[key] ?? '';

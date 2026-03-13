@@ -41,7 +41,7 @@ import {
 
 type ViewMode = 'matrix' | 'list' | 'network';
 
-const VIEW_TABS: { id: ViewMode; label: string; icon: React.ElementType }[] = [
+const VIEW_TABS: { id: ViewMode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'matrix', label: 'Matrix', icon: GitBranch },
   { id: 'list', label: 'List', icon: List },
   { id: 'network', label: 'Network', icon: Network },

@@ -89,8 +89,8 @@ export const designTokens = {
 
 /** Get the hex colour for a given dimension */
 export function dimensionColor(dimension: Dimension | string): string {
-  const key = typeof dimension === 'string' ? dimension : dimension.valueOf();
-  return designTokens.colors.dimension[key] ?? '#6b7280';
+  const key = typeof dimension === 'string' ? dimension : String(dimension);
+  return (designTokens.colors.dimension as Record<string, string>)[key] ?? '#6b7280';
 }
 
 /** Get a Tailwind-compatible gradient class for a dimension */

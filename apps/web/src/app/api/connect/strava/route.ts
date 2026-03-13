@@ -11,7 +11,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
-import { getStravaAuthUrl } from '@life-design/core';
+
+function getStravaAuthUrl(state: string): string {
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  if (!clientId) throw new Error('STRAVA_CLIENT_ID is not configured');
+  const redirectUri = process.env.STRAVA_REDIRECT_URI ?? `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/integrations/strava/callback`;
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    approval_prompt: 'auto',
+    scope: 'read,activity:read',
+    state,
+  });
+  return `https://www.strava.com/oauth/authorize?${params.toString()}`;
+}
 
 /** Duration in seconds for the CSRF state cookie (10 minutes). */
 const STATE_COOKIE_MAX_AGE_SECONDS = 600;
