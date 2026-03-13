@@ -137,6 +137,17 @@ export default function SettingsPage() {
     setMicroMoments,
   } = useGuest();
   const [notification, setNotification] = useState<string | null>(null);
+  const [billing, setBilling] = useState<{
+    authenticated: boolean;
+    hasAccess: boolean;
+    subscription: {
+      status?: string;
+      plan_type?: string;
+      trial_end?: string | null;
+      current_period_end?: string | null;
+      lifetime_access?: boolean;
+    } | null;
+  } | null>(null);
 
   const selectedVoice = VOICE_OPTIONS.find(v => v.id === voicePreference);
   const archetypeConfig = getArchetypeConfig(mentorProfile.archetype);
@@ -176,6 +187,24 @@ export default function SettingsPage() {
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadBillingStatus() {
+      try {
+        const response = await fetch('/api/billing/status');
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!isCancelled) setBilling(data);
+      } catch {
+        // Billing status is optional; ignore transient failures.
+      }
+    }
+    void loadBillingStatus();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const isConnected = (providerId: string) => {
     return connectedIntegrations.some(i => i.provider === providerId);
@@ -441,6 +470,46 @@ export default function SettingsPage() {
             <span className="text-slate-300 font-medium">Privacy Note:</span> Your integration tokens are stored locally on your device. 
             We never store your credentials on our servers. You can disconnect any integration at any time.
           </p>
+        </div>
+      </div>
+
+      {/* Billing */}
+      <div className="glass-card p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Billing</h2>
+            <p className="text-sm text-slate-500">Manage your plan and subscription access</p>
+          </div>
+          <div className={`badge-theme ${billing?.hasAccess ? 'text-emerald-300' : 'text-amber-300'}`}>
+            {billing?.hasAccess ? 'Access Active' : 'No Active Plan'}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300 space-y-2">
+          <p>Status: <span className="text-white">{billing?.subscription?.status ?? 'none'}</span></p>
+          <p>Plan: <span className="text-white">{billing?.subscription?.plan_type ?? 'none'}</span></p>
+          <p>Trial end: <span className="text-white">{billing?.subscription?.trial_end ?? 'n/a'}</span></p>
+          <p>Period end: <span className="text-white">{billing?.subscription?.current_period_end ?? 'n/a'}</span></p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <form action="/api/billing/checkout" method="POST">
+            <input type="hidden" name="plan" value="annual" />
+            <button
+              type="submit"
+              className="inline-flex rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-500/30"
+            >
+              Upgrade to annual
+            </button>
+          </form>
+          <form action="/api/billing/portal" method="POST">
+            <button
+              type="submit"
+              className="inline-flex rounded-lg border border-white/20 px-4 py-2 text-sm text-white hover:bg-white/10"
+            >
+              Open billing portal
+            </button>
+          </form>
         </div>
       </div>
 
