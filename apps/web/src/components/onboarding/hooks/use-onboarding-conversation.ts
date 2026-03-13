@@ -14,6 +14,8 @@ import {
 import {
   clearOnboardingSessionInStorage,
   createOnboardingSessionPatchQueue,
+  dismissOnboardingSessionNotice,
+  getLatestOnboardingSessionNotice,
   loadOnboardingSessionFromStorage,
   ONBOARDING_SESSION_STORAGE_KEY,
   parseOnboardingSession,
@@ -119,6 +121,7 @@ export function useOnboardingConversation({
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [extractedProfile, setExtractedProfile] = useState<ExtractedProfile>({});
   const [error, setError] = useState<string | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
   const hydratedCheckpointRef = useRef(false);
   const restoredSessionRef = useRef(false);
   const patchQueueRef = useRef<ReturnType<typeof createOnboardingSessionPatchQueue> | null>(null);
@@ -133,6 +136,7 @@ export function useOnboardingConversation({
       if (Object.keys(session.extractedProfile).length > 0) {
         setExtractedProfile(session.extractedProfile);
       }
+      setSessionNotice(getLatestOnboardingSessionNotice(localStorage, sessionStorage));
     } catch {
       // Ignore malformed checkpoint and continue gracefully.
     } finally {
@@ -164,6 +168,7 @@ export function useOnboardingConversation({
       if (!session) return;
       setMessages(session.messages);
       setExtractedProfile(session.extractedProfile);
+      setSessionNotice(getLatestOnboardingSessionNotice(localStorage, sessionStorage));
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -324,12 +329,19 @@ export function useOnboardingConversation({
     }
   }, [extractedProfile, onComplete, onCreateGoals, onSaveProfile]);
 
+  const dismissSessionNotice = useCallback(() => {
+    dismissOnboardingSessionNotice(sessionStorage);
+    setSessionNotice(null);
+  }, []);
+
   return {
     isProcessing,
     messages,
     setMessages,
     extractedProfile,
     error,
+    sessionNotice,
+    dismissSessionNotice,
     setError,
     processUserMessage,
     handleManualComplete,

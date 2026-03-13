@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   createOnboardingSessionPatchQueue,
+  dismissOnboardingSessionNotice,
+  getLatestOnboardingSessionNotice,
   LEGACY_ONBOARDING_CHECKPOINT_KEY,
   LEGACY_ONBOARDING_PROGRESS_KEY,
   ONBOARDING_SESSION_REPAIR_LOG_KEY,
@@ -351,5 +353,54 @@ describe('onboarding-session', () => {
 
     expect(session.messages.length).toBeLessThan(largeMessages.length);
     expect(session.messages.at(-1)?.content.startsWith('message-199-')).toBe(true);
+  });
+
+  it('records payload trimming and exposes a notice message', () => {
+    const storage = createMemoryStorage();
+    const largeMessages = Array.from({ length: 220 }, (_, index) => ({
+      role: 'assistant' as const,
+      content: `long-${index}-${'x'.repeat(1600)}`,
+    }));
+
+    patchOnboardingSessionInStorage(storage, {
+      flow: {
+        currentStep: 'conversation',
+        isVideoComplete: true,
+        hasSkippedVideo: false,
+        selectedTheme: 'ocean',
+        selectedArchetype: 'coach',
+        selectedVoice: 'voice-a',
+      },
+      messages: largeMessages,
+      extractedProfile: { name: 'Aaron' },
+    });
+
+    const repairLogRaw = storage.getItem(ONBOARDING_SESSION_REPAIR_LOG_KEY);
+    expect(repairLogRaw).toContain('payload_trimmed');
+    expect(getLatestOnboardingSessionNotice(storage)).toMatch(/recent context/i);
+  });
+
+  it('hides notice when dismissed for current session storage', () => {
+    const repairStorage = createMemoryStorage();
+    const sessionStorage = createMemoryStorage();
+    patchOnboardingSessionInStorage(repairStorage, {
+      flow: {
+        currentStep: 'conversation',
+        isVideoComplete: true,
+        hasSkippedVideo: false,
+        selectedTheme: 'ocean',
+        selectedArchetype: 'coach',
+        selectedVoice: 'voice-a',
+      },
+      messages: Array.from({ length: 220 }, (_, index) => ({
+        role: 'assistant' as const,
+        content: `long-${index}-${'x'.repeat(1600)}`,
+      })),
+      extractedProfile: { name: 'Aaron' },
+    });
+
+    expect(getLatestOnboardingSessionNotice(repairStorage, sessionStorage)).toMatch(/recent context/i);
+    dismissOnboardingSessionNotice(sessionStorage);
+    expect(getLatestOnboardingSessionNotice(repairStorage, sessionStorage)).toBeNull();
   });
 });

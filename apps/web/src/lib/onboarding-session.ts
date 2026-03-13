@@ -6,6 +6,7 @@ export const ONBOARDING_SESSION_STORAGE_KEY = 'life-design-onboarding-session';
 export const LEGACY_ONBOARDING_PROGRESS_KEY = 'life-design-onboarding-progress';
 export const LEGACY_ONBOARDING_CHECKPOINT_KEY = 'life-design-onboarding-checkpoint';
 export const ONBOARDING_SESSION_REPAIR_LOG_KEY = 'life-design-onboarding-session-repair-log';
+export const ONBOARDING_SESSION_NOTICE_DISMISSED_KEY = 'life-design-onboarding-session-notice-dismissed';
 
 const STEP_ORDER: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'complete'];
 const ONBOARDING_SESSION_VERSION = 3;
@@ -56,7 +57,8 @@ type SessionRepairReason =
   | 'stale_session'
   | 'upgraded_legacy_payload'
   | 'migrated_legacy_keys'
-  | 'write_conflict_rebased';
+  | 'write_conflict_rebased'
+  | 'payload_trimmed';
 
 interface SessionRepairEvent {
   reason: SessionRepairReason;
@@ -429,10 +431,36 @@ export function patchOnboardingSessionInStorage(
   });
   try {
     storage.setItem(ONBOARDING_SESSION_STORAGE_KEY, JSON.stringify(next));
+    if (Array.isArray(mergedMessages) && next.messages.length < mergedMessages.length) {
+      recordSessionRepairEvent(storage, 'payload_trimmed');
+    }
   } catch {
     // Ignore persistence failures.
   }
   return next;
+}
+
+export function dismissOnboardingSessionNotice(storage: Storage): void {
+  try {
+    storage.setItem(ONBOARDING_SESSION_NOTICE_DISMISSED_KEY, '1');
+  } catch {
+    // Ignore session storage failures.
+  }
+}
+
+export function getLatestOnboardingSessionNotice(
+  repairStorage: Storage,
+  dismissStorage: Storage = repairStorage,
+): string | null {
+  if (readStorageSafe(dismissStorage, ONBOARDING_SESSION_NOTICE_DISMISSED_KEY) === '1') {
+    return null;
+  }
+  const latestEvent = readRepairEvents(repairStorage).at(-1);
+  if (!latestEvent) return null;
+  if (latestEvent.reason === 'payload_trimmed') {
+    return 'I kept the most recent context to keep your onboarding fast. If anything important was earlier, tell me and I will fold it back in.';
+  }
+  return null;
 }
 
 function mergeSessionPatches(

@@ -12,6 +12,7 @@ import {
   Square,
   Volume2,
   Waves,
+  X,
 } from 'lucide-react';
 import { useTheme } from '@/components/theme/theme-provider';
 import { useGuest } from '@/lib/guest-context';
@@ -108,6 +109,8 @@ export default function VoiceOnboardingAgent({
     setMessages,
     extractedProfile,
     error,
+    sessionNotice,
+    dismissSessionNotice,
     setError,
     processUserMessage,
     handleManualComplete,
@@ -395,6 +398,22 @@ export default function VoiceOnboardingAgent({
               <WaveDivider className="mb-6" />
 
               <div className="space-y-4">
+                {sessionNotice ? (
+                  <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/8 px-4 py-3 text-sm text-cyan-100/90">
+                    <div className="flex items-start justify-between gap-3">
+                      <p>{sessionNotice}</p>
+                      <button
+                        type="button"
+                        onClick={dismissSessionNotice}
+                        aria-label="Dismiss context notice"
+                        className="rounded-md p-1 text-cyan-100/70 hover:text-cyan-50 hover:bg-cyan-500/20 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
                 {!supportsSpeechRecognition ? (
                   <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-200/80">
                     Voice input is unavailable here. You can complete onboarding by typing your responses below.

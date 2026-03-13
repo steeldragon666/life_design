@@ -26,6 +26,7 @@ export type RateLimitResult = {
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;
+const RATE_LIMIT_PRUNE_MULTIPLIER = 2;
 const MAX_MESSAGE_LENGTH = 4_000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_ITEM_LENGTH = 4_000;
@@ -47,6 +48,15 @@ function getRateLimitStore(): Map<string, RateLimitEntry> {
   }
 
   return globalState[RATE_LIMIT_STORE_KEY];
+}
+
+function pruneRateLimitStore(store: Map<string, RateLimitEntry>, now: number): void {
+  const cutoff = now - RATE_LIMIT_WINDOW_MS * RATE_LIMIT_PRUNE_MULTIPLIER;
+  for (const [key, value] of store.entries()) {
+    if (value.windowStart < cutoff) {
+      store.delete(key);
+    }
+  }
 }
 
 function getClientIp(request: NextRequest): string {
@@ -86,6 +96,7 @@ export function applyChatRateLimit(request: NextRequest): RateLimitResult {
   const ip = getClientIp(request);
   const key = `chat:${ip}`;
   const store = getRateLimitStore();
+  pruneRateLimitStore(store, now);
   const current = store.get(key);
 
   if (!current || now - current.windowStart >= RATE_LIMIT_WINDOW_MS) {
@@ -209,4 +220,12 @@ export function normalizeAndSanitizeOutputText(text: string): string {
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
 
   return escapeHtml(normalized);
+}
+
+export function __unsafeResetChatRateLimitStore(): void {
+  getRateLimitStore().clear();
+}
+
+export function __unsafeGetChatRateLimitStoreSize(): number {
+  return getRateLimitStore().size;
 }
