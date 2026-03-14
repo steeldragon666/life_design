@@ -17,6 +17,14 @@ export abstract class BaseLifeConnector implements LifeConnector {
     protected accessToken: string
   ) {}
 
+  protected async safeFetch(url: string, init?: RequestInit): Promise<any> {
+    const response = await fetch(url, init);
+    if (!response.ok) {
+      throw new Error(`${this.provider} API error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
   abstract fetchData(...args: any[]): Promise<any>;
   async writeData(..._args: any[]): Promise<any> {
     throw new Error('Method not implemented.');
@@ -38,11 +46,9 @@ export class StravaConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    // Basic implementation for fetching activities
-    const response = await fetch('https://www.strava.com/api/v3/athlete/activities', {
+    return this.safeFetch('https://www.strava.com/api/v3/athlete/activities', {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
-    return response.json();
   }
 }
 
@@ -52,10 +58,9 @@ export class GoogleCalendarConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    const response = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+    return this.safeFetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
-    return response.json();
   }
 
   async createEvent(event: {
@@ -64,7 +69,7 @@ export class GoogleCalendarConnector extends BaseLifeConnector {
     start: { dateTime: string; timeZone: string };
     end: { dateTime: string; timeZone: string };
   }) {
-    const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+    return this.safeFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -72,7 +77,6 @@ export class GoogleCalendarConnector extends BaseLifeConnector {
       },
       body: JSON.stringify(event),
     });
-    return response.json();
   }
 
   async writeData(event: any) {
@@ -82,41 +86,37 @@ export class GoogleCalendarConnector extends BaseLifeConnector {
 
 export class GoogleSearchConnector extends BaseLifeConnector {
   constructor(accessToken: string) {
-    super(IntegrationProvider.GoogleCalendar, Dimension.Growth, accessToken);
+    super(IntegrationProvider.Gmail, Dimension.Growth, accessToken);
   }
 
   async fetchData(query: string) {
-    // Custom Search JSON API
-    const response = await fetch(
+    return this.safeFetch(
       `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_CX}&q=${encodeURIComponent(query)}`
     );
-    return response.json();
   }
 }
 
 export class GoogleMapsConnector extends BaseLifeConnector {
   constructor() {
-    super(IntegrationProvider.GoogleCalendar, Dimension.Social, '');
+    super(IntegrationProvider.Gmail, Dimension.Social, '');
   }
 
   async fetchData(location: string, type: string) {
-    const response = await fetch(
+    return this.safeFetch(
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location}&radius=5000&type=${type}&key=${process.env.GOOGLE_MAPS_API_KEY}`
     );
-    return response.json();
   }
 }
 
 export class WeatherConnector extends BaseLifeConnector {
   constructor() {
-    super(IntegrationProvider.GoogleCalendar, Dimension.Health, '');
+    super(IntegrationProvider.Weather, Dimension.Health, '');
   }
 
   async fetchData(postcode: string) {
-    const response = await fetch(
+    return this.safeFetch(
       `https://api.openweathermap.org/data/2.5/weather?zip=${postcode}&appid=${process.env.OPENWEATHER_API_KEY ?? process.env.WEATHER_API_KEY}&units=metric`
     );
-    return response.json();
   }
 }
 
@@ -147,19 +147,16 @@ export class SpotifyConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    // Fetch recently played tracks
-    const response = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
+    return this.safeFetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
-    return response.json();
   }
 
   async getTopTracks(timeRange: 'short_term' | 'medium_term' | 'long_term' = 'medium_term') {
-    const response = await fetch(
+    return this.safeFetch(
       `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
       { headers: { Authorization: `Bearer ${this.accessToken}` } },
     );
-    return response.json();
   }
 }
 
@@ -169,18 +166,15 @@ export class SlackConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    // Get channel list as basic data
-    const response = await fetch('https://slack.com/api/conversations.list', {
+    return this.safeFetch('https://slack.com/api/conversations.list', {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
-    return response.json();
   }
 
   async getUserPresence() {
-    const response = await fetch('https://slack.com/api/users.getPresence', {
+    return this.safeFetch('https://slack.com/api/users.getPresence', {
       headers: { Authorization: `Bearer ${this.accessToken}` },
     });
-    return response.json();
   }
 }
 
@@ -190,18 +184,17 @@ export class InstagramConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    // Get basic user info and media count
-    const response = await fetch(
-      `https://graph.instagram.com/me?fields=id,username,media_count&access_token=${this.accessToken}`,
+    return this.safeFetch(
+      'https://graph.instagram.com/me?fields=id,username,media_count',
+      { headers: { Authorization: `Bearer ${this.accessToken}` } },
     );
-    return response.json();
   }
 
   async getRecentMedia(limit: number = 25) {
-    const response = await fetch(
-      `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}&access_token=${this.accessToken}`,
+    return this.safeFetch(
+      `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}`,
+      { headers: { Authorization: `Bearer ${this.accessToken}` } },
     );
-    return response.json();
   }
 }
 
@@ -211,8 +204,7 @@ export class NotionConnector extends BaseLifeConnector {
   }
 
   async fetchData() {
-    // List databases as basic data
-    const response = await fetch('https://api.notion.com/v1/search', {
+    return this.safeFetch('https://api.notion.com/v1/search', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -221,11 +213,10 @@ export class NotionConnector extends BaseLifeConnector {
       },
       body: JSON.stringify({ filter: { value: 'database', property: 'object' } }),
     });
-    return response.json();
   }
 
   async queryDatabase(databaseId: string) {
-    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+    return this.safeFetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.accessToken}`,
@@ -233,7 +224,6 @@ export class NotionConnector extends BaseLifeConnector {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
   }
 }
 

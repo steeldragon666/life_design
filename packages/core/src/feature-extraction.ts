@@ -158,7 +158,7 @@ function mapStrava(payload: unknown): NormalizedSignal[] {
   const consistencyScore = scoreFromRatio(activities.length, 6);
   const volumeScore = scoreFromRatio(totalMovingMinutes, 180);
   const enduranceScore = scoreFromRatio(totalDistanceKm, 35);
-  const intensityScore = avgHeartRate > 0 ? scoreFromRatio(avgHeartRate, 150) : 50;
+  const intensityScore = avgHeartRate > 0 ? scoreFromRatio(avgHeartRate, 150) : 5;
 
   const score =
     consistencyScore * 0.25 + volumeScore * 0.35 + enduranceScore * 0.25 + intensityScore * 0.15;
@@ -281,7 +281,7 @@ function mapSpotify(payload: unknown): NormalizedSignal[] {
     diversityScore * 0.35 + contentScore * 0.2 + listeningScore * 0.25 + curationScore * 0.2;
   const confidence = clamp((items.length / 50) * 0.9 + 0.1, 0.2, 1);
 
-  return [withSignal(Dimension.Health, score, confidence, payload)];
+  return [withSignal(Dimension.Growth, score, confidence, payload)];
 }
 
 function mapNotion(payload: unknown): NormalizedSignal[] {
