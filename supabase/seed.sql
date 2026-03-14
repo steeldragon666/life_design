@@ -107,12 +107,13 @@ BEGIN
   -- 2. Profiles
   -- ─────────────────────────────────────────────────────────────────────────
 
-  INSERT INTO profiles (user_id, full_name, onboarded, created_at, updated_at)
+  -- profiles PK is 'id' (references auth.users), with 'onboarded' from 00002
+  INSERT INTO profiles (id, email, onboarded, created_at, updated_at)
   VALUES
-    (v_trial_id,   'Trial User',        true,  now() - interval '3 days',  now()),
-    (v_active_id,  'Active Subscriber', true,  now() - interval '95 days', now()),
-    (v_expired_id, 'Expired User',      false, now() - interval '14 days', now())
-  ON CONFLICT (user_id) DO NOTHING;
+    (v_trial_id,   'trial@lifedesign.dev',   true,  now() - interval '3 days',  now()),
+    (v_active_id,  'active@lifedesign.dev',  true,  now() - interval '95 days', now()),
+    (v_expired_id, 'expired@lifedesign.dev', false, now() - interval '14 days', now())
+  ON CONFLICT (id) DO NOTHING;
 
   -- ─────────────────────────────────────────────────────────────────────────
   -- 3. Subscriptions
@@ -123,7 +124,7 @@ BEGIN
   DELETE FROM subscriptions WHERE user_id IN (v_trial_id, v_active_id, v_expired_id);
 
   INSERT INTO subscriptions (
-    id, user_id, plan, status,
+    id, user_id, plan_type, status,
     trial_start, trial_end,
     current_period_start, current_period_end,
     created_at, updated_at
@@ -184,27 +185,31 @@ BEGIN
   ON CONFLICT (plan, feature) DO NOTHING;
 
   -- ─────────────────────────────────────────────────────────────────────────
-  -- 5. User streaks
+  -- 5. User streaks (table created by a later migration; skip if absent)
   -- ─────────────────────────────────────────────────────────────────────────
 
-  INSERT INTO user_streaks (
-    user_id, current_streak, longest_streak,
-    last_checkin_date, total_checkins,
-    streak_freeze_available, streak_freeze_used_week,
-    week_start_date, updated_at
-  )
-  VALUES
-    (v_trial_id,   3,  3,  current_date - 1, 3,  true, false, date_trunc('week', current_date)::date, now()),
-    (v_active_id,  62, 62, current_date - 1, 88, true, false, date_trunc('week', current_date)::date, now()),
-    (v_expired_id, 0,  4,  current_date - 9, 5,  true, false, date_trunc('week', current_date)::date, now())
-  ON CONFLICT (user_id) DO NOTHING;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_streaks') THEN
+    INSERT INTO user_streaks (
+      user_id, current_streak, longest_streak,
+      last_checkin_date, total_checkins,
+      streak_freeze_available, streak_freeze_used_week,
+      week_start_date, updated_at
+    )
+    VALUES
+      (v_trial_id,   3,  3,  current_date - 1, 3,  true, false, date_trunc('week', current_date)::date, now()),
+      (v_active_id,  62, 62, current_date - 1, 88, true, false, date_trunc('week', current_date)::date, now()),
+      (v_expired_id, 0,  4,  current_date - 9, 5,  true, false, date_trunc('week', current_date)::date, now())
+    ON CONFLICT (user_id) DO NOTHING;
+  END IF;
 
   -- ─────────────────────────────────────────────────────────────────────────
   -- 6. 90 days of synthetic feature_store data (active subscriber only)
+  --    Table created by a later migration; skip if absent.
   -- ─────────────────────────────────────────────────────────────────────────
-  -- Values follow a gentle improvement trend with noise so the correlation
-  -- and anomaly algorithms have realistic material to process.
 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'feature_store') THEN
+    RAISE NOTICE 'Skipping feature_store seed — table does not exist yet.';
+  ELSE
   FOR v_day IN 1..90 LOOP
     v_date      := current_date - (90 - v_day);
     v_mood      := GREATEST(1.0, LEAST(10.0, 4.5 + (v_day::float8 / 90.0) * 3.0 + (random() * 2.0 - 1.0)));
@@ -255,11 +260,15 @@ BEGIN
             v_date::timestamptz + interval '12 hours', 'finance_entry', 0.8)
     ON CONFLICT (user_id, feature, recorded_at) DO NOTHING;
   END LOOP;
+  END IF; -- feature_store exists
 
   -- ─────────────────────────────────────────────────────────────────────────
-  -- 7. Sample daily check-ins (active subscriber, last 5 days)
+  -- 7. Sample daily check-ins (table created by a later migration; skip if absent)
   -- ─────────────────────────────────────────────────────────────────────────
 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'daily_checkins') THEN
+    RAISE NOTICE 'Skipping daily_checkins seed — table does not exist yet.';
+  ELSE
   FOR v_day IN 1..5 LOOP
     v_date := current_date - (5 - v_day);
 
@@ -288,11 +297,15 @@ BEGIN
     )
     ON CONFLICT (user_id, checkin_date) DO NOTHING;
   END LOOP;
+  END IF; -- daily_checkins exists
 
   -- ─────────────────────────────────────────────────────────────────────────
-  -- 8. Sample daily insights (active subscriber, last 5 days)
+  -- 8. Sample daily insights (table created by a later migration; skip if absent)
   -- ─────────────────────────────────────────────────────────────────────────
 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'daily_insights') THEN
+    RAISE NOTICE 'Skipping daily_insights seed — table does not exist yet.';
+  ELSE
   FOR v_day IN 1..5 LOOP
     v_date := current_date - (5 - v_day);
 
@@ -321,21 +334,24 @@ BEGIN
     )
     ON CONFLICT (user_id, (generated_at::date)) DO NOTHING;
   END LOOP;
+  END IF; -- daily_insights exists
 
   -- ─────────────────────────────────────────────────────────────────────────
-  -- 9. User progress
+  -- 9. User progress (table created by a later migration; skip if absent)
   -- ─────────────────────────────────────────────────────────────────────────
 
-  INSERT INTO user_progress (
-    user_id, level, total_xp, current_streak, longest_streak,
-    total_checkins, deep_checkins, voice_entries,
-    sources_connected, goals_completed, updated_at
-  )
-  VALUES
-    (v_trial_id,   1,    150,  3,  3,  3,  0, 0, 1, 0, now()),
-    (v_active_id,  12,  9450, 62, 62, 88, 12, 8, 4, 5, now()),
-    (v_expired_id, 1,    200,  0,  4,  5,  0, 0, 0, 0, now())
-  ON CONFLICT (user_id) DO NOTHING;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_progress') THEN
+    INSERT INTO user_progress (
+      user_id, level, total_xp, current_streak, longest_streak,
+      total_checkins, deep_checkins, voice_entries,
+      sources_connected, goals_completed, updated_at
+    )
+    VALUES
+      (v_trial_id,   1,    150,  3,  3,  3,  0, 0, 1, 0, now()),
+      (v_active_id,  12,  9450, 62, 62, 88, 12, 8, 4, 5, now()),
+      (v_expired_id, 1,    200,  0,  4,  5,  0, 0, 0, 0, now())
+    ON CONFLICT (user_id) DO NOTHING;
+  END IF;
 
 END $$;
 
