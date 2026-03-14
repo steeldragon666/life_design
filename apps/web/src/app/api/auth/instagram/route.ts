@@ -15,5 +15,13 @@ export async function GET() {
   const redirectUri = `${appUrl}/api/integrations/instagram/callback`;
   const url = buildAuthorizationUrl(INSTAGRAM_CONFIG, redirectUri, state);
 
-  return NextResponse.redirect(url);
+  const response = NextResponse.redirect(url);
+  response.cookies.set('oauth_state_instagram', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 10, // 10 minutes
+  });
+  return response;
 }

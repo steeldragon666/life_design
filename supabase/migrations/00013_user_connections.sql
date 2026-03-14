@@ -18,7 +18,11 @@ CREATE TABLE user_connections (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         uuid REFERENCES auth.users NOT NULL,
   provider        text NOT NULL
-    CHECK (provider IN ('apple_health', 'strava', 'google_calendar')),
+    CHECK (provider IN (
+      'apple_health', 'strava', 'google_calendar', 'gmail',
+      'spotify', 'slack', 'instagram', 'notion', 'banking',
+      'linkedin', 'weather'
+    )),
   -- AES-256-GCM ciphertext: [ authTag (16 bytes) || ciphertext ]
   encrypted_tokens bytea NOT NULL,
   -- 12-byte GCM initialisation vector

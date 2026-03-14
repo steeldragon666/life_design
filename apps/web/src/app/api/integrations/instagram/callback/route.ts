@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=instagram_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_instagram')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=instagram_invalid_state`);
+  }
+
   try {
     // Instagram uses form-encoded POST for token exchange
     const redirectUri = `${appUrl}/api/integrations/instagram/callback`;
@@ -33,6 +40,10 @@ export async function GET(request: NextRequest) {
 
     const tokens = await response.json();
 
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('instagram returned no access token');
+    }
+
     // Exchange short-lived token for long-lived token
     const longLivedRes = await fetch(
       `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${INSTAGRAM_CONFIG.clientSecret}&access_token=${tokens.access_token}`,
@@ -40,15 +51,24 @@ export async function GET(request: NextRequest) {
 
     const longLived = longLivedRes.ok ? await longLivedRes.json() : tokens;
 
-    // For guest mode, redirect with tokens in URL (will be stored in localStorage by client)
-    const tokenData = encodeURIComponent(JSON.stringify({
+    const tokenPayload = {
       provider: 'instagram',
       access_token: longLived.access_token ?? tokens.access_token,
       expires_at: longLived.expires_in ? Date.now() + (longLived.expires_in * 1000) : undefined,
       user_id: tokens.user_id,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=instagram&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=instagram`);
+    redirectResponse.cookies.set('life-design-oauth-instagram', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_instagram', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Instagram callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=instagram_failed`);

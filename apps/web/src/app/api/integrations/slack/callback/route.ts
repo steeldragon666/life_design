@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=slack_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_slack')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=slack_invalid_state`);
+  }
+
   try {
     const redirectUri = `${appUrl}/api/integrations/slack/callback`;
     
@@ -39,16 +46,29 @@ export async function GET(request: NextRequest) {
       throw new Error(`Slack API error: ${data.error}`);
     }
 
-    // For guest mode, redirect with tokens in URL
-    const tokenData = encodeURIComponent(JSON.stringify({
+    if (typeof data.access_token !== 'string' || !data.access_token) {
+      throw new Error('slack returned no access token');
+    }
+
+    const tokenPayload = {
       provider: 'slack',
       access_token: data.access_token,
       team_id: data.team?.id,
       team_name: data.team?.name,
       scope: data.scope,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=slack&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=slack`);
+    redirectResponse.cookies.set('life-design-oauth-slack', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_slack', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Slack callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=slack_failed`);

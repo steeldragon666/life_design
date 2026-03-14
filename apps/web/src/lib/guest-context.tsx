@@ -273,13 +273,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Failed to save encrypted guest integrations to localStorage:', error);
-        try {
-          if (!isCancelled) {
-            localStorage.setItem(GUEST_INTEGRATIONS_STORAGE_KEY, JSON.stringify(integrations));
-          }
-        } catch (fallbackError) {
-          console.error('Failed to save plaintext guest integrations fallback.', fallbackError);
-        }
+        // Do NOT fall back to plaintext — tokens would be exposed to XSS
       }
     };
 

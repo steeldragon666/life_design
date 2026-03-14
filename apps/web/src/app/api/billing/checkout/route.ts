@@ -109,9 +109,6 @@ export async function POST(request: NextRequest) {
     {
       user_id: user.id,
       stripe_customer_id: stripeCustomerId,
-      stripe_price_id: priceId,
-      plan_type: plan,
-      status: 'none',
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'user_id' },

@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=strava_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_strava')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=strava_invalid_state`);
+  }
+
   try {
     const response = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
@@ -30,6 +37,10 @@ export async function GET(request: NextRequest) {
 
     const tokens = await response.json();
 
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('strava returned no access token');
+    }
+
     const tokenPayload = {
       provider: 'strava',
       access_token: tokens.access_token,
@@ -46,6 +57,8 @@ export async function GET(request: NextRequest) {
       path: '/',
       maxAge: 60 * 5,
     });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_strava', '', { path: '/', maxAge: 0 });
     return redirectResponse;
   } catch (err) {
     console.error('Strava callback error:', err);

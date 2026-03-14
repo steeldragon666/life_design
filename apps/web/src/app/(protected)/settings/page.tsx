@@ -155,14 +155,10 @@ export default function SettingsPage() {
   // Handle OAuth callback
   useEffect(() => {
     const connected = searchParams.get('connected');
-    const tokenData = searchParams.get('token');
     const error = searchParams.get('error');
 
     async function resolveOAuthToken() {
-      if (!connected) return;
-      if (tokenData) {
-        return JSON.parse(decodeURIComponent(tokenData)) as Record<string, unknown>;
-      }
+      if (!connected) return null;
       const response = await fetch(`/api/integrations/oauth/pending?provider=${encodeURIComponent(connected)}`, {
         cache: 'no-store',
       });

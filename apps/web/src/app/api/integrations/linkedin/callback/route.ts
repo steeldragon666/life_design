@@ -11,6 +11,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=linkedin_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_linkedin')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=linkedin_invalid_state`);
+  }
+
   try {
     const clientId = process.env.LINKEDIN_CLIENT_ID ?? '';
     const clientSecret = process.env.LINKEDIN_CLIENT_SECRET ?? '';
@@ -34,6 +41,10 @@ export async function GET(request: NextRequest) {
 
     const tokens = await response.json();
 
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('linkedin returned no access token');
+    }
+
     const tokenPayload = {
       provider: 'linkedin',
       access_token: tokens.access_token,
@@ -48,6 +59,8 @@ export async function GET(request: NextRequest) {
       path: '/',
       maxAge: 60 * 5,
     });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_linkedin', '', { path: '/', maxAge: 0 });
     return redirectResponse;
   } catch (err) {
     console.error('LinkedIn callback error:', err);
