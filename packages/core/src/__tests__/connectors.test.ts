@@ -2,24 +2,35 @@
  * connectors.test.ts
  *
  * Unit tests for the Strava connector, Google Calendar connector, and shared
- * OAuth manager.
- *
- * All external HTTP calls are replaced with vi.fn() stubs on the global fetch.
- * The Supabase client is mocked with a chainable builder pattern matching the
- * real client interface.
+ * OAuth manager. All external HTTP calls are replaced with vi.fn() stubs.
+ * The Supabase client is mocked with a chainable builder pattern.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-// ─── Module under test ───────────────────────────────────────────────────────
+// ─── Feature-extraction mock ─────────────────────────────────────────────────
+// Mock the feature-extraction module to isolate connector sync logic from the
+// full ML pipeline. The actual extraction logic is tested in its own suite.
+vi.mock('../feature-extraction', () => ({
+  extractStravaFeatures: vi.fn(() => [
+    { feature: 'weekly_distance_km', dimension: 'fitness', value: 35, source: 'strava', confidence: 1.0, recordedAt: new Date() },
+  ]),
+  extractCalendarFeatures: vi.fn(() => [
+    { feature: 'meeting_hours', dimension: 'career', value: 8, source: 'google_calendar', confidence: 1.0, recordedAt: new Date() },
+  ]),
+  storeFeatures: vi.fn().mockResolvedValue(undefined),
+}));
+
+// ─── Modules under test ──────────────────────────────────────────────────────
 import {
   getStravaAuthUrl,
   exchangeStravaCode,
   refreshStravaToken,
   fetchStravaActivities,
   syncStrava,
-} from '../connectors/strava.js';
-import type { StravaTokens } from '../connectors/strava.js';
+} from '../connectors/strava';
+import type { StravaTokens, StravaActivityRaw } from '../connectors/strava';
 
 import {
   getGoogleAuthUrl,
@@ -28,43 +39,41 @@ import {
   fetchCalendarEvents,
   syncGoogleCalendar,
   classifyEvent,
-} from '../connectors/google-calendar.js';
-import type { GoogleCalendarTokens, GoogleCalendarEventRaw } from '../connectors/google-calendar.js';
+} from '../connectors/google-calendar';
+import type {
+  GoogleCalendarTokens,
+  GoogleCalendarEventRaw,
+} from '../connectors/google-calendar';
 
-import { storeTokens, getTokens, revokeTokens } from '../connectors/oauth-manager.js';
+import { storeTokens, getTokens, revokeTokens } from '../connectors/oauth-manager';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared test fixtures
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NOW_UNIX = 1_720_000_000; // deterministic "now"
+const NOW_UNIX = 1_720_000_000;
+
+// Use a far-future expiry (year 2099) so maybeRefresh* never triggers during
+// tests. Tests that specifically test the token-refresh path will override
+// this with an expired fixture.
+const FAR_FUTURE_EXPIRY = 4_102_444_800; // 2100-01-01 00:00:00 UTC
 
 const STRAVA_TOKENS: StravaTokens = {
-  accessToken: 'strava_access_token',
-  refreshToken: 'strava_refresh_token',
-  expiresAt: NOW_UNIX + 3600,
+  accessToken: 'strava_access',
+  refreshToken: 'strava_refresh',
+  expiresAt: FAR_FUTURE_EXPIRY,
   athleteId: 12345,
 };
 
 const GOOGLE_TOKENS: GoogleCalendarTokens = {
-  accessToken: 'google_access_token',
-  refreshToken: 'google_refresh_token',
-  expiresAt: NOW_UNIX + 3600,
+  accessToken: 'google_access',
+  refreshToken: 'google_refresh',
+  expiresAt: FAR_FUTURE_EXPIRY,
 };
 
-/** Builds a minimal raw Strava activity for testing. */
-function makeStravaActivityRaw(overrides: Partial<{
-  id: number;
-  type: string;
-  distance: number;
-  moving_time: number;
-  start_date: string;
-  average_heartrate: number | null;
-  max_heartrate: number | null;
-  suffer_score: number | null;
-}> = {}) {
+function makeStravaRaw(overrides: Partial<StravaActivityRaw> = {}): StravaActivityRaw {
   return {
-    id: 1,
+    id: overrides.id ?? 1,
     name: 'Morning Run',
     type: overrides.type ?? 'Run',
     start_date: overrides.start_date ?? '2024-06-01T07:00:00Z',
@@ -80,15 +89,12 @@ function makeStravaActivityRaw(overrides: Partial<{
   };
 }
 
-/** Builds a minimal raw Google Calendar event for testing. */
-function makeGoogleEventRaw(overrides: Partial<GoogleCalendarEventRaw> = {}): GoogleCalendarEventRaw {
+function makeGoogleEvent(overrides: Partial<GoogleCalendarEventRaw> = {}): GoogleCalendarEventRaw {
   return {
     id: 'evt1',
-    summary: overrides.summary ?? 'Team Standup',
-    start: overrides.start ?? { dateTime: '2024-06-03T09:00:00Z' },
-    end: overrides.end ?? { dateTime: '2024-06-03T09:30:00Z' },
-    attendees: overrides.attendees,
-    recurrence: overrides.recurrence,
+    summary: 'Team Standup',
+    start: { dateTime: '2024-06-03T09:00:00Z' },
+    end: { dateTime: '2024-06-03T09:30:00Z' },
     ...overrides,
   };
 }
@@ -97,16 +103,11 @@ function makeGoogleEventRaw(overrides: Partial<GoogleCalendarEventRaw> = {}): Go
 // Supabase mock factory
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Creates a minimal chainable Supabase client mock.
- * Methods return `this` for chaining; terminal methods return a resolved
- * Promise with configurable data/error.
- */
-function makeSupabaseMock(response: { data: unknown; error: unknown } = { data: null, error: null }) {
+function makeSupabaseMock(
+  response: { data: unknown; error: unknown } = { data: null, error: null },
+): SupabaseClient {
   const chain: Record<string, unknown> = {};
-
   const terminal = () => Promise.resolve(response);
-  const self = () => chain;
 
   chain.from = vi.fn(() => chain);
   chain.select = vi.fn(() => chain);
@@ -118,29 +119,30 @@ function makeSupabaseMock(response: { data: unknown; error: unknown } = { data: 
   chain.order = vi.fn(() => chain);
   chain.limit = vi.fn(() => chain);
   chain.single = vi.fn(terminal);
-  chain.then = vi.fn((resolve: (v: unknown) => unknown) => Promise.resolve(response).then(resolve));
+  chain.then = vi.fn((resolve: (v: unknown) => unknown) =>
+    Promise.resolve(response).then(resolve),
+  );
 
-  return chain as unknown as import('@supabase/supabase-js').SupabaseClient;
+  return chain as unknown as SupabaseClient;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Environment setup helpers
+// Environment helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 function setStravaEnv() {
-  process.env.STRAVA_CLIENT_ID = 'test_client_id';
-  process.env.STRAVA_CLIENT_SECRET = 'test_client_secret';
+  process.env.STRAVA_CLIENT_ID = 'test_strava_id';
+  process.env.STRAVA_CLIENT_SECRET = 'test_strava_secret';
   process.env.STRAVA_REDIRECT_URI = 'http://localhost:3000/api/connect/strava/callback';
 }
 
 function setGoogleEnv() {
-  process.env.GOOGLE_CLIENT_ID = 'google_client_id';
-  process.env.GOOGLE_CLIENT_SECRET = 'google_client_secret';
+  process.env.GOOGLE_CLIENT_ID = 'test_google_id';
+  process.env.GOOGLE_CLIENT_SECRET = 'test_google_secret';
   process.env.GOOGLE_REDIRECT_URI = 'http://localhost:3000/api/connect/google/callback';
 }
 
 function setEncryptionKeyEnv() {
-  // 32 bytes = 64 hex chars
   process.env.ENCRYPTION_KEY = 'a'.repeat(64);
 }
 
@@ -152,31 +154,31 @@ describe('getStravaAuthUrl', () => {
   beforeEach(setStravaEnv);
 
   it('returns a URL pointing to the Strava authorisation endpoint', () => {
-    const url = getStravaAuthUrl('csrf-state-123');
+    const url = getStravaAuthUrl('state-abc');
     expect(url).toContain('https://www.strava.com/oauth/authorize');
   });
 
   it('includes the activity:read_all scope', () => {
-    const url = getStravaAuthUrl('csrf-state-123');
+    const url = getStravaAuthUrl('state-abc');
     expect(url).toContain('activity%3Aread_all');
   });
 
-  it('includes the state parameter', () => {
-    const url = getStravaAuthUrl('my-state-token');
-    expect(url).toContain('state=my-state-token');
+  it('includes the state parameter verbatim', () => {
+    const url = getStravaAuthUrl('my-csrf-token');
+    expect(url).toContain('state=my-csrf-token');
   });
 
-  it('includes the redirect_uri from the environment', () => {
+  it('includes the redirect_uri from STRAVA_REDIRECT_URI', () => {
     const url = getStravaAuthUrl('x');
     expect(url).toContain(encodeURIComponent('http://localhost:3000/api/connect/strava/callback'));
   });
 
-  it('throws when STRAVA_CLIENT_ID is missing', () => {
+  it('throws when STRAVA_CLIENT_ID is absent', () => {
     delete process.env.STRAVA_CLIENT_ID;
     expect(() => getStravaAuthUrl('x')).toThrow('STRAVA_CLIENT_ID');
   });
 
-  it('throws when STRAVA_REDIRECT_URI is missing', () => {
+  it('throws when STRAVA_REDIRECT_URI is absent', () => {
     setStravaEnv();
     delete process.env.STRAVA_REDIRECT_URI;
     expect(() => getStravaAuthUrl('x')).toThrow('STRAVA_REDIRECT_URI');
@@ -191,28 +193,34 @@ describe('getGoogleAuthUrl', () => {
   beforeEach(setGoogleEnv);
 
   it('returns a URL pointing to the Google authorisation endpoint', () => {
-    const url = getGoogleAuthUrl('csrf-state-456');
+    const url = getGoogleAuthUrl('state-xyz');
     expect(url).toContain('https://accounts.google.com/o/oauth2/v2/auth');
   });
 
   it('includes the calendar.readonly scope', () => {
-    const url = getGoogleAuthUrl('csrf-state-456');
+    const url = getGoogleAuthUrl('state-xyz');
     expect(url).toContain('calendar.readonly');
   });
 
   it('requests offline access for refresh tokens', () => {
-    const url = getGoogleAuthUrl('csrf-state-456');
+    const url = getGoogleAuthUrl('state-xyz');
     expect(url).toContain('access_type=offline');
   });
 
   it('includes the state parameter', () => {
-    const url = getGoogleAuthUrl('state-xyz');
-    expect(url).toContain('state=state-xyz');
+    const url = getGoogleAuthUrl('my-state');
+    expect(url).toContain('state=my-state');
   });
 
-  it('throws when GOOGLE_CLIENT_ID is missing', () => {
+  it('throws when GOOGLE_CLIENT_ID is absent', () => {
     delete process.env.GOOGLE_CLIENT_ID;
     expect(() => getGoogleAuthUrl('x')).toThrow('GOOGLE_CLIENT_ID');
+  });
+
+  it('throws when GOOGLE_REDIRECT_URI is absent', () => {
+    setGoogleEnv();
+    delete process.env.GOOGLE_REDIRECT_URI;
+    expect(() => getGoogleAuthUrl('x')).toThrow('GOOGLE_REDIRECT_URI');
   });
 });
 
@@ -225,26 +233,21 @@ describe('exchangeStravaCode', () => {
     setStravaEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns a StravaTokens object with the expected structure', async () => {
-    const mockResponse = {
-      access_token: 'new_access',
-      refresh_token: 'new_refresh',
-      expires_at: NOW_UNIX + 21600,
-      athlete: { id: 99 },
-    };
-
+  it('returns a StravaTokens object with the correct structure', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(mockResponse),
+      json: () =>
+        Promise.resolve({
+          access_token: 'new_access',
+          refresh_token: 'new_refresh',
+          expires_at: NOW_UNIX + 21600,
+          athlete: { id: 99 },
+        }),
     });
 
     const tokens = await exchangeStravaCode('auth-code-123');
-
     expect(tokens.accessToken).toBe('new_access');
     expect(tokens.refreshToken).toBe('new_refresh');
     expect(tokens.expiresAt).toBe(NOW_UNIX + 21600);
@@ -257,7 +260,6 @@ describe('exchangeStravaCode', () => {
       status: 400,
       text: () => Promise.resolve('bad_verification_code'),
     });
-
     await expect(exchangeStravaCode('bad-code')).rejects.toThrow('400');
   });
 });
@@ -271,34 +273,28 @@ describe('refreshStravaToken', () => {
     setStravaEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns new tokens using grant_type refresh_token', async () => {
-    const mockResponse = {
-      access_token: 'refreshed_access',
-      refresh_token: 'refreshed_refresh',
-      expires_at: NOW_UNIX + 21600,
-      athlete: { id: 12345 },
-    };
-
+  it('sends grant_type=refresh_token and returns new tokens', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(mockResponse),
+      json: () =>
+        Promise.resolve({
+          access_token: 'refreshed_access',
+          refresh_token: 'refreshed_refresh',
+          expires_at: NOW_UNIX + 21600,
+          athlete: { id: 12345 },
+        }),
     });
 
-    const tokens = await refreshStravaToken('old-refresh-token');
-
+    const tokens = await refreshStravaToken('old-refresh');
     expect(tokens.accessToken).toBe('refreshed_access');
-    expect(tokens.refreshToken).toBe('refreshed_refresh');
 
-    const callBody = JSON.parse(
+    const body = JSON.parse(
       (fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body as string,
     );
-    expect(callBody.grant_type).toBe('refresh_token');
-    expect(callBody.refresh_token).toBe('old-refresh-token');
+    expect(body.grant_type).toBe('refresh_token');
+    expect(body.refresh_token).toBe('old-refresh');
   });
 });
 
@@ -311,28 +307,25 @@ describe('fetchStravaActivities — pagination', () => {
     setStravaEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('stops paginating when a page returns fewer than 100 results', async () => {
-    // Page 1: full page (100 items), page 2: partial page (3 items)
+  it('stops paginating when a page has fewer than 100 results', async () => {
     const page1 = Array.from({ length: 100 }, (_, i) =>
-      makeStravaActivityRaw({ id: i, start_date: '2024-06-01T07:00:00Z' }),
+      makeStravaRaw({ id: i, start_date: '2024-06-01T07:00:00Z' }),
     );
     const page2 = Array.from({ length: 3 }, (_, i) =>
-      makeStravaActivityRaw({ id: 100 + i, start_date: '2024-06-02T07:00:00Z' }),
+      makeStravaRaw({ id: 100 + i, start_date: '2024-06-02T07:00:00Z' }),
     );
 
     (fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(page1) })
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(page2) });
 
-    const after = new Date('2024-05-25T00:00:00Z');
-    const before = new Date('2024-06-03T00:00:00Z');
-
-    const activities = await fetchStravaActivities(STRAVA_TOKENS, after, before);
+    const activities = await fetchStravaActivities(
+      STRAVA_TOKENS,
+      new Date('2024-05-25T00:00:00Z'),
+      new Date('2024-06-03T00:00:00Z'),
+    );
 
     expect(activities).toHaveLength(103);
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
@@ -354,7 +347,7 @@ describe('fetchStravaActivities — pagination', () => {
   });
 
   it('maps raw fields to StravaActivity correctly', async () => {
-    const raw = makeStravaActivityRaw({
+    const raw = makeStravaRaw({
       type: 'Ride',
       distance: 25000,
       moving_time: 3600,
@@ -394,17 +387,20 @@ describe('fetchStravaActivities — rate limit backoff', () => {
     vi.stubGlobal('fetch', vi.fn());
     vi.useFakeTimers();
   });
-
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.useRealTimers();
   });
 
-  it('retries after receiving HTTP 429 and eventually succeeds', async () => {
-    const activity = makeStravaActivityRaw();
+  it('retries after HTTP 429 and eventually succeeds', async () => {
+    const activity = makeStravaRaw();
 
     (fetch as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ ok: false, status: 429, text: () => Promise.resolve('Rate Limited') })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        text: () => Promise.resolve('Rate Limited'),
+      })
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([activity]) });
 
     const promise = fetchStravaActivities(
@@ -413,97 +409,91 @@ describe('fetchStravaActivities — rate limit backoff', () => {
       new Date('2024-06-02T00:00:00Z'),
     );
 
-    // Advance timers past the first backoff delay (1 second).
     await vi.runAllTimersAsync();
-
     const activities = await promise;
+
     expect(activities).toHaveLength(1);
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
   });
 
-  it('throws after exhausting all retries', async () => {
+  it('throws after exhausting all retries on persistent 429', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
       status: 429,
       text: () => Promise.resolve('Rate Limited'),
     });
 
+    // Attach a catch handler immediately so the rejection is always handled —
+    // prevents Node's "unhandled rejection" warning when fake timers fire the
+    // final sleep and the error propagates before the await assertion runs.
     const promise = fetchStravaActivities(
       STRAVA_TOKENS,
       new Date('2024-06-01T00:00:00Z'),
       new Date('2024-06-02T00:00:00Z'),
-    );
+    ).catch((e: unknown) => e);
 
     await vi.runAllTimersAsync();
-
-    await expect(promise).rejects.toThrow();
+    const result = await promise;
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toMatch(/429/);
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(3);
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Google Calendar event classification
+// classifyEvent — Google Calendar
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('classifyEvent', () => {
-  it('classifies an event with 2 attendees as "meeting"', () => {
-    const event = makeGoogleEventRaw({
-      summary: 'Project Sync',
-      attendees: [{ email: 'alice@example.com' }, { email: 'bob@example.com' }],
-    });
-    expect(classifyEvent(event)).toBe('meeting');
+  it('classifies an event with 2+ attendees as "meeting"', () => {
+    expect(
+      classifyEvent(
+        makeGoogleEvent({
+          attendees: [{ email: 'a@co.com' }, { email: 'b@co.com' }],
+        }),
+      ),
+    ).toBe('meeting');
   });
 
-  it('classifies an event with 1 attendee as "meeting" only if >= 2', () => {
-    const event = makeGoogleEventRaw({
-      summary: 'One-on-one',
-      attendees: [{ email: 'alice@example.com' }],
-    });
-    // 1 attendee is not enough — should fall through to other checks
-    expect(classifyEvent(event)).not.toBe('meeting');
+  it('does not classify a single-attendee event as "meeting"', () => {
+    expect(
+      classifyEvent(makeGoogleEvent({ attendees: [{ email: 'a@co.com' }] })),
+    ).not.toBe('meeting');
   });
 
   it('classifies "Deep Work Session" as "focus"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Deep Work Session' });
-    expect(classifyEvent(event)).toBe('focus');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Deep Work Session' }))).toBe('focus');
   });
 
   it('classifies "Focus Time" as "focus"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Focus Time' });
-    expect(classifyEvent(event)).toBe('focus');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Focus Time' }))).toBe('focus');
   });
 
   it('classifies "Blocked — no meetings" as "focus"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Blocked — no meetings' });
-    expect(classifyEvent(event)).toBe('focus');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Blocked — no meetings' }))).toBe('focus');
   });
 
   it('classifies "Lunch with Sarah" as "social"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Lunch with Sarah' });
-    expect(classifyEvent(event)).toBe('social');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Lunch with Sarah' }))).toBe('social');
   });
 
   it('classifies "Team Happy Hour" as "social"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Team Happy Hour' });
-    expect(classifyEvent(event)).toBe('social');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Team Happy Hour' }))).toBe('social');
   });
 
   it('classifies "Coffee with Alex" as "social"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Coffee with Alex' });
-    expect(classifyEvent(event)).toBe('social');
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Coffee with Alex' }))).toBe('social');
   });
 
-  it('classifies a single-attendee non-keyword event as "personal"', () => {
-    const event = makeGoogleEventRaw({ summary: 'Dentist appointment' });
-    expect(classifyEvent(event)).toBe('personal');
+  it('classifies a no-attendee, non-keyword event as "personal"', () => {
+    expect(classifyEvent(makeGoogleEvent({ summary: 'Dentist appointment' }))).toBe('personal');
   });
 
-  it('classifies an unknown event as "unknown" when there are attendees but no match', () => {
-    // 0 attendees but title implies work → unknown (not personal, not focus, not social)
-    const event = makeGoogleEventRaw({ summary: 'Standup', attendees: [{ email: 'a@b.com' }] });
-    // 1 attendee + "standup" keyword → should be unknown since < 2 attendees
-    const result = classifyEvent(event);
-    // Not enough attendees for meeting; "standup" is not in keyword lists → unknown
+  it('classifies a single-attendee work-keyword event as "unknown"', () => {
+    // 1 attendee (not 2) and title has "standup" — not focus, social, or personal
+    const result = classifyEvent(
+      makeGoogleEvent({ summary: 'Standup', attendees: [{ email: 'a@b.com' }] }),
+    );
     expect(result).toBe('unknown');
   });
 });
@@ -517,28 +507,22 @@ describe('exchangeGoogleCode', () => {
     setGoogleEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns a GoogleCalendarTokens object', async () => {
-    const mockResponse = {
-      access_token: 'google_access',
-      refresh_token: 'google_refresh',
-      expires_in: 3600,
-      token_type: 'Bearer',
-    };
-
+  it('returns a GoogleCalendarTokens object with future expiry', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve(mockResponse),
+      json: () =>
+        Promise.resolve({
+          access_token: 'goog_access',
+          refresh_token: 'goog_refresh',
+          expires_in: 3600,
+        }),
     });
 
     const tokens = await exchangeGoogleCode('google-auth-code');
-
-    expect(tokens.accessToken).toBe('google_access');
-    expect(tokens.refreshToken).toBe('google_refresh');
+    expect(tokens.accessToken).toBe('goog_access');
+    expect(tokens.refreshToken).toBe('goog_refresh');
     expect(tokens.expiresAt).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });
 
@@ -548,8 +532,7 @@ describe('exchangeGoogleCode', () => {
       status: 401,
       text: () => Promise.resolve('invalid_client'),
     });
-
-    await expect(exchangeGoogleCode('bad-code')).rejects.toThrow('401');
+    await expect(exchangeGoogleCode('bad')).rejects.toThrow('401');
   });
 });
 
@@ -562,88 +545,80 @@ describe('refreshGoogleToken', () => {
     setGoogleEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns updated tokens and preserves refresh token when not re-issued', async () => {
+  it('preserves the existing refresh token when Google omits it', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({
-        access_token: 'new_google_access',
-        expires_in: 3600,
-        // No refresh_token in this response (Google's normal behaviour)
-      }),
+      json: () =>
+        Promise.resolve({
+          access_token: 'new_access',
+          expires_in: 3600,
+          // No refresh_token in response
+        }),
     });
 
-    const tokens = await refreshGoogleToken('original-refresh-token');
-
-    expect(tokens.accessToken).toBe('new_google_access');
-    expect(tokens.refreshToken).toBe('original-refresh-token');
+    const tokens = await refreshGoogleToken('original-refresh');
+    expect(tokens.accessToken).toBe('new_access');
+    expect(tokens.refreshToken).toBe('original-refresh');
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Token encryption / decryption round-trip
+// OAuth manager — encryption round-trip
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('OAuth manager — encryption round-trip', () => {
-  beforeEach(() => {
-    setEncryptionKeyEnv();
-  });
+describe('oauth-manager — encryption round-trip', () => {
+  beforeEach(setEncryptionKeyEnv);
 
   it('stores and retrieves tokens with identical values', async () => {
-    const originalTokens = {
+    const original = {
       accessToken: 'test_access_abc',
       refreshToken: 'test_refresh_xyz',
       expiresAt: NOW_UNIX + 3600,
     };
 
-    let storedEncrypted: Buffer | null = null;
-    let storedIv: Buffer | null = null;
+    let capturedEncrypted: Buffer | null = null;
+    let capturedIv: Buffer | null = null;
 
-    // Mock supabase upsert to capture the encrypted payload.
     const supabaseMock = {
       from: vi.fn().mockReturnThis(),
-      upsert: vi.fn().mockImplementation(async (rows: Array<Record<string, unknown>>) => {
-        const row = rows[0] ?? rows;
-        const r = Array.isArray(rows) ? rows[0] : rows;
-        storedEncrypted = r.encrypted_tokens as Buffer;
-        storedIv = r.token_iv as Buffer;
+      upsert: vi.fn().mockImplementation(async (rows: Record<string, unknown>) => {
+        capturedEncrypted = rows.encrypted_tokens as Buffer;
+        capturedIv = rows.token_iv as Buffer;
         return { error: null };
       }),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: vi.fn().mockImplementation(async () => ({
         data: {
-          encrypted_tokens: storedEncrypted,
-          token_iv: storedIv,
-          expires_at: new Date((originalTokens.expiresAt) * 1000).toISOString(),
+          encrypted_tokens: capturedEncrypted,
+          token_iv: capturedIv,
+          expires_at: new Date(original.expiresAt * 1000).toISOString(),
         },
         error: null,
       })),
     };
 
     await storeTokens(
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
-      { provider: 'strava', userId: 'user-uuid-1' },
-      originalTokens,
+      supabaseMock as unknown as SupabaseClient,
+      { provider: 'strava', userId: 'uid-1' },
+      original,
     );
 
     const retrieved = await getTokens(
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
-      { provider: 'strava', userId: 'user-uuid-1' },
+      supabaseMock as unknown as SupabaseClient,
+      { provider: 'strava', userId: 'uid-1' },
     );
 
     expect(retrieved).not.toBeNull();
-    expect(retrieved!.accessToken).toBe(originalTokens.accessToken);
-    expect(retrieved!.refreshToken).toBe(originalTokens.refreshToken);
-    expect(retrieved!.expiresAt).toBe(originalTokens.expiresAt);
+    expect(retrieved!.accessToken).toBe(original.accessToken);
+    expect(retrieved!.refreshToken).toBe(original.refreshToken);
+    expect(retrieved!.expiresAt).toBe(original.expiresAt);
   });
 
-  it('returns null when no row exists for the user/provider', async () => {
-    const supabaseMock = {
+  it('returns null when no row exists', async () => {
+    const mock = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -651,46 +626,38 @@ describe('OAuth manager — encryption round-trip', () => {
     };
 
     const result = await getTokens(
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
+      mock as unknown as SupabaseClient,
       { provider: 'strava', userId: 'no-such-user' },
     );
-
     expect(result).toBeNull();
   });
 
   it('throws when ENCRYPTION_KEY is missing', async () => {
     delete process.env.ENCRYPTION_KEY;
-
-    const supabaseMock = makeSupabaseMock();
-
     await expect(
-      storeTokens(supabaseMock, { provider: 'strava', userId: 'u1' }, {
-        accessToken: 'a',
-        refreshToken: 'r',
-        expiresAt: NOW_UNIX,
-      }),
+      storeTokens(
+        makeSupabaseMock(),
+        { provider: 'strava', userId: 'u1' },
+        { accessToken: 'a', refreshToken: 'r', expiresAt: NOW_UNIX },
+      ),
     ).rejects.toThrow('ENCRYPTION_KEY');
   });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// syncStrava — feature extraction integration
+// syncStrava
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('syncStrava', () => {
   beforeEach(() => {
     setStravaEnv();
-    setEncryptionKeyEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
+  afterEach(() => vi.unstubAllGlobals());
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('returns recordsProcessed and features arrays when activities exist', async () => {
+  it('returns recordsProcessed and features when activities exist', async () => {
     const activities = Array.from({ length: 5 }, (_, i) =>
-      makeStravaActivityRaw({
+      makeStravaRaw({
         id: i,
         type: 'Run',
         distance: 5000 + i * 1000,
@@ -701,9 +668,9 @@ describe('syncStrava', () => {
 
     (fetch as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(activities) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) }); // second page empty
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
 
-    const supabaseMock = {
+    const mock = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -715,26 +682,25 @@ describe('syncStrava', () => {
     };
 
     const result = await syncStrava(
-      'user-uuid-sync',
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
+      'user-sync',
+      mock as unknown as SupabaseClient,
       STRAVA_TOKENS,
     );
 
     expect(result.recordsProcessed).toBe(5);
     expect(result.features.length).toBeGreaterThan(0);
-    // All features should have source 'strava'
     for (const f of result.features) {
       expect(f.source).toBe('strava');
     }
   });
 
-  it('returns zero records and empty features when no activities exist', async () => {
+  it('returns zero records and empty features when no activities', async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve([]),
     });
 
-    const supabaseMock = {
+    const mock = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -745,8 +711,8 @@ describe('syncStrava', () => {
     };
 
     const result = await syncStrava(
-      'user-uuid-empty',
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
+      'user-empty',
+      mock as unknown as SupabaseClient,
       STRAVA_TOKENS,
     );
 
@@ -756,7 +722,7 @@ describe('syncStrava', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// syncGoogleCalendar — feature extraction integration
+// syncGoogleCalendar
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('syncGoogleCalendar', () => {
@@ -764,39 +730,39 @@ describe('syncGoogleCalendar', () => {
     setGoogleEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it('returns recordsProcessed and features when events exist', async () => {
     const calendarList = {
       items: [{ id: 'primary', summary: 'Primary', primary: true, accessRole: 'owner' }],
     };
 
-    // Generate 5 weekday events spanning different categories
     const baseDate = new Date('2024-06-03T00:00:00Z'); // Monday
     const eventItems = Array.from({ length: 5 }, (_, i) => {
       const day = new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000);
-      return makeGoogleEventRaw({
+      return makeGoogleEvent({
         id: `evt${i}`,
         summary: i % 2 === 0 ? 'Team Meeting' : 'Focus Time',
         start: { dateTime: new Date(day.getTime() + 9 * 3600 * 1000).toISOString() },
         end: { dateTime: new Date(day.getTime() + 10 * 3600 * 1000).toISOString() },
-        attendees: i % 2 === 0
-          ? [{ email: 'a@co.com' }, { email: 'b@co.com' }]
-          : undefined,
+        attendees:
+          i % 2 === 0
+            ? [{ email: 'a@co.com' }, { email: 'b@co.com' }]
+            : undefined,
       });
     });
 
-    const eventsResponse = { items: eventItems, nextPageToken: undefined };
-
-    // Fetch calls: calendar list, then events page
     (fetch as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(calendarList) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(eventsResponse) });
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(calendarList),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ items: eventItems }),
+      });
 
-    const supabaseMock = {
+    const mock = {
       from: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -808,8 +774,8 @@ describe('syncGoogleCalendar', () => {
     };
 
     const result = await syncGoogleCalendar(
-      'user-uuid-gcal',
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
+      'user-gcal',
+      mock as unknown as SupabaseClient,
       GOOGLE_TOKENS,
     );
 
@@ -830,70 +796,62 @@ describe('revokeTokens', () => {
     setEncryptionKeyEnv();
     vi.stubGlobal('fetch', vi.fn());
   });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it('calls the provider revocation endpoint and deletes the row', async () => {
-    // Mock the revocation HTTP call
-    (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true });
+    // Build an encrypted token fixture synchronously using Node crypto.
+    const crypto = await import('crypto');
+    const key = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const payload = JSON.stringify({
+      accessToken: 'access_to_revoke',
+      refreshToken: 'refresh_to_revoke',
+      expiresAt: FAR_FUTURE_EXPIRY,
+    });
+    const ct = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    const encBuf = Buffer.concat([tag, ct]);
 
-    const { encryptTokensForTest } = await buildEncryptedTokenFixture();
-
-    const supabaseMock = {
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: encryptTokensForTest,
-        error: null,
+    // Mock: getTokens decrypts the fixture; delete chain resolves; log insert resolves.
+    let deleteEqCalled = false;
+    const insertMock = vi.fn().mockResolvedValue({ error: null });
+    const deleteMock = {
+      eq: vi.fn().mockImplementation((_col: string, _val: string) => {
+        deleteEqCalled = true;
+        return { eq: vi.fn().mockResolvedValue({ error: null }) };
       }),
-      delete: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ error: null }),
-      then: vi.fn().mockResolvedValue({ error: null }),
     };
 
+    const mock = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'connector_sync_log') {
+          return { insert: insertMock };
+        }
+        // user_connections — must support select chain and delete chain
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({
+            data: { encrypted_tokens: encBuf, token_iv: iv, expires_at: null },
+            error: null,
+          }),
+          delete: vi.fn().mockReturnValue(deleteMock),
+        };
+      }),
+    };
+
+    // Simulate a successful revocation HTTP call from the provider.
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true });
+
     await revokeTokens(
-      supabaseMock as unknown as import('@supabase/supabase-js').SupabaseClient,
+      mock as unknown as SupabaseClient,
       { provider: 'strava', userId: 'user-revoke' },
     );
 
-    // delete() chain should have been called
-    expect(supabaseMock.delete).toHaveBeenCalled();
-    // The provider revocation HTTP call should have been made
+    // The provider revocation fetch should have been called.
     expect(fetch).toHaveBeenCalled();
+    // The delete chain's eq() should have been called (row was deleted).
+    expect(deleteEqCalled).toBe(true);
   });
 });
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers for revokeTokens test
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Creates an encrypted token fixture in the format stored in the DB so that
- * `getTokens` can decrypt it during the revokeTokens test.
- */
-async function buildEncryptedTokenFixture() {
-  const { randomBytes, createCipheriv } = await import('crypto');
-
-  const key = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
-  const iv = randomBytes(12);
-  const cipher = createCipheriv('aes-256-gcm', key, iv);
-  const payload = JSON.stringify({
-    accessToken: 'access_to_revoke',
-    refreshToken: 'refresh_to_revoke',
-    expiresAt: NOW_UNIX + 3600,
-  });
-  const ciphertext = Buffer.concat([cipher.update(payload, 'utf8'), cipher.final()]);
-  const authTag = cipher.getAuthTag();
-  const encryptedBuffer = Buffer.concat([authTag, ciphertext]);
-
-  return {
-    encryptTokensForTest: {
-      encrypted_tokens: encryptedBuffer,
-      token_iv: iv,
-      expires_at: new Date((NOW_UNIX + 3600) * 1000).toISOString(),
-    },
-  };
-}
