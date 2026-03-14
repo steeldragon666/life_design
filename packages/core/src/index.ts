@@ -1,3 +1,4 @@
+export * from './config';
 export * from './enums';
 export * from './types';
 export * from './validation';
@@ -6,3 +7,7 @@ export * from './correlation';
 export * from './connectors';
 export * from './feature-extraction';
 export * from './holistic';
+export * from './connectors/apple-health';
+export * from './connectors/strava';
+export * from './connectors/google-calendar';
+export * from './connectors/oauth-manager';

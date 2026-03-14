@@ -7,6 +7,38 @@ export interface NormalizedSignal {
   rawData: unknown;
 }
 
+// ---------------------------------------------------------------------------
+// Typed connector interfaces
+// ---------------------------------------------------------------------------
+
+export interface StravaActivity {
+  type: string;
+  distanceMeters: number;
+  movingTimeSeconds: number;
+  startDate: Date;
+  averageHeartRate?: number;
+  maxHeartRate?: number;
+  sufferedScore?: number;
+}
+
+export interface CalendarEvent {
+  summary: string;
+  start: Date;
+  end: Date;
+  attendees?: number;
+  isRecurring: boolean;
+}
+
+export interface NormalisedFeature {
+  feature: string;
+  dimension: Dimension;
+  value: number;
+  source: string;
+  confidence: number;
+  recordedAt: Date;
+}
+
+
 type UnknownRecord = Record<string, unknown>;
 
 function clamp(value: number, min: number, max: number): number {
@@ -356,3 +388,63 @@ export function normalizeProviderPayload(
   if (!fallbackDimension) return [];
   return mapFallback(fallbackDimension, payload);
 }
+
+// ---------------------------------------------------------------------------
+// Typed feature extraction for connectors
+// ---------------------------------------------------------------------------
+
+function makeFeat(
+  feature: string,
+  dimension: Dimension,
+  value: number,
+  source: string,
+  confidence: number,
+  recordedAt: Date,
+): NormalisedFeature {
+  return { feature, dimension, value, source, confidence, recordedAt };
+}
+
+export function extractStravaFeatures(activities: StravaActivity[]): NormalisedFeature[] {
+  const features: NormalisedFeature[] = [];
+
+  for (const a of activities) {
+    const ts = a.startDate;
+    features.push(makeFeat('distance_km', Dimension.Fitness, a.distanceMeters / 1000, 'strava', 1.0, ts));
+    features.push(makeFeat('moving_time_min', Dimension.Fitness, a.movingTimeSeconds / 60, 'strava', 1.0, ts));
+    if (a.averageHeartRate !== undefined) {
+      features.push(makeFeat('avg_heart_rate', Dimension.Fitness, a.averageHeartRate, 'strava', 1.0, ts));
+    }
+    if (a.sufferedScore !== undefined) {
+      features.push(makeFeat('suffer_score', Dimension.Fitness, a.sufferedScore, 'strava', 0.8, ts));
+    }
+  }
+
+  return features;
+}
+
+export function extractCalendarFeatures(events: CalendarEvent[]): NormalisedFeature[] {
+  const features: NormalisedFeature[] = [];
+  let meetingMinutes = 0;
+  let focusMinutes = 0;
+  let eventCount = 0;
+  const day = events.length > 0 ? events[0].start : new Date();
+
+  for (const e of events) {
+    const durationMin = Math.max(0, (e.end.getTime() - e.start.getTime()) / 60_000);
+    eventCount++;
+
+    const title = e.summary.toLowerCase();
+    const isFocus = title.includes('focus') || title.includes('deep work') || title.includes('study');
+    const isMeeting = (e.attendees ?? 0) >= 2;
+
+    if (isMeeting) meetingMinutes += durationMin;
+    else if (isFocus) focusMinutes += durationMin;
+  }
+
+  features.push(makeFeat('event_count', Dimension.Career, eventCount, 'google_calendar', 1.0, day));
+  features.push(makeFeat('meeting_minutes', Dimension.Career, meetingMinutes, 'google_calendar', 1.0, day));
+  features.push(makeFeat('focus_minutes', Dimension.Career, focusMinutes, 'google_calendar', 0.8, day));
+
+  return features;
+}
+
