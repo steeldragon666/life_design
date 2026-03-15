@@ -10,6 +10,12 @@ import {
   computeOverallScore,
 } from '@life-design/core';
 import useDashboardData from '@/hooks/useDashboardData';
+import DashboardInsightsFeed from '@/components/dashboard/DashboardInsightsFeed';
+import WeeklyDigestView from '@/components/digest/WeeklyDigestView';
+import type { StoredDigest } from '@/lib/digest/digest-generator';
+import { useNudges } from '@/providers/LifeDesignProvider';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
 
 // ---------------------------------------------------------------------------
 // Dynamic recharts imports (SSR-safe)
@@ -124,6 +130,17 @@ function ActivityIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 010-5H6" /><path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
+      <path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" />
+      <path d="M18 2H6v7a6 6 0 0012 0V2z" />
     </svg>
   );
 }
@@ -263,6 +280,30 @@ export default function DashboardClient({
     refetch,
   } = useDashboardData();
 
+  const nudgeScheduler = useNudges();
+  const [showDigest, setShowDigest] = useState(false);
+
+  // Live query for latest digest
+  const latestDigest = useLiveQuery(async () => {
+    // digests table may not exist yet
+    try {
+      return await (db as any).digests?.orderBy('generatedAt').reverse().first();
+    } catch { return undefined; }
+  }) as StoredDigest | undefined;
+
+  // Live query for unseen badge count
+  const unseenBadgeCount = useLiveQuery(async () => {
+    const all = await db.badges.toArray();
+    return all.filter(b => !b.context?.includes('seen')).length;
+  }) ?? 0;
+
+  // Active nudge from scheduler
+  const activeNudge = useLiveQuery(async () => {
+    const nudge = await nudgeScheduler.getActiveNudge();
+    if (!nudge) return null;
+    return { id: nudge.id!, title: nudge.title, message: nudge.message, type: nudge.type };
+  });
+
   // Merge: prefer client data when available, fall back to server props
   const streak = loading ? serverStreak : clientStreak;
 
@@ -335,10 +376,18 @@ export default function DashboardClient({
       {/* ------------------------------------------------------------------ */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">
-            {getGreeting()}
-            {firstName ? <>, <span className="text-[#5A7F5A]">{firstName}</span></> : null}
-          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">
+              {getGreeting()}
+              {firstName ? <>, <span className="text-[#5A7F5A]">{firstName}</span></> : null}
+            </h1>
+            {unseenBadgeCount > 0 && (
+              <Link href="/achievements" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FEF7F0] text-[#D4864A] text-xs font-medium">
+                <TrophyIcon className="w-3.5 h-3.5" />
+                {unseenBadgeCount} new
+              </Link>
+            )}
+          </div>
           <p className="text-sm text-[#A8A198] mt-1">{formatToday()} — Here&apos;s your life at a glance</p>
         </div>
         <Link
@@ -429,58 +478,22 @@ export default function DashboardClient({
               <Skeleton className="h-28" />
               <Skeleton className="h-28" />
             </div>
-          ) : dataMaturity === 'cold' ? (
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-              <div className="flex items-center gap-3 mb-3">
-                <SparklesIcon className="w-5 h-5 text-[#5A7F5A] flex-shrink-0" />
-                <p className="text-sm font-medium text-[#2A2623]">
-                  {checkinCount}/7 check-ins to unlock insights
-                </p>
-              </div>
-              <div className="h-1.5 bg-[#F5F3EF] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#9BB89B] to-[#5A7F5A] rounded-full transition-all duration-700"
-                  style={{ width: `${Math.min(100, (checkinCount / 7) * 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-[#A8A198] mt-3 leading-relaxed font-['Instrument_Serif'] italic">
-                Your AI mentor analyses patterns across all 8 life dimensions once you have
-                enough data. Keep checking in daily to reveal correlations unique to you.
-              </p>
-            </div>
-          ) : insights.length > 0 ? (
-            <div className="space-y-3">
-              {insights.map((insight) => {
-                const dimTag = insight.dimension
-                  ? DIMENSION_LABELS[insight.dimension as Dimension] ?? insight.dimension
-                  : 'General';
-                return (
-                  <div key={insight.id} className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#F4F7F4] to-[#E4ECE4] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <SparklesIcon className="w-4 h-4 text-[#5A7F5A]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#2A2623] mb-0.5">{insight.headline}</p>
-                        <p className="text-sm text-[#3D3833] leading-relaxed">{insight.body}</p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F4F7F4] text-[#5A7F5A] font-medium">
-                            {dimTag}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           ) : (
-            <div className="p-8 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-              <SparklesIcon className="w-8 h-8 text-[#A8A198] mx-auto mb-3" />
-              <p className="text-sm text-[#A8A198] italic font-['Instrument_Serif']">
-                Continuously monitoring your life patterns…
-              </p>
-            </div>
+            <DashboardInsightsFeed
+              insights={insights.map(i => ({
+                id: String(i.id ?? i.headline),
+                type: 'suggestion' as const,
+                title: i.headline,
+                body: i.body,
+                dimension: i.dimension ?? null,
+              }))}
+              activeNudge={activeNudge ? { id: activeNudge.id, title: activeNudge.title, message: activeNudge.message, type: activeNudge.type } : null}
+              latestDigest={latestDigest ?? null}
+              onDismissInsight={() => {}}
+              onDismissNudge={(id) => nudgeScheduler.markAsRead(id)}
+              onTalkToMentor={() => {}}
+              onViewDigest={() => setShowDigest(true)}
+            />
           )}
         </div>
 
@@ -817,6 +830,20 @@ export default function DashboardClient({
           </div>
         )}
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Weekly Digest modal */}
+      {/* ------------------------------------------------------------------ */}
+      {showDigest && latestDigest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="max-w-lg w-full max-h-[90vh] overflow-y-auto m-4 rounded-2xl bg-white shadow-xl">
+            <WeeklyDigestView
+              digest={latestDigest}
+              onClose={() => setShowDigest(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
