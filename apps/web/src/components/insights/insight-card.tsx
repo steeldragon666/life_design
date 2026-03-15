@@ -1,11 +1,4 @@
-import { 
-  TrendingUp, 
-  Zap, 
-  Lightbulb, 
-  Activity, 
-  AlertTriangle,
-  ChevronRight
-} from 'lucide-react';
+'use client';
 
 interface InsightInfo {
   id: string;
@@ -20,56 +13,106 @@ interface InsightCardProps {
   onDismiss: (id: string) => void;
 }
 
-const TYPE_CONFIG = {
-  trend: { icon: TrendingUp, color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/5' },
-  correlation: { icon: Activity, color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/5' },
-  suggestion: { icon: Lightbulb, color: 'text-green-400', border: 'border-green-500/30', bg: 'bg-green-500/5' },
-  goal_progress: { icon: Zap, color: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-500/5' },
-  goal_risk: { icon: AlertTriangle, color: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/5' },
+// Zen-minimal palette: sage/warm/sky
+const TYPE_CONFIG: Record<string, { icon: string; accent: string; bg: string; border: string }> = {
+  goal_risk: {
+    icon: '\u26A0',
+    accent: 'text-[#D4864A]',
+    bg: 'bg-[#D4864A]/8',
+    border: 'border-[#D4864A]/30',
+  },
+  goal_progress: {
+    icon: '\u2B06',
+    accent: 'text-[#5A7F5A]',
+    bg: 'bg-[#5A7F5A]/8',
+    border: 'border-[#5A7F5A]/30',
+  },
+  correlation: {
+    icon: '\u2194',
+    accent: 'text-[#5B7E9D]',
+    bg: 'bg-[#5B7E9D]/8',
+    border: 'border-[#5B7E9D]/30',
+  },
+  trend: {
+    icon: '\u2197',
+    accent: 'text-[#5A7F5A]',
+    bg: 'bg-[#5A7F5A]/8',
+    border: 'border-[#5A7F5A]/30',
+  },
+  suggestion: {
+    icon: '\u2728',
+    accent: 'text-[#8B7EC8]',
+    bg: 'bg-[#8B7EC8]/8',
+    border: 'border-[#8B7EC8]/30',
+  },
 };
 
+// Negative trend gets warm/terracotta styling
+function getConfig(insight: InsightInfo) {
+  const base = TYPE_CONFIG[insight.type] ?? TYPE_CONFIG.trend;
+  if (insight.type === 'trend' && insight.body.includes('declining')) {
+    return { ...base, accent: 'text-[#D4864A]', bg: 'bg-[#D4864A]/8', border: 'border-[#D4864A]/30' };
+  }
+  return base;
+}
+
 export default function InsightCard({ insight, onDismiss }: InsightCardProps) {
-  const config = TYPE_CONFIG[insight.type] || TYPE_CONFIG.trend;
-  const Icon = config.icon;
+  const config = getConfig(insight);
 
   return (
-    <div className={`glass-card group flex flex-col gap-4 border-l-4 ${config.border} p-5 relative overflow-hidden transition-all duration-300`}>
-      <div className={`absolute top-0 right-0 h-24 w-24 ${config.bg} blur-3xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity`} />
-      
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${config.bg} ${config.color}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-white tracking-tight leading-tight">{insight.title}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                {insight.type.replace('_', ' ')}
-              </span>
-              {insight.dimension && (
-                <>
-                  <span className="h-1 w-1 rounded-full bg-white/10" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">
-                    {insight.dimension}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
+    <div
+      className={`
+        group rounded-2xl bg-white border ${config.border}
+        p-4 relative overflow-hidden
+        transition-all duration-300 hover:shadow-sm
+        animate-[fadeIn_0.4s_ease-out]
+      `}
+    >
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div className={`flex-shrink-0 w-9 h-9 rounded-xl ${config.bg} flex items-center justify-center text-base`}>
+          {config.icon}
         </div>
-        <button
-          onClick={() => onDismiss(insight.id)}
-          aria-label="Dismiss insight"
-          className="p-1 rounded-lg hover:bg-white/5 opacity-0 group-hover:opacity-100 transition-all text-slate-500 hover:text-white"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-medium text-[#2A2623] leading-tight">
+                {insight.title}
+              </h3>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#A8A198]">
+                  {insight.type.replace('_', ' ')}
+                </span>
+                {insight.dimension && (
+                  <>
+                    <span className="h-0.5 w-0.5 rounded-full bg-[#D4CFC5]" />
+                    <span className={`text-[10px] font-medium uppercase tracking-wider ${config.accent}`}>
+                      {insight.dimension}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Dismiss */}
+            <button
+              onClick={() => onDismiss(insight.id)}
+              aria-label="Dismiss insight"
+              className="flex-shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-[#C4C0B8] hover:text-[#7D756A] hover:bg-[#F5F3EF]"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <p className="mt-2 text-sm text-[#7D756A] leading-relaxed">
+            {insight.body}
+          </p>
+        </div>
       </div>
-      
-      <p className="text-sm text-slate-300 leading-relaxed font-medium">
-        {insight.body}
-      </p>
     </div>
   );
 }

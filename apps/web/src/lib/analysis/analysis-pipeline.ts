@@ -16,7 +16,7 @@ export class AnalysisPipeline {
 
   constructor(
     private db: LifeDesignDB,
-    private aiLocal?: AILocalClient,
+    private aiLocal?: AILocalClient | null,
     private badgeSystem?: BadgeSystem,
   ) {
     this.insightGenerator = new InsightGenerator(db);

@@ -8,14 +8,14 @@
 import type { WorkerRequest, WorkerResponse } from './worker';
 import type { DimensionLabel } from './models';
 
-export type { DimensionLabel } from './models';
+// Lightweight re-exports — no Transformers.js dependency.
+// Heavy modules (classify, summarize, embed, similarity, voice-processor)
+// run inside the Web Worker and must NOT be re-exported here to avoid
+// pulling onnxruntime-node into client bundles.
+export type { DimensionLabel, ModelTask } from './models';
 export { EMBEDDING_DIM, DIMENSION_LABELS, MODEL_REGISTRY } from './models';
-export { cosineSimilarity, findSimilarCheckIns, clusterCheckIns, generateCheckInEmbedding } from './similarity';
-export type { ScoredCheckIn, Cluster } from './similarity';
-export { classifyGoal, classifyJournalEntry, detectMoodFromText } from './classify';
 export type { GoalClassification, JournalClassification, MoodEstimate } from './classify';
-export { generateJournalPreview, summarizeWeeklyJournals } from './summarize';
-export { startVoiceRecording, transcribeVoice, startLiveTranscription, extractScoresFromSpeech, processVoiceCheckIn } from './voice-processor';
+export type { ScoredCheckIn, Cluster } from './similarity';
 export type { VoiceSession, VoiceCheckInResult } from './voice-processor';
 
 export interface AILocalProgress {

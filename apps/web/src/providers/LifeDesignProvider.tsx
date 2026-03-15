@@ -15,7 +15,10 @@ import { AnalysisPipeline } from '@/lib/analysis/analysis-pipeline';
 import { NudgeScheduler } from '@/lib/nudge/nudge-scheduler';
 import { ChallengeEngine } from '@/lib/challenges/challenge-engine';
 import { BadgeSystem } from '@/lib/achievements/badge-system';
-import { AILocalClient, type AILocalProgress } from '@life-design/ai-local';
+
+// Type-only import to avoid pulling Transformers.js into the client bundle.
+// AILocalClient is loaded dynamically at runtime.
+import type { AILocalClient, AILocalProgress } from '@life-design/ai-local';
 
 // ---------------------------------------------------------------------------
 // Context shape
@@ -27,7 +30,7 @@ interface LifeDesignContextValue {
   nudgeScheduler: NudgeScheduler;
   challengeEngine: ChallengeEngine;
   badgeSystem: BadgeSystem;
-  aiLocal: AILocalClient;
+  aiLocal: AILocalClient | null;
   aiReady: boolean;
   aiProgress: number;
 }
@@ -41,41 +44,63 @@ const LifeDesignContext = createContext<LifeDesignContextValue | null>(null);
 export function LifeDesignProvider({ children }: { children: ReactNode }) {
   const [aiReady, setAiReady] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
+  const [aiLocal, setAiLocal] = useState<AILocalClient | null>(null);
 
   const handleProgress = useCallback((p: AILocalProgress) => {
     if (p.progress !== undefined) setAiProgress(p.progress);
     if (p.status === 'ready') setAiReady(true);
   }, []);
 
-  // Engine instances are created once and never replaced — stable reference.
-  const [engines] = useState<Omit<LifeDesignContextValue, 'aiReady' | 'aiProgress'>>(() => {
+  // Non-AI engine instances are created once — stable reference.
+  const [engines] = useState(() => {
     const badgeSystem = new BadgeSystem(db);
     const challengeEngine = new ChallengeEngine(db);
     const nudgeScheduler = new NudgeScheduler(db);
-    const aiLocal = new AILocalClient({ onProgress: handleProgress });
-    const analysisPipeline = new AnalysisPipeline(db, aiLocal, badgeSystem);
-    return { db, analysisPipeline, nudgeScheduler, challengeEngine, badgeSystem, aiLocal };
+    return { db, nudgeScheduler, challengeEngine, badgeSystem };
   });
 
-  // Start nudge scheduler on mount and preload AI model (non-blocking).
+  // Lazily create AnalysisPipeline once aiLocal is ready.
+  const [analysisPipeline, setAnalysisPipeline] = useState<AnalysisPipeline>(
+    () => new AnalysisPipeline(db, null, engines.badgeSystem),
+  );
+
+  // Dynamic import of AILocalClient to avoid bundling Transformers.js/onnxruntime-node.
   const startedRef = useRef(false);
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
 
     engines.nudgeScheduler.start();
-    // Trigger model warm-up by embedding an empty string; success marks AI ready.
-    engines.aiLocal.embed('').then(() => setAiReady(true)).catch(() => {
-      // AI unavailable or in SSR — remain in not-ready state.
+
+    import('@life-design/ai-local').then(({ AILocalClient: Client }) => {
+      const client = new Client({ onProgress: handleProgress });
+      setAiLocal(client);
+      setAnalysisPipeline(new AnalysisPipeline(db, client, engines.badgeSystem));
+      // Warm up model.
+      client.embed('').then(() => setAiReady(true)).catch(() => {});
+    }).catch(() => {
+      // AI unavailable — remain in not-ready state.
     });
 
     return () => {
       engines.nudgeScheduler.stop();
-      engines.aiLocal.dispose();
     };
-  }, [engines]);
+  }, [engines, handleProgress]);
 
-  const contextValue: LifeDesignContextValue = { ...engines, aiReady, aiProgress };
+  // Dispose aiLocal on unmount.
+  useEffect(() => {
+    return () => {
+      aiLocal?.dispose();
+    };
+  }, [aiLocal]);
+
+  const contextValue: LifeDesignContextValue = {
+    ...engines,
+    analysisPipeline,
+    aiLocal,
+    aiReady,
+    aiProgress,
+  };
 
   return (
     <LifeDesignContext.Provider value={contextValue}>

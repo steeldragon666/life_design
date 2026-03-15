@@ -6,7 +6,7 @@ import { EMBEDDING_DIM } from '../models';
 // vi.mock factories are hoisted — cannot reference variables declared later.
 // ---------------------------------------------------------------------------
 
-vi.mock('@huggingface/transformers', () => {
+vi.mock('../transformers-entry', () => {
   const DIM = 384;
   const dims = ['career', 'finance', 'health', 'fitness', 'family', 'social', 'romance', 'growth'];
   const makeSingleOutput = () => ({
