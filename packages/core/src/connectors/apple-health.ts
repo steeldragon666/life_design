@@ -270,16 +270,20 @@ const BACKGROUND_SYNC_DEBOUNCE_MS = 60 * 60 * 1_000; // 1 hour
 
 /**
  * Detects whether the current runtime is an iOS/iPadOS native environment.
- * Uses the Platform export from react-native when available; falls back to
- * a user-agent heuristic for environments where React Native is not loaded.
+ * Uses expo-health availability as the authoritative signal (if expo-health
+ * loads, we're on iOS with the right native module). Falls back to a
+ * user-agent heuristic for web environments.
+ *
+ * NOTE: We intentionally avoid importing react-native here because bundlers
+ * (webpack/turbopack) resolve even dynamic imports at build time, pulling in
+ * react-native's Flow syntax which breaks the Next.js web build.
  */
 async function isIOS(): Promise<boolean> {
   try {
-    // Dynamic import so the module load does not fail on web.
-    const rn = await import('react-native' as string);
-    return (rn as { Platform?: { OS?: string } }).Platform?.OS === 'ios';
+    await loadExpoHealth();
+    return true; // expo-health loaded successfully — we're on iOS
   } catch {
-    // Web or non-RN environment.
+    // expo-health not available — check user-agent as fallback
     if (typeof navigator !== 'undefined') {
       return /iP(hone|ad|od)/.test(navigator.userAgent);
     }
