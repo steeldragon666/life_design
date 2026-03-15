@@ -5,6 +5,7 @@ import { GuestProvider } from '@/lib/guest-context';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+import { LifeDesignProvider } from '@/providers/LifeDesignProvider';
 
 const AppProviderErrorBoundary = ResilientErrorBoundary as any;
 
@@ -23,7 +24,9 @@ export default function AppProviders({ children }: { children: ReactNode }) {
     >
       <ThemeProvider>
         <GuestProvider>
-          <SoundscapeProvider>{children}</SoundscapeProvider>
+          <LifeDesignProvider>
+            <SoundscapeProvider>{children}</SoundscapeProvider>
+          </LifeDesignProvider>
         </GuestProvider>
       </ThemeProvider>
     </AppProviderErrorBoundary>
