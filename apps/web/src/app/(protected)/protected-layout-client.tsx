@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
 
 // ---------------------------------------------------------------------------
@@ -43,11 +44,55 @@ function SunIcon({ className }: { className?: string }) {
   );
 }
 
+function FlameIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 010-5H6" /><path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
+      <path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 1012 0V2z" />
+    </svg>
+  );
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+    </svg>
+  );
+}
+
+function ChatIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+    </svg>
+  );
+}
+
+function BeakerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.5 3h15M6 3v16a2 2 0 002 2h8a2 2 0 002-2V3" />
+      <path d="M6 14h12" />
+    </svg>
+  );
+}
+
+function MoreIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" />
     </svg>
   );
 }
@@ -66,6 +111,10 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: HomeIcon },
   { href: '/goals', label: 'Goals', icon: TargetIcon },
   { href: '/checkin', label: 'Check-in', icon: SunIcon },
+  { href: '/mentor', label: 'Mentor', icon: ChatIcon },
+  { href: '/simulator', label: 'Simulate', icon: BeakerIcon },
+  { href: '/challenges', label: 'Challenges', icon: FlameIcon },
+  { href: '/achievements', label: 'Badges', icon: TrophyIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
 
@@ -82,6 +131,11 @@ export default function ProtectedLayout({
   const { isHydrated } = useGuest();
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  const mobileMainItems = navItems.slice(0, 4); // Home, Goals, Check-in, Mentor
+  const mobileMoreItems = navItems.slice(4); // Simulate, Challenges, Badges, Settings
+  const isMoreActive = mobileMoreItems.some(i => isActive(i.href));
+  const [moreOpen, setMoreOpen] = useState(false);
 
   if (!isHydrated) {
     return (
@@ -142,7 +196,7 @@ export default function ProtectedLayout({
       {/* Mobile Bottom Nav */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-2xl border-t border-[#E8E4DD] pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around py-2">
-          {navItems.map(item => (
+          {mobileMainItems.map(item => (
             <Link
               key={item.href}
               href={item.href}
@@ -156,8 +210,41 @@ export default function ProtectedLayout({
               )}
             </Link>
           ))}
+
+          {/* "More" button */}
+          <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all ${moreOpen || isMoreActive ? 'text-[#5A7F5A]' : 'text-[#A8A198]'}`}
+          >
+            <MoreIcon className="w-5 h-5" />
+            <span className="text-[10px] font-medium">More</span>
+            {isMoreActive && !moreOpen && (
+              <div className="w-1 h-1 rounded-full bg-[#5A7F5A] mt-0.5" />
+            )}
+          </button>
         </div>
       </nav>
+
+      {/* More drawer overlay */}
+      {moreOpen && (
+        <>
+          <div className="lg:hidden fixed inset-0 z-30 bg-black/20" onClick={() => setMoreOpen(false)} />
+          <div className="lg:hidden fixed bottom-[calc(60px+env(safe-area-inset-bottom))] inset-x-0 z-35 bg-white rounded-t-2xl border-t border-[#E8E4DD] shadow-xl p-4 space-y-1">
+            {mobileMoreItems.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMoreOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
+                  ${isActive(item.href) ? 'bg-[#F4F7F4] text-[#5A7F5A]' : 'text-[#7D756A] hover:bg-[#F5F3EF]'}`}
+              >
+                <item.icon className="w-5 h-5" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
