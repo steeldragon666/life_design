@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { DIMENSION_LABELS, type Dimension } from '@life-design/core';
+import { DIMENSION_LABELS, type Dimension, computeTrend } from '@life-design/core';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
 
 // ---------------------------------------------------------------------------
 // Inline SVG icons
@@ -20,6 +22,16 @@ function CheckIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+}
+
+function AlertTriangleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   );
 }
@@ -96,6 +108,22 @@ function getProgress(goal: GoalWithRelations): number {
 
 export default function GoalsClient({ goals }: GoalsClientProps) {
   const [activeTab, setActiveTab] = useState<HorizonTab>('all');
+
+  const recentCheckIns = useLiveQuery(() =>
+    db.checkIns.orderBy('date').reverse().limit(7).toArray()
+  );
+
+  function getMomentum(dimension: string): { slope: number; label: string; color: string } {
+    const scores = recentCheckIns
+      ?.map(ci => ci.dimensionScores[dimension as Dimension])
+      .filter((s): s is number => s !== undefined)
+      .reverse() ?? []; // reverse to chronological order
+    if (scores.length < 3) return { slope: 0, label: 'New', color: '#A8A198' };
+    const slope = computeTrend(scores);
+    if (slope > 0.05) return { slope, label: 'Rising', color: '#5A7F5A' };
+    if (slope < -0.05) return { slope, label: 'Falling', color: '#D4864A' };
+    return { slope, label: 'Stable', color: '#A8A198' };
+  }
 
   const filtered = useMemo(() => {
     if (activeTab === 'all') return goals;
@@ -225,7 +253,7 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                       </span>
                     </div>
 
-                    {/* Category badge */}
+                    {/* Category badge + target date + momentum indicator */}
                     <div className="flex items-center gap-3">
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full font-medium capitalize"
@@ -238,6 +266,14 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                           Due {new Date(goal.target_date).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })}
                         </span>
                       )}
+                      {dimension && (() => {
+                        const momentum = getMomentum(dimension);
+                        return (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: momentum.color + '15', color: momentum.color }}>
+                            {momentum.slope > 0.05 ? '↑' : momentum.slope < -0.05 ? '↓' : '→'} {momentum.label}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     {/* Progress bar */}
@@ -247,6 +283,24 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                         style={{ width: `${progress}%`, backgroundColor: colors.bar }}
                       />
                     </div>
+
+                    {/* Timeline risk warning */}
+                    {goal.target_date && dimension && (() => {
+                      const now = new Date();
+                      const end = new Date(goal.target_date);
+                      const timeLeft = end.getTime() - now.getTime();
+                      const totalDays = 90; // approximate goal duration
+                      const daysLeft = timeLeft / (1000 * 60 * 60 * 24);
+                      const momentum = getMomentum(dimension);
+                      if (daysLeft > 0 && daysLeft < totalDays * 0.3 && progress < 70 && momentum.slope <= 0) {
+                        return (
+                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#D4864A] font-medium">
+                            <AlertTriangleIcon className="w-3 h-3" /> Timeline risk — momentum stalling
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
               </Link>
