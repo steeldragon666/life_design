@@ -1,11 +1,87 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Sparkles, ArrowRight, Zap, Compass, Mic, Target, Waves } from 'lucide-react';
 import { useGuest } from '@/lib/guest-context';
+
+// ---------------------------------------------------------------------------
+// Inline SVG icons (matching redesign stroke style)
+// ---------------------------------------------------------------------------
+
+function LeafIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 20A7 7 0 019.8 6.9C15.5 4.9 17 3.5 17 3.5s4 2 4 9-5.5 8-5.5 8" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </svg>
+  );
+}
+
+function MicIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="13" rx="3" />
+      <path d="M19 10v2a7 7 0 01-14 0v-2" />
+      <path d="M12 19v3" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z" />
+      <path d="M19 17l.5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5L19 17z" />
+    </svg>
+  );
+}
+
+function CompassIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="m16.24 7.76-1.804 5.411a2 2 0 01-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 011.265-1.265z" />
+    </svg>
+  );
+}
+
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Feature card data
+// ---------------------------------------------------------------------------
+
+const FEATURE_CARDS = [
+  { icon: MicIcon, title: 'Voice Agent', desc: 'Natural conversation', color: 'from-[#E8A46D]/15 to-[#D4864A]/5', iconColor: 'text-[#D4864A]' },
+  { icon: TargetIcon, title: 'Goal Tracking', desc: 'Multi-horizon goals', color: 'from-[#9BB89B]/15 to-[#739A73]/5', iconColor: 'text-[#5A7F5A]' },
+  { icon: CompassIcon, title: 'Daily Check-ins', desc: 'Track your progress', color: 'from-[#85B8D8]/15 to-[#5E9BC4]/5', iconColor: 'text-[#5E9BC4]' },
+  { icon: SparklesIcon, title: 'AI Insights', desc: 'Personalized wisdom', color: 'from-[#C4B8D8]/15 to-[#9B8BB8]/5', iconColor: 'text-[#8B7BA8]' },
+];
+
+const TRUST_BADGES = [
+  { dot: 'bg-[#9BB89B]', label: 'Local Storage' },
+  { dot: 'bg-[#85B8D8]', label: 'Privacy First' },
+  { dot: 'bg-[#C4B8D8]', label: 'AI Powered' },
+];
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,209 +118,138 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0a0e17] flex">
-      {/* Organic Flowing Background - Calming Aesthetic */}
-      <div className="absolute inset-0">
-        {/* Soft gradient mesh */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0f1729] to-[#0a0e17]" />
-        
-        {/* Organic flowing shapes */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-teal-500/10 via-blue-500/5 to-transparent rounded-full blur-[100px] animate-pulse-subtle" />
-          <div className="absolute bottom-[-20%] left-[-10%] w-[800px] h-[800px] bg-gradient-to-tr from-purple-500/8 via-pink-500/5 to-transparent rounded-full blur-[120px]" />
-          <div className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-gradient-to-br from-cyan-500/5 to-transparent rounded-full blur-[80px]" />
-        </div>
-
-        {/* Subtle organic wave pattern overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          }}
-        />
+    <div className="min-h-screen relative overflow-hidden bg-[#FAFAF8]">
+      {/* Background Elements */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-[-15%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-[#C4D5C4]/25 via-[#B5D4E8]/15 to-transparent rounded-full blur-[100px] animate-breathe" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#F5C9A3]/15 via-[#FCE8D5]/10 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] w-[400px] h-[400px] bg-gradient-to-br from-[#E4ECE4]/20 to-transparent rounded-full blur-[80px]" />
       </div>
+
+      {/* Nav */}
+      <header className="relative z-20 flex items-center justify-between px-6 lg:px-12 py-6">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#9BB89B] to-[#739A73] flex items-center justify-center shadow-sm">
+            <LeafIcon className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-['Instrument_Serif'] text-xl text-[#2A2623]">Life Design</span>
+        </Link>
+      </header>
 
       {/* Main Content */}
-      <div className="w-full flex flex-col lg:flex-row items-stretch relative z-10">
-        {/* Left Side - Hero Illustration */}
-        <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative">
-          <div className="relative w-full max-w-lg">
-            {/* Glow effect behind illustration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 via-blue-500/10 to-purple-500/20 blur-[60px] rounded-full" />
-            
-            <Image
-              src="/images/life-design-hero-illustration.png"
-              alt="Life Design"
-              width={500}
-              height={500}
-              className="relative z-10 object-contain drop-shadow-2xl"
-              priority
-            />
-
-            {/* Floating elements */}
-            <div className="absolute top-10 right-10 glass rounded-2xl p-3 animate-float" style={{ animationDelay: '0s' }}>
-              <Target className="h-6 w-6 text-teal-400" />
-            </div>
-            <div className="absolute bottom-20 left-0 glass rounded-2xl p-3 animate-float" style={{ animationDelay: '1s' }}>
-              <Waves className="h-6 w-6 text-blue-400" />
-            </div>
-            <div className="absolute top-1/3 left-10 glass rounded-2xl p-3 animate-float" style={{ animationDelay: '2s' }}>
-              <Compass className="h-6 w-6 text-purple-400" />
+      <section className="relative z-10 flex flex-col lg:flex-row items-center max-w-6xl mx-auto px-6 lg:px-12 pt-8 lg:pt-16 pb-16">
+        {/* Left Content */}
+        <div className="flex-1 max-w-xl space-y-8 text-center lg:text-left">
+          <div className="animate-fade-up stagger-1">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F4F7F4] border border-[#C4D5C4]/30 mb-6">
+              <div className="w-2 h-2 rounded-full bg-[#9BB89B] animate-breathe" />
+              <span className="text-xs font-medium text-[#5A7F5A] tracking-wide uppercase">Personal Intelligence</span>
             </div>
           </div>
-        </div>
 
-        {/* Right Side - Content */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md space-y-8">
-            {/* Logo & Brand */}
-            <div className="text-center lg:text-left space-y-4">
-              <div className="flex justify-center lg:justify-start">
-                <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-teal-400/20 via-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/10 shadow-2xl shadow-teal-500/10 backdrop-blur-xl">
-                  <Image
-                    src="/images/life-orb-3d-icon.png"
-                    alt="Life Design"
-                    width={56}
-                    height={56}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-[34px] font-bold tracking-tight text-white leading-tight">
-                  Life Design
-                </h1>
-                <p className="text-[17px] text-slate-400 mt-2 font-medium leading-relaxed">
-                  Your personal intelligence platform for meaningful living
-                </p>
-              </div>
-            </div>
+          <h1 className="animate-fade-up stagger-2 font-['Instrument_Serif'] text-[clamp(2.5rem,5vw,4rem)] leading-[1.1] text-[#1A1816] tracking-tight">
+            Design a life<br />
+            <span className="italic text-[#5A7F5A]">worth living</span>
+          </h1>
 
-            {/* Primary CTA */}
-            <div className="space-y-4">
-              {!profile?.onboarded ? (
-                <button
-                  onClick={startGuestMode}
-                  className="group flex w-full items-center justify-center gap-3 btn-coral py-5 text-[17px]"
-                >
-                  <Mic className="h-5 w-5" />
-                  {hasOnboardingProgress || profile ? 'Resume Your Journey' : 'Start Your Journey'}
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              ) : (
-                <button
-                  onClick={continueAsGuest}
-                  className="group flex w-full items-center justify-center gap-3 btn-primary py-5 text-[17px]"
-                >
-                  <Sparkles className="h-5 w-5" />
-                  Continue to Dashboard
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              )}
+          <p className="animate-fade-up stagger-3 text-lg text-[#7D756A] leading-relaxed max-w-md mx-auto lg:mx-0">
+            Discover hidden patterns across health, career, relationships and growth. AI-powered insights connecting all dimensions of your life.
+          </p>
 
-              <p className="text-center text-[13px] text-slate-500">
-                No account needed. Start with a voice conversation.
-              </p>
-
-              {!profile?.onboarded && (hasOnboardingProgress || profile) && (
-                <button
-                  onClick={restartOnboarding}
-                  className="w-full text-center text-[13px] text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  Start over instead
-                </button>
-              )}
-            </div>
-
-            {/* Feature Cards - iOS Style */}
-            <div className="grid grid-cols-2 gap-3">
-              <FeatureCard
-                icon={Mic}
-                title="AI Voice Agent"
-                description="Natural conversation"
-                color="coral"
-              />
-              <FeatureCard
-                icon={Target}
-                title="Goal Tracking"
-                description="Multi-horizon goals"
-                color="teal"
-              />
-              <FeatureCard
-                icon={Compass}
-                title="Daily Check-ins"
-                description="Track your progress"
-                color="blue"
-              />
-              <FeatureCard
-                icon={Sparkles}
-                title="AI Insights"
-                description="Personalized wisdom"
-                color="purple"
-              />
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="flex items-center justify-center gap-6 pt-4">
-              <div className="flex items-center gap-2 text-slate-500">
-                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-xs">Local Storage</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-500">
-                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-xs">Privacy First</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-500">
-                <div className="h-2 w-2 rounded-full bg-purple-500" />
-                <span className="text-xs">AI Powered</span>
-              </div>
-            </div>
-
-            {/* Footer */}
-            {profile && (
-              <div className="text-center pt-4">
-                <button
-                  onClick={clearGuestData}
-                  className="text-[13px] text-slate-600 hover:text-slate-400 transition-colors"
-                >
-                  Clear data and start fresh
-                </button>
-              </div>
+          {/* Primary CTA */}
+          <div className="animate-fade-up stagger-4 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+            {!profile?.onboarded ? (
+              <button
+                onClick={startGuestMode}
+                className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-[#5A7F5A]/20 hover:shadow-xl hover:shadow-[#5A7F5A]/30 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <MicIcon className="w-[18px] h-[18px]" />
+                {hasOnboardingProgress || profile ? 'Resume Your Journey' : 'Start Your Journey'}
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            ) : (
+              <button
+                onClick={continueAsGuest}
+                className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-[#5A7F5A]/20 hover:shadow-xl hover:shadow-[#5A7F5A]/30 transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <SparklesIcon className="w-[18px] h-[18px]" />
+                Continue to Dashboard
+                <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             )}
+            <p className="text-[13px] text-[#A8A198] self-center">No account needed</p>
+          </div>
+
+          {/* Resume / restart options */}
+          {!profile?.onboarded && (hasOnboardingProgress || profile) && (
+            <div className="animate-fade-up stagger-5">
+              <button
+                onClick={restartOnboarding}
+                className="text-[13px] text-[#A8A198] hover:text-[#7D756A] transition-colors"
+              >
+                Start over instead
+              </button>
+            </div>
+          )}
+
+          {profile && (
+            <div>
+              <button
+                onClick={clearGuestData}
+                className="text-[13px] text-[#A8A198] hover:text-[#7D756A] transition-colors"
+              >
+                Clear data and start fresh
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right - Feature Cards */}
+        <div className="flex-1 max-w-lg mt-16 lg:mt-0 lg:pl-16 w-full">
+          <div className="relative">
+            {/* Central orb */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-[#E4ECE4] via-[#F4F7F4] to-[#DBEAF4] opacity-60 blur-xl animate-breathe" />
+
+            <div className="grid grid-cols-2 gap-4 relative z-10">
+              {FEATURE_CARDS.map((item, i) => (
+                <div
+                  key={i}
+                  className={`animate-fade-up stagger-${i + 2} group p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 hover:shadow-lg hover:shadow-[#9BB89B]/5 transition-all duration-300 hover:-translate-y-1 cursor-default`}
+                >
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                  </div>
+                  <p className="text-sm font-semibold text-[#2A2623]">{item.title}</p>
+                  <p className="text-xs text-[#A8A198] mt-0.5">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      </section>
 
-function FeatureCard({ 
-  icon: Icon, 
-  title, 
-  description,
-  color 
-}: { 
-  icon: any; 
-  title: string; 
-  description: string;
-  color: 'coral' | 'teal' | 'blue' | 'purple';
-}) {
-  const colors = {
-    coral: 'from-coral-400/20 to-coral-500/10 text-coral-400',
-    teal: 'from-teal-400/20 to-teal-500/10 text-teal-400',
-    blue: 'from-blue-400/20 to-blue-500/10 text-blue-400',
-    purple: 'from-purple-400/20 to-purple-500/10 text-purple-400',
-  };
+      {/* Trust bar */}
+      <section className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 pb-16">
+        <div className="flex items-center justify-center gap-8 flex-wrap">
+          {TRUST_BADGES.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${item.dot}`} />
+              <span className="text-xs text-[#A8A198] font-medium">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
-  return (
-    <div className="glass-card p-4 flex flex-col items-center text-center gap-2 hover:bg-white/8 transition-all group">
-      <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${colors[color]} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
-      </div>
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-[#E8E4DD]/60 px-6 lg:px-12 py-8">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#A8A198]">
+          <div className="flex items-center gap-2">
+            <LeafIcon className="w-4 h-4 text-[#9BB89B]" />
+            <span>Life Design</span>
+          </div>
+          <p>Crafted with care for meaningful living</p>
+        </div>
+      </footer>
     </div>
   );
 }

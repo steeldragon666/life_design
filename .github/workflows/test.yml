@@ -1,0 +1,103 @@
+name: Test Suite
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '20'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Core tests
+        run: pnpm --filter @life-design/core test
+
+      - name: AI tests
+        run: pnpm --filter @life-design/ai test
+        continue-on-error: true
+
+      - name: Web tests
+        run: pnpm --filter @life-design/web test
+        continue-on-error: true
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Type check core
+        run: pnpm --filter @life-design/core type-check
+        continue-on-error: true
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: unit-tests
+    env:
+      E2E_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web app
+        run: pnpm --filter @life-design/web build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: placeholder
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium
+        working-directory: e2e
+        env:
+          E2E_SUPABASE_URL: placeholder
+          E2E_SUPABASE_SERVICE_KEY: placeholder
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7

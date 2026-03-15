@@ -39,3 +39,4 @@ pnpm-debug.log*
 .vercel
 .env*.local
 life_design/
+.gstack/

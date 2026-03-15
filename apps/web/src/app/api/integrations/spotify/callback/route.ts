@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=spotify_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_spotify')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=spotify_invalid_state`);
+  }
+
   try {
     const redirectUri = `${appUrl}/api/integrations/spotify/callback`;
     
@@ -36,17 +43,29 @@ export async function GET(request: NextRequest) {
     }
 
     const tokens = await response.json();
-    
-    // For guest mode, redirect with tokens in URL (will be stored in localStorage by client)
-    // In production, you'd want to use a more secure method
-    const tokenData = encodeURIComponent(JSON.stringify({
+
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('spotify returned no access token');
+    }
+
+    const tokenPayload = {
       provider: 'spotify',
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expires_at: Date.now() + (tokens.expires_in * 1000),
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=spotify&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=spotify`);
+    redirectResponse.cookies.set('life-design-oauth-spotify', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_spotify', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Spotify callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=spotify_failed`);

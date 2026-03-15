@@ -224,12 +224,27 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : undefined;
+        // Look up user_id from existing subscription record
+        let userId: string | undefined;
+        if (customerId) {
+          const supabase = getServiceRoleSupabaseClient();
+          if (supabase) {
+            const { data } = await supabase
+              .from('subscriptions')
+              .select('user_id')
+              .eq('stripe_customer_id', customerId)
+              .maybeSingle();
+            userId = data?.user_id ?? undefined;
+          }
+        }
         await upsertSubscription({
-          stripe_customer_id: typeof invoice.customer === 'string' ? invoice.customer : undefined,
+          user_id: userId,
+          stripe_customer_id: customerId,
           stripe_subscription_id: getInvoiceSubscriptionId(invoice),
           status: 'past_due',
         });
-        await recordSubscriptionEvent(event);
+        await recordSubscriptionEvent(event, userId);
         break;
       }
 

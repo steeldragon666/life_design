@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildFallbackWeeklyDigest,
+  buildFallbackWeeklyDigestWithAI,
   buildWeeklyDigestSeed,
   type WeeklyDigestCheckin,
   type WeeklyDigestGoal,
@@ -138,5 +139,43 @@ describe('weekly digest utility', () => {
     expect(seed.stats.totalCheckins).toBe(0);
     expect(seed.stats.currentStreak).toBe(0);
     expect(seed.insights.progressHighlights.length).toBeGreaterThan(0);
+  });
+});
+
+describe('buildFallbackWeeklyDigestWithAI', () => {
+  const seed = buildWeeklyDigestSeed({
+    goals: baseGoals,
+    checkins: baseCheckins,
+    profile: { id: 'guest-user', name: 'Aaron' },
+  });
+
+  it('enriches mentorNote when summarization succeeds', async () => {
+    const summarize = vi.fn(async () => 'focused on career growth');
+    const result = await buildFallbackWeeklyDigestWithAI(
+      seed,
+      ['Worked on promotions', 'Led a team meeting'],
+      summarize,
+    );
+    expect(result.mentorNote).toContain('focused on career growth');
+    expect(summarize).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to base mentorNote when summarization fails', async () => {
+    const summarize = vi.fn(async () => { throw new Error('model error'); });
+    const base = buildFallbackWeeklyDigest(seed);
+    const result = await buildFallbackWeeklyDigestWithAI(
+      seed,
+      ['Some journal entry'],
+      summarize,
+    );
+    expect(result.mentorNote).toBe(base.mentorNote);
+  });
+
+  it('returns base digest unchanged when journal entries are empty', async () => {
+    const summarize = vi.fn(async () => 'should not be called');
+    const base = buildFallbackWeeklyDigest(seed);
+    const result = await buildFallbackWeeklyDigestWithAI(seed, [], summarize);
+    expect(result.mentorNote).toBe(base.mentorNote);
+    expect(summarize).not.toHaveBeenCalled();
   });
 });

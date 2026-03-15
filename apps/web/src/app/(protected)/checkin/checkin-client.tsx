@@ -2,168 +2,325 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useGuest } from '@/lib/guest-context';
-import { ALL_DIMENSIONS, Dimension, DurationType } from '@life-design/core';
-import CheckInForm from '@/components/checkin/checkin-form';
-import type { CheckInFormData } from '@/components/checkin/checkin-form';
-import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
-import { inferMoodAdaptation } from '@/lib/mood-adapter';
-import { requestChatText } from '@/lib/chat-client';
+import { ALL_DIMENSIONS, Dimension, DIMENSION_LABELS, DurationType } from '@life-design/core';
+
+// ---------------------------------------------------------------------------
+// Inline SVG icons
+// ---------------------------------------------------------------------------
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+const DIMENSION_META: Record<string, { emoji: string; question: string }> = {
+  career: { emoji: '\u{1F3AF}', question: 'How fulfilled do you feel at work?' },
+  finance: { emoji: '\u{2728}', question: 'How secure do you feel financially?' },
+  health: { emoji: '\u{1F33F}', question: 'How is your physical wellbeing today?' },
+  fitness: { emoji: '\u{1F4AA}', question: 'How active and energised do you feel?' },
+  family: { emoji: '\u{1F3E1}', question: 'How connected do you feel to family?' },
+  social: { emoji: '\u{1F91D}', question: 'How are your social connections today?' },
+  romance: { emoji: '\u{1F496}', question: 'How fulfilled is your romantic life?' },
+  growth: { emoji: '\u{1F4D6}', question: 'How much did you learn or grow today?' },
+};
+
+const moodOptions = [
+  { value: 1, label: 'Struggling', color: '#D4864A' },
+  { value: 2, label: 'Low', color: '#E8A46D' },
+  { value: 3, label: 'Neutral', color: '#A8A198' },
+  { value: 4, label: 'Good', color: '#9BB89B' },
+  { value: 5, label: 'Thriving', color: '#5A7F5A' },
+];
+
+// Map 5-point mood scale to 1-10 for storage
+function moodTo10(mood5: number): number {
+  return mood5 * 2;
+}
 
 interface CheckInClientProps {
   date: string;
 }
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export default function CheckInClient({ date }: CheckInClientProps) {
   const router = useRouter();
-  const { profile, addCheckin, mentorProfile, checkins, conversationMemory, appendConversationSummary } = useGuest();
+  const { addCheckin, appendConversationSummary } = useGuest();
+
+  // Wizard state: 0 = mood, 1-8 = dimensions, 9 = reflection, 10 = complete
+  const [step, setStep] = useState(0);
+  const [mood, setMood] = useState<number | null>(null);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [reflection, setReflection] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [groundingStarted, setGroundingStarted] = useState(false);
-  const [groundingLoading, setGroundingLoading] = useState(false);
-  const latestCheckin = checkins.length > 0 ? checkins[checkins.length - 1] : null;
-  const latestScores = latestCheckin?.dimension_scores.reduce<Partial<Record<Dimension, number>>>((acc, item) => {
-    if (ALL_DIMENSIONS.includes(item.dimension as Dimension) && item.score >= 1 && item.score <= 10) {
-      acc[item.dimension as Dimension] = item.score;
+
+  const totalSteps = 10;
+  const progress = ((step + 1) / (totalSteps + 1)) * 100;
+
+  const handleDimensionScore = (dim: string, score: number) => {
+    setScores(prev => ({ ...prev, [dim]: score }));
+  };
+
+  const canProceed = () => {
+    if (step === 0) return mood !== null;
+    if (step >= 1 && step <= 8) return scores[ALL_DIMENSIONS[step - 1]] !== undefined;
+    if (step === 9) return true; // Reflection is optional
+    return false;
+  };
+
+  const handleNext = () => {
+    if (step === 9) {
+      // Submit check-in on final step
+      submitCheckin();
+    } else {
+      setStep(step + 1);
     }
-    return acc;
-  }, {});
+  };
 
-  async function startGrounding() {
-    const fallbackOpener =
-      'Take one deep breath in, and exhale slowly. What feels most present in your body right now?';
+  function submitCheckin() {
+    if (mood === null) return;
 
-    if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-      setError('Voice grounding is unavailable in this browser. You can still complete your written check-in.');
-      return;
-    }
-
-    setGroundingLoading(true);
     setError(null);
 
     try {
-      const mood = inferMoodAdaptation(checkins);
-      const systemPrompt = buildMentorSystemPrompt(mentorProfile, 'checkin', {
-        mood,
-        memory: conversationMemory,
-      });
-      const result = await requestChatText({
-        payload: {
-          message: 'Create a 3-line grounding check-in opener with one breath cue and one reflective question.',
-          systemPrompt,
-          includePersistedMemory: true,
-          userId: profile?.id,
-          source: 'checkin',
-        },
-        fallbackText: fallbackOpener,
-        timeoutMs: 18_000,
-      });
-      const opener = result.text;
-      if (result.degraded) {
-        setError(
-          result.reason === 'timeout'
-            ? 'Grounding response was slow, so I started with a gentle fallback.'
-            : 'Could not load a custom grounding opener. Using a calming fallback.',
-        );
-      }
+      const dimensionScores = ALL_DIMENSIONS
+        .filter(dim => scores[dim] !== undefined)
+        .map(dim => ({
+          dimension: dim,
+          score: scores[dim],
+        }));
 
-      const utterance = new SpeechSynthesisUtterance(opener);
-      utterance.rate = 0.88;
-      utterance.pitch = 1;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-      appendConversationSummary('Started guided grounding before check-in.', 'checkin');
-      setGroundingStarted(true);
-    } catch {
-      const utterance = new SpeechSynthesisUtterance(fallbackOpener);
-      utterance.rate = 0.88;
-      utterance.pitch = 1;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-      setGroundingStarted(true);
-    } finally {
-      setGroundingLoading(false);
-    }
-  }
-
-  async function handleSubmit(data: CheckInFormData) {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Validate scores
-      if (data.mood < 1 || data.mood > 10) {
-        setError('Mood must be between 1 and 10');
-        setLoading(false);
-        return;
-      }
-
-      const invalidScores = data.scores.some((s) => s.score < 1 || s.score > 10);
-      if (invalidScores) {
-        setError('All dimension scores must be between 1 and 10');
-        setLoading(false);
-        return;
-      }
-
-      // Save to guest context
       addCheckin({
         id: `checkin-${Date.now()}`,
         date,
-        mood: data.mood,
-        duration_type: data.durationType ?? DurationType.Quick,
-        journal_entry: data.journalEntry,
-        dimension_scores: data.scores.map(s => ({
-          dimension: s.dimension,
-          score: s.score,
-        })),
+        mood: moodTo10(mood),
+        duration_type: DurationType.Deep,
+        journal_entry: reflection || undefined,
+        dimension_scores: dimensionScores,
       });
-      appendConversationSummary(`Submitted check-in with mood ${data.mood}/10.`, 'checkin');
 
-      // Navigate to dashboard
-      router.push('/dashboard');
-    } catch (err) {
+      appendConversationSummary(`Submitted check-in with mood ${moodTo10(mood)}/10.`, 'checkin');
+      setStep(10); // Show completion screen
+    } catch {
       setError('Failed to save check-in. Please try again.');
-      setLoading(false);
     }
   }
 
   return (
-    <>
-      {error && (
-        <div className="glass-card p-4 mb-4 border-l-4 border-red-500">
-          <p className="text-sm text-red-400">{error}</p>
+    <div className="px-5 lg:px-10 py-6 lg:py-8 max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">Daily Check-in</h1>
+        <p className="text-sm text-[#A8A198] mt-1">Take a moment to reflect on your day</p>
+      </div>
+
+      {/* Progress Bar */}
+      {step < 10 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] text-[#A8A198] uppercase tracking-wider font-medium">
+              Step {step + 1} of {totalSteps + 1}
+            </span>
+            <span className="text-[10px] font-['DM_Mono'] text-[#5A7F5A]">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-1 bg-[#F5F3EF] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#9BB89B] to-[#5A7F5A] rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
       )}
-      <div className="glass-card p-4 mb-4">
-        <p className="text-sm text-slate-300 mb-3">
-          {mentorProfile.characterName} can lead a brief grounding moment before your check-in.
-        </p>
-        <div className="flex flex-wrap gap-2 items-center">
-          <button onClick={startGrounding} className="btn-secondary" type="button" disabled={groundingLoading}>
-            {groundingLoading
-              ? 'Preparing grounding...'
-              : groundingStarted
-                ? 'Replay grounding intro'
-                : 'Start 30-second grounding'}
-          </button>
-          <a
-            href="#checkin-form"
-            className="text-sm text-slate-300 underline underline-offset-2 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-400 rounded-sm"
-          >
-            Skip grounding and continue
-          </a>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 mb-6 rounded-2xl bg-[#FEF7F0] border border-[#E8A46D]/30">
+          <p className="text-sm text-[#D4864A]">{error}</p>
         </div>
+      )}
+
+      {/* Step Content */}
+      <div className="animate-fade-up" key={step}>
+        {/* Step 0: Mood */}
+        {step === 0 && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
+              <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623] mb-2">How are you feeling overall?</h2>
+              <p className="text-sm text-[#A8A198] mb-6">Be honest &mdash; there&rsquo;s no wrong answer</p>
+
+              <div className="flex gap-3">
+                {moodOptions.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => setMood(option.value)}
+                    className={`flex-1 p-4 rounded-2xl border-2 transition-all text-center
+                      ${mood === option.value
+                        ? 'border-[#5A7F5A] bg-[#F4F7F4] shadow-sm'
+                        : 'border-[#E8E4DD] hover:border-[#C4D5C4] bg-white'
+                      }`}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center"
+                      style={{ backgroundColor: option.color + '20' }}
+                    >
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: option.color }} />
+                    </div>
+                    <p className="text-xs font-medium text-[#5C554C]">{option.label}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Steps 1-8: Dimension scores */}
+        {step >= 1 && step <= 8 && (() => {
+          const dim = ALL_DIMENSIONS[step - 1];
+          const meta = DIMENSION_META[dim] ?? { emoji: '\u{2B50}', question: `How do you feel about ${dim}?` };
+          const label = DIMENSION_LABELS[dim] ?? dim;
+
+          return (
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">{meta.emoji}</span>
+                  <div>
+                    <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623]">{label}</h2>
+                    <p className="text-sm text-[#A8A198]">{meta.question}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 mt-6">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(score => {
+                    const isSelected = scores[dim] === score;
+                    const isInRange = scores[dim] !== undefined && score <= scores[dim];
+                    return (
+                      <button
+                        key={score}
+                        onClick={() => handleDimensionScore(dim, score)}
+                        className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all
+                          ${isSelected
+                            ? 'bg-[#5A7F5A] text-white shadow-sm'
+                            : isInRange
+                              ? 'bg-[#E4ECE4] text-[#5A7F5A]'
+                              : 'bg-[#F5F3EF] text-[#A8A198] hover:bg-[#E8E4DD]'
+                          }`}
+                      >
+                        {score}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-between mt-2 px-1">
+                  <span className="text-[10px] text-[#A8A198]">Struggling</span>
+                  <span className="text-[10px] text-[#A8A198]">Thriving</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Step 9: Reflection */}
+        {step === 9 && (
+          <div className="space-y-6">
+            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
+              <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623] mb-2">Today&rsquo;s Reflection</h2>
+              <p className="text-sm text-[#A8A198] mb-4">What&rsquo;s on your mind? Any wins, challenges, or thoughts?</p>
+              <textarea
+                value={reflection}
+                onChange={(e) => setReflection(e.target.value)}
+                className="w-full h-40 p-4 rounded-xl bg-[#FAFAF8] border border-[#E8E4DD] text-sm text-[#3D3833] resize-none focus:outline-none focus:ring-2 focus:ring-[#9BB89B]/50 focus:border-[#9BB89B] placeholder:text-[#C4C0B8]"
+                placeholder="Today I felt grateful for..."
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 10: Complete */}
+        {step === 10 && (
+          <div className="text-center py-12 space-y-6">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E4ECE4] to-[#C4D5C4] flex items-center justify-center mx-auto">
+              <CheckCircleIcon className="w-10 h-10 text-[#5A7F5A]" />
+            </div>
+            <div>
+              <h2 className="font-['Instrument_Serif'] text-3xl text-[#1A1816] mb-2">Check-in Complete</h2>
+              <p className="text-sm text-[#A8A198] max-w-sm mx-auto">
+                Beautiful. Your reflections are saved and your AI coach will generate new insights shortly.
+              </p>
+            </div>
+
+            {/* Mini summary */}
+            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60 max-w-sm mx-auto text-left">
+              <p className="text-xs text-[#A8A198] uppercase tracking-wider mb-3 font-medium">Today&rsquo;s Snapshot</p>
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_DIMENSIONS.filter(dim => scores[dim] !== undefined).map(dim => (
+                  <div key={dim} className="flex items-center gap-2">
+                    <div className="w-6 h-1.5 rounded-full bg-[#F5F3EF] overflow-hidden">
+                      <div className="h-full rounded-full bg-[#9BB89B]" style={{ width: `${scores[dim] * 10}%` }} />
+                    </div>
+                    <span className="text-[11px] text-[#7D756A]">{DIMENSION_LABELS[dim]}</span>
+                    <span className="text-[10px] font-['DM_Mono'] text-[#5A7F5A] ml-auto">{scores[dim]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-sm font-medium text-white shadow-sm hover:shadow-md transition-all"
+            >
+              View Dashboard
+            </Link>
+          </div>
+        )}
       </div>
-      <div id="checkin-form">
-        <CheckInForm
-          onSubmit={handleSubmit}
-          loading={loading}
-          initialValues={{
-            mood: latestCheckin?.mood,
-            scores: latestScores,
-          }}
-        />
-      </div>
-    </>
+
+      {/* Navigation Buttons */}
+      {step < 10 && (
+        <div className="flex gap-3 mt-8">
+          {step > 0 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[#E8E4DD] text-sm font-medium text-[#7D756A] hover:bg-[#F5F3EF] transition-colors"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </button>
+          )}
+          <button
+            onClick={handleNext}
+            disabled={!canProceed()}
+            className={`flex-1 px-6 py-3 rounded-2xl text-sm font-medium transition-all
+              ${canProceed()
+                ? 'bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white shadow-sm hover:shadow-md'
+                : 'bg-[#F5F3EF] text-[#C4C0B8] cursor-not-allowed'
+              }`}
+          >
+            {step === 9 ? 'Complete Check-in' : 'Continue'}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

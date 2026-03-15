@@ -19,7 +19,20 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <p>Loading...</p>;
+    // Guest mode — render dashboard client with empty server data;
+    // the client component will hydrate from localStorage via useDashboardData()
+    return (
+      <DashboardClient
+        latestScores={[]}
+        overallScore={0}
+        streak={0}
+        dimensionTrends={{}}
+        recentInsights={[]}
+        goalsSummary={{ total: 0, byHorizon: { short: 0, medium: 0, long: 0 }, nearestDeadline: null }}
+        activeGoals={[]}
+        nudges={[]}
+      />
+    );
   }
 
   // Fetch profile for context (including first_name for personalised greeting)
@@ -108,6 +121,14 @@ export default async function DashboardPage() {
       dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
+      activeGoals={activeGoals as Array<{
+        id: string;
+        title: string;
+        horizon: string;
+        target_date: string | null;
+        goal_dimensions?: Array<{ dimension: string }>;
+        goal_milestones?: Array<{ id: string; completed: boolean }>;
+      }>}
       nudges={nudges}
       firstName={firstName}
     />

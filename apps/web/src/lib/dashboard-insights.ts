@@ -44,6 +44,48 @@ function average(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
+/**
+ * Cosine similarity between two vectors.
+ * For L2-normalized vectors (as produced by ai-local embed), this is a dot product.
+ */
+export function cosineSimilarity(a: Float32Array, b: Float32Array): number {
+  if (a.length !== b.length) return 0;
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
+export interface SemanticInsightMatch {
+  dimension: string;
+  similarity: number;
+}
+
+/**
+ * Given a journal entry embedding and prototype embeddings per dimension,
+ * find which dimensions the journal text is semantically closest to.
+ */
+export function findSemanticDimensionMatches(
+  journalEmbedding: Float32Array,
+  dimensionPrototypes: Map<string, Float32Array>,
+  threshold = 0.3,
+): SemanticInsightMatch[] {
+  const matches: SemanticInsightMatch[] = [];
+  for (const [dimension, prototype] of dimensionPrototypes) {
+    const sim = cosineSimilarity(journalEmbedding, prototype);
+    if (sim >= threshold) {
+      matches.push({ dimension, similarity: sim });
+    }
+  }
+  return matches.sort((a, b) => b.similarity - a.similarity);
+}
+
 export function buildDashboardInsights({
   checkins,
   latestScores,

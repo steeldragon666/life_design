@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=strava_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_strava')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=strava_invalid_state`);
+  }
+
   try {
     const response = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
@@ -29,16 +36,30 @@ export async function GET(request: NextRequest) {
     }
 
     const tokens = await response.json();
-    
-    const tokenData = encodeURIComponent(JSON.stringify({
+
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('strava returned no access token');
+    }
+
+    const tokenPayload = {
       provider: 'strava',
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expires_at: tokens.expires_at * 1000,
       athlete: tokens.athlete,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=strava&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=strava`);
+    redirectResponse.cookies.set('life-design-oauth-strava', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_strava', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Strava callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=strava_failed`);

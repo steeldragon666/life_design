@@ -8,68 +8,73 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Life Design — Your entire life, intelligently connected',
   description:
-    'Discover hidden patterns across health, career, relationships and growth. AI-powered insights built on real statistics, not vague affirmations.',
+    'Discover hidden patterns across health, career, relationships and growth. AI-powered insights connecting all dimensions of your life.',
   alternates: { canonical: '/' },
 };
 
 // ---------------------------------------------------------------------------
-// Inline SVG icons
+// Inline SVG icons (matching redesign stroke style)
 // ---------------------------------------------------------------------------
 
-function IconCrossLink() {
+function LeafIcon({ className }: { className?: string }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-6 w-6"
-      aria-hidden="true"
-    >
-      <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 20A7 7 0 019.8 6.9C15.5 4.9 17 3.5 17 3.5s4 2 4 9-5.5 8-5.5 8" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
     </svg>
   );
 }
 
-function IconBrain() {
+function MicIcon({ className }: { className?: string }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-6 w-6"
-      aria-hidden="true"
-    >
-      <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
-      <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="13" rx="3" />
+      <path d="M19 10v2a7 7 0 01-14 0v-2" />
+      <path d="M12 19v3" />
     </svg>
   );
 }
 
-function IconChart() {
+function ArrowRightIcon({ className }: { className?: string }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-6 w-6"
-      aria-hidden="true"
-    >
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-      <line x1="2" y1="20" x2="22" y2="20" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z" />
+      <path d="M19 17l.5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5L19 17z" />
+    </svg>
+  );
+}
+
+function CompassIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="m16.24 7.76-1.804 5.411a2 2 0 01-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 011.265-1.265z" />
+    </svg>
+  );
+}
+
+function WavesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+      <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+      <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+    </svg>
+  );
+}
+
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
     </svg>
   );
 }
@@ -78,51 +83,23 @@ function IconChart() {
 // Static data
 // ---------------------------------------------------------------------------
 
-const PROBLEM_CARDS = [
-  {
-    app: 'Health app',
-    metric: '7h 23m sleep',
-    label: 'You tracked your sleep perfectly',
-    key: 'health',
-  },
-  {
-    app: 'Finance app',
-    metric: '-$340 this week',
-    label: 'You noticed spending crept up',
-    key: 'finance',
-  },
-  {
-    app: 'Goals app',
-    metric: '2 / 8 goals',
-    label: 'Progress stalled — but why?',
-    key: 'growth',
-  },
+const FEATURE_CARDS = [
+  { icon: MicIcon, title: 'Voice Agent', desc: 'Natural conversation', color: 'from-[#E8A46D]/15 to-[#D4864A]/5', iconColor: 'text-[#D4864A]' },
+  { icon: TargetIcon, title: 'Goal Tracking', desc: 'Multi-horizon goals', color: 'from-[#9BB89B]/15 to-[#739A73]/5', iconColor: 'text-[#5A7F5A]' },
+  { icon: CompassIcon, title: 'Daily Check-ins', desc: 'Track your progress', color: 'from-[#85B8D8]/15 to-[#5E9BC4]/5', iconColor: 'text-[#5E9BC4]' },
+  { icon: SparklesIcon, title: 'AI Insights', desc: 'Personalized wisdom', color: 'from-[#C4B8D8]/15 to-[#9B8BB8]/5', iconColor: 'text-[#8B7BA8]' },
 ];
 
-const FEATURES = [
-  {
-    key: 'cross-domain',
-    icon: <IconCrossLink />,
-    title: 'Cross-domain insights',
-    body: 'Discover how your sleep quality correlates with career output, or how financial stress shows up in your health metrics. Patterns you could never see in isolated apps.',
-  },
-  {
-    key: 'ai-mentor',
-    icon: <IconBrain />,
-    title: 'AI mentor',
-    body: 'A personalised guide that blends therapist empathy, coaching accountability, and philosophical wisdom — adapting its voice to exactly what you need right now.',
-  },
-  {
-    key: 'evidence',
-    icon: <IconChart />,
-    title: 'Evidence-based',
-    body: 'Every insight is backed by statistical significance testing. Correlation coefficients, p-values, and sample sizes — real data science, not vague positive affirmations.',
-  },
+const HOW_IT_WORKS = [
+  { step: '01', title: 'Speak your mind', desc: 'Start a voice conversation. Share your goals, challenges, and aspirations naturally.', icon: MicIcon },
+  { step: '02', title: 'Discover patterns', desc: 'AI connects the dots across all eight dimensions of your life.', icon: WavesIcon },
+  { step: '03', title: 'Grow intentionally', desc: 'Receive personalized insights and track your progress over time.', icon: LeafIcon },
 ];
 
-const DIMENSIONS = [
-  'Career', 'Finance', 'Health', 'Fitness',
-  'Family', 'Social', 'Romance', 'Growth',
+const TRUST_BADGES = [
+  { dot: 'bg-[#9BB89B]', label: 'Local Storage' },
+  { dot: 'bg-[#85B8D8]', label: 'Privacy First' },
+  { dot: 'bg-[#C4B8D8]', label: 'AI Powered' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -131,346 +108,143 @@ const DIMENSIONS = [
 
 export default function MarketingLandingPage() {
   return (
-    <main className="relative min-h-screen bg-[#0f0a1a] text-white overflow-hidden">
+    <main className="min-h-screen relative overflow-hidden bg-[#FAFAF8]">
+      {/* Background Elements */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute top-[-15%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-[#C4D5C4]/25 via-[#B5D4E8]/15 to-transparent rounded-full blur-[100px] animate-breathe" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-tr from-[#F5C9A3]/15 via-[#FCE8D5]/10 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] w-[400px] h-[400px] bg-gradient-to-br from-[#E4ECE4]/20 to-transparent rounded-full blur-[80px]" />
+      </div>
 
-      {/* Atmospheric background blobs */}
-      <div
-        className="pointer-events-none absolute -top-60 left-1/2 -translate-x-1/2 h-[700px] w-[1000px] rounded-full bg-indigo-600/10 blur-[160px]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute top-1/3 -left-60 h-[500px] w-[500px] rounded-full bg-violet-700/8 blur-[120px]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute top-2/3 -right-60 h-[500px] w-[500px] rounded-full bg-indigo-500/8 blur-[120px]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-violet-600/6 blur-[140px]"
-        aria-hidden="true"
-      />
-
-      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Nav bar                                                          */}
-        {/* ---------------------------------------------------------------- */}
-        <nav className="flex items-center justify-between py-6" aria-label="Main navigation">
-          <span className="text-sm font-bold tracking-tight text-white">
-            Life Design
-          </span>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/pricing"
-              className="text-sm text-slate-400 transition-colors hover:text-white"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/login"
-              className="text-sm text-slate-400 transition-colors hover:text-white"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
-            >
-              Get started
-            </Link>
+      {/* Nav */}
+      <header className="relative z-20 flex items-center justify-between px-6 lg:px-12 py-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#9BB89B] to-[#739A73] flex items-center justify-center shadow-sm">
+            <LeafIcon className="w-5 h-5 text-white" />
           </div>
-        </nav>
+          <span className="font-['Instrument_Serif'] text-xl text-[#2A2623]">Life Design</span>
+        </div>
+        <Link
+          href="/login"
+          className="text-sm text-[#5A7F5A] font-medium hover:text-[#476447] transition-colors px-4 py-2 rounded-full border border-[#C4D5C4]/50 hover:bg-[#F4F7F4]"
+        >
+          Sign in
+        </Link>
+      </header>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* 1. Hero section                                                  */}
-        {/* ---------------------------------------------------------------- */}
-        <section className="pb-24 pt-20 text-center" aria-labelledby="hero-heading">
-          {/* Eyeline badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/5 px-4 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
-              Now in early access
-            </span>
+      {/* Hero */}
+      <section className="relative z-10 flex flex-col lg:flex-row items-center max-w-6xl mx-auto px-6 lg:px-12 pt-8 lg:pt-16 pb-16">
+        {/* Left Content */}
+        <div className="flex-1 max-w-xl space-y-8 text-center lg:text-left">
+          <div className="animate-fade-up stagger-1">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F4F7F4] border border-[#C4D5C4]/30 mb-6">
+              <div className="w-2 h-2 rounded-full bg-[#9BB89B] animate-breathe" />
+              <span className="text-xs font-medium text-[#5A7F5A] tracking-wide uppercase">Personal Intelligence</span>
+            </div>
           </div>
 
-          <h1
-            id="hero-heading"
-            className="mx-auto max-w-4xl text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl"
-          >
-            <span className="bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-              Your entire life,
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-              intelligently connected.
-            </span>
+          <h1 className="animate-fade-up stagger-2 font-['Instrument_Serif'] text-[clamp(2.5rem,5vw,4rem)] leading-[1.1] text-[#1A1816] tracking-tight">
+            Design a life<br />
+            <span className="italic text-[#5A7F5A]">worth living</span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400 sm:text-xl">
-            Health, career, relationships, finances — all in one place.
-            Life Design finds the hidden patterns connecting every dimension
-            of your life and turns them into actions you can actually take.
+          <p className="animate-fade-up stagger-3 text-lg text-[#7D756A] leading-relaxed max-w-md mx-auto lg:mx-0">
+            Discover hidden patterns across health, career, relationships and growth. AI-powered insights connecting all dimensions of your life.
           </p>
 
-          {/* CTA buttons */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="animate-fade-up stagger-4 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
             <Link
-              href="/signup"
-              className="rounded-xl bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-600/30 transition-all hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+              href="/login"
+              className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-[#5A7F5A]/20 hover:shadow-xl hover:shadow-[#5A7F5A]/30 transition-all duration-300 hover:-translate-y-0.5"
             >
-              Start Your Free Trial
+              <MicIcon className="w-[18px] h-[18px]" />
+              Start Your Journey
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link
-              href="/pricing"
-              className="rounded-xl border border-white/20 px-8 py-3.5 text-base font-semibold text-slate-300 transition-all hover:border-white/40 hover:text-white"
-            >
-              View pricing
-            </Link>
+            <p className="text-[13px] text-[#A8A198] self-center">No account needed</p>
           </div>
+        </div>
 
-          <p className="mt-4 text-sm text-slate-600">
-            7-day free trial. No credit card required.
-          </p>
+        {/* Right - Feature Cards */}
+        <div className="flex-1 max-w-lg mt-16 lg:mt-0 lg:pl-16 w-full">
+          <div className="relative">
+            {/* Central orb */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-br from-[#E4ECE4] via-[#F4F7F4] to-[#DBEAF4] opacity-60 blur-xl animate-breathe" />
 
-          {/* Dimension pills */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-            {DIMENSIONS.map((dim) => (
-              <span
-                key={dim}
-                className="rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-medium text-slate-400"
-              >
-                {dim}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* 2. Problem statement                                             */}
-        {/* ---------------------------------------------------------------- */}
-        <section className="mb-24" aria-labelledby="problem-heading">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <h2
-              id="problem-heading"
-              className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
-            >
-              You track everything.
-              <br />
-              <span className="text-slate-400">But the picture is still fragmented.</span>
-            </h2>
-            <p className="mt-4 text-slate-400">
-              You track your health in one app, finances in another, goals in a third —
-              and none of them talk to each other. You have data, but you lack insight.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {PROBLEM_CARDS.map((card) => (
-              <div
-                key={card.key}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm"
-              >
-                <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-600">
-                  {card.app}
-                </p>
-                <p className="mb-2 text-2xl font-bold text-white">{card.metric}</p>
-                <p className="text-sm text-slate-500">{card.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Divider label */}
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-800" />
-            <span className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-slate-500">
-              None of these apps see the full picture
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-800" />
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* 3. Solution                                                      */}
-        {/* ---------------------------------------------------------------- */}
-        <section className="mb-24" aria-labelledby="solution-heading">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-indigo-400">
-              The solution
-            </p>
-            <h2
-              id="solution-heading"
-              className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
-            >
-              Life Design connects everything.
-            </h2>
-            <p className="mt-4 text-slate-400">
-              One platform that synthesises all 8 dimensions of your life
-              and surfaces the insights that actually move the needle.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.key}
-                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm transition-all hover:border-indigo-500/30 hover:bg-white/[0.06]"
-              >
-                {/* Icon */}
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 transition-colors group-hover:bg-indigo-500/15">
-                  {feature.icon}
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-white">
-                  {feature.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-slate-400">
-                  {feature.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* 4. Social proof                                                  */}
-        {/* ---------------------------------------------------------------- */}
-        <section className="mb-24 text-center" aria-labelledby="social-proof-heading">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-12 backdrop-blur-sm">
-            {/* Placeholder avatar stack */}
-            <div className="mb-4 flex items-center justify-center -space-x-2">
-              {[0, 1, 2, 3, 4].map((i) => (
+            <div className="grid grid-cols-2 gap-4 relative z-10">
+              {FEATURE_CARDS.map((item, i) => (
                 <div
                   key={i}
-                  className="h-10 w-10 rounded-full border-2 border-[#0f0a1a] bg-gradient-to-br from-indigo-400 to-violet-500"
-                  aria-hidden="true"
-                />
-              ))}
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0f0a1a] bg-slate-800 text-xs font-semibold text-slate-300"
-                aria-hidden="true"
-              >
-                +1k
-              </div>
-            </div>
-
-            <h2
-              id="social-proof-heading"
-              className="text-2xl font-bold text-white"
-            >
-              Join 1,000+ early adopters
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
-              People building a life they designed — not one that happened by default.
-            </p>
-
-            {/* Placeholder testimonial */}
-            <blockquote className="mx-auto mt-8 max-w-xl">
-              <p className="text-base italic text-slate-300 leading-relaxed">
-                &ldquo;I realised my worst financial weeks always followed my worst sleep weeks.
-                Life Design made that connection in three days. Took me three years to notice it myself.&rdquo;
-              </p>
-              <footer className="mt-3 text-sm text-slate-500">
-                — Early access member, Sydney AU
-              </footer>
-            </blockquote>
-
-            {/* Star rating */}
-            <div
-              className="mt-6 flex items-center justify-center gap-1"
-              aria-label="5 out of 5 stars"
-            >
-              {[0, 1, 2, 3, 4].map((i) => (
-                <svg
-                  key={i}
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-5 w-5 text-amber-400"
-                  aria-hidden="true"
+                  className={`animate-fade-up stagger-${i + 2} group p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 hover:shadow-lg hover:shadow-[#9BB89B]/5 transition-all duration-300 hover:-translate-y-1 cursor-default`}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                    <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+                  </div>
+                  <p className="text-sm font-semibold text-[#2A2623]">{item.title}</p>
+                  <p className="text-xs text-[#A8A198] mt-0.5">{item.desc}</p>
+                </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* 5. CTA section                                                   */}
-        {/* ---------------------------------------------------------------- */}
-        <section
-          className="mb-16 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-violet-500/5 px-8 py-16 text-center backdrop-blur-sm"
-          aria-labelledby="cta-heading"
-        >
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-indigo-400">
-            Start designing your life
-          </p>
-          <h2
-            id="cta-heading"
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+      {/* Trust bar */}
+      <section className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 pb-16">
+        <div className="flex items-center justify-center gap-8 flex-wrap">
+          {TRUST_BADGES.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${item.dot}`} />
+              <span className="text-xs text-[#A8A198] font-medium">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12 py-20 border-t border-[#E8E4DD]/60">
+        <h2 className="font-['Instrument_Serif'] text-3xl text-center text-[#1A1816] mb-4">How it works</h2>
+        <p className="text-center text-[#A8A198] mb-16 max-w-md mx-auto">Three simple steps to begin your journey of intentional living</p>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {HOW_IT_WORKS.map((item, i) => (
+            <div key={i} className="text-center group">
+              <div className="w-16 h-16 rounded-2xl bg-[#F4F7F4] border border-[#C4D5C4]/30 flex items-center justify-center mx-auto mb-5 group-hover:bg-[#E4ECE4] transition-colors">
+                <item.icon className="w-6 h-6 text-[#5A7F5A]" />
+              </div>
+              <p className="text-xs text-[#A8A198] font-['DM_Mono'] mb-2">{item.step}</p>
+              <h3 className="font-['Instrument_Serif'] text-xl text-[#2A2623] mb-2">{item.title}</h3>
+              <p className="text-sm text-[#7D756A] leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative z-10 max-w-4xl mx-auto px-6 lg:px-12 py-20">
+        <div className="rounded-3xl bg-gradient-to-br from-[#F4F7F4] via-[#FAFAF8] to-[#FEF7F0] border border-[#E8E4DD]/60 p-12 text-center">
+          <h2 className="font-['Instrument_Serif'] text-3xl text-[#1A1816] mb-4">Begin with intention</h2>
+          <p className="text-[#7D756A] mb-8 max-w-md mx-auto">No signup required. Start with a simple conversation and let your journey unfold naturally.</p>
+          <Link
+            href="/login"
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-[#5A7F5A]/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
           >
-            Your evolution starts today.
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-slate-400">
-            7-day free trial. Cancel any time. No credit card required to start.
-          </p>
+            Start Your Journey
+            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      </section>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/signup"
-              className="rounded-xl bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-600/30 transition-all hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-            >
-              Start Your Free Trial
-            </Link>
-            <Link
-              href="/pricing"
-              className="rounded-xl border border-white/20 px-8 py-3.5 text-base font-semibold text-slate-300 transition-all hover:border-white/40 hover:text-white"
-            >
-              See all plans
-            </Link>
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-[#E8E4DD]/60 px-6 lg:px-12 py-8">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#A8A198]">
+          <div className="flex items-center gap-2">
+            <LeafIcon className="w-4 h-4 text-[#9BB89B]" />
+            <span>Life Design</span>
           </div>
-
-          <p className="mt-6 text-xs text-slate-600">
-            Monthly from $9.99 &nbsp;&middot;&nbsp; Annual from $99 &nbsp;&middot;&nbsp; Lifetime $249
-          </p>
-        </section>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* 6. Footer                                                        */}
-        {/* ---------------------------------------------------------------- */}
-        <footer className="border-t border-white/5 py-10">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <span className="text-sm font-semibold text-white">Life Design</span>
-
-            <nav
-              className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-600"
-              aria-label="Footer navigation"
-            >
-              <Link href="/pricing" className="transition-colors hover:text-slate-300">
-                Pricing
-              </Link>
-              <Link href="/privacy" className="transition-colors hover:text-slate-300">
-                Privacy
-              </Link>
-              <Link href="/terms" className="transition-colors hover:text-slate-300">
-                Terms
-              </Link>
-              <Link href="/login" className="transition-colors hover:text-slate-300">
-                Sign in
-              </Link>
-            </nav>
-
-            <p className="text-xs text-slate-700">
-              &copy; {new Date().getFullYear()} Life Design. All rights reserved.
-            </p>
-          </div>
-        </footer>
-
-      </div>
+          <p>Crafted with care for meaningful living</p>
+        </div>
+      </footer>
     </main>
   );
 }

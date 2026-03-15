@@ -28,31 +28,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
 
         {/* Theme colour for browser chrome and mobile status bar */}
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#FAFAF8" />
 
         {/* iOS PWA support */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Life Design" />
         <link rel="apple-touch-icon" href="/icons/icon-512.png" />
 
-        {/* Cabinet Grotesk — Headings */}
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&display=swap"
-        />
-        {/* Erode — Body text */}
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=erode@300,400,500&display=swap"
-        />
-        {/* JetBrains Mono — Data/Numbers */}
+        {/* Google Fonts: DM Sans (body), Instrument Serif (headings), DM Mono (data) */}
         <link
           rel="preconnect"
           href="https://fonts.googleapis.com"
@@ -64,10 +54,10 @@ export default function RootLayout({
         />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap"
         />
       </head>
-      <body className="antialiased selection:bg-indigo-500/30">
+      <body className="antialiased selection:bg-sage-500/30">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

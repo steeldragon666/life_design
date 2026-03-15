@@ -26,5 +26,13 @@ export async function GET(request: NextRequest) {
     prompt: 'consent',
   });
 
-  return NextResponse.redirect(`${GOOGLE_CONFIG.authUrl}?${params.toString()}`);
+  const response = NextResponse.redirect(`${GOOGLE_CONFIG.authUrl}?${params.toString()}`);
+  response.cookies.set('oauth_state_google', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 10, // 10 minutes
+  });
+  return response;
 }
