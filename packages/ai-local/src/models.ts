@@ -3,7 +3,7 @@
  * Models are loaded lazily on first use and cached in IndexedDB by Transformers.js.
  */
 
-export type ModelTask = 'embedding' | 'classification' | 'summarization';
+export type ModelTask = 'embedding';
 
 export interface ModelConfig {
   modelId: string;
@@ -15,14 +15,6 @@ export const MODEL_REGISTRY: Record<ModelTask, ModelConfig> = {
   embedding: {
     modelId: 'Xenova/all-MiniLM-L6-v2',
     sizeMB: 23,
-  },
-  classification: {
-    modelId: 'Xenova/mobilebert-uncased-mnli',
-    sizeMB: 25,
-  },
-  summarization: {
-    modelId: 'Xenova/distilbart-cnn-6-6',
-    sizeMB: 110,
   },
 };
 
