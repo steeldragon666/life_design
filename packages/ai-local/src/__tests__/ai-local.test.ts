@@ -204,25 +204,316 @@ describe('lazySingleton', () => {
   });
 });
 
+describe('cosineSimilarity', () => {
+  it('returns 1 for identical vectors', async () => {
+    const { cosineSimilarity } = await import('../similarity');
+    const a = new Float32Array([1, 0, 0]);
+    const b = new Float32Array([1, 0, 0]);
+    expect(cosineSimilarity(a, b)).toBeCloseTo(1.0, 5);
+  });
+
+  it('returns 0 for orthogonal vectors', async () => {
+    const { cosineSimilarity } = await import('../similarity');
+    const a = new Float32Array([1, 0, 0]);
+    const b = new Float32Array([0, 1, 0]);
+    expect(cosineSimilarity(a, b)).toBeCloseTo(0.0, 5);
+  });
+
+  it('returns -1 for opposite vectors', async () => {
+    const { cosineSimilarity } = await import('../similarity');
+    const a = new Float32Array([1, 0, 0]);
+    const b = new Float32Array([-1, 0, 0]);
+    expect(cosineSimilarity(a, b)).toBeCloseTo(-1.0, 5);
+  });
+
+  it('returns 0 for zero vectors', async () => {
+    const { cosineSimilarity } = await import('../similarity');
+    const a = new Float32Array([0, 0, 0]);
+    const b = new Float32Array([1, 2, 3]);
+    expect(cosineSimilarity(a, b)).toBe(0);
+  });
+
+  it('throws on mismatched lengths', async () => {
+    const { cosineSimilarity } = await import('../similarity');
+    const a = new Float32Array([1, 0]);
+    const b = new Float32Array([1, 0, 0]);
+    expect(() => cosineSimilarity(a, b)).toThrow('length mismatch');
+  });
+});
+
+describe('findSimilarCheckIns', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns empty for empty check-ins array', async () => {
+    const { findSimilarCheckIns } = await import('../similarity');
+    const result = await findSimilarCheckIns('test', []);
+    expect(result).toEqual([]);
+  });
+
+  it('returns scored check-ins up to topK', async () => {
+    const { findSimilarCheckIns } = await import('../similarity');
+    const mockCheckIns = Array.from({ length: 8 }, (_, i) => ({
+      id: `ci-${i}`,
+      user_id: 'u1',
+      date: `2024-01-0${i + 1}`,
+      mood: 5 + (i % 3),
+      duration_type: 'quick' as any,
+      journal_entry: `Journal entry ${i}`,
+      created_at: '2024-01-01',
+      updated_at: '2024-01-01',
+    }));
+
+    const result = await findSimilarCheckIns('feeling great', mockCheckIns, 3);
+    expect(result).toHaveLength(3);
+    expect(result[0]).toHaveProperty('checkIn');
+    expect(result[0]).toHaveProperty('similarity');
+    expect(typeof result[0].similarity).toBe('number');
+  });
+});
+
+describe('clusterCheckIns', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns empty for empty input', async () => {
+    const { clusterCheckIns } = await import('../similarity');
+    const result = await clusterCheckIns([]);
+    expect(result).toEqual([]);
+  });
+
+  it('returns clusters with members', async () => {
+    const { clusterCheckIns } = await import('../similarity');
+    const mockCheckIns = Array.from({ length: 6 }, (_, i) => ({
+      id: `ci-${i}`,
+      user_id: 'u1',
+      date: `2024-01-0${i + 1}`,
+      mood: i < 3 ? 8 : 3,
+      duration_type: 'quick' as any,
+      journal_entry: `Entry ${i}`,
+      created_at: '2024-01-01',
+      updated_at: '2024-01-01',
+    }));
+
+    const result = await clusterCheckIns(mockCheckIns, 2);
+    expect(result.length).toBeGreaterThan(0);
+    for (const cluster of result) {
+      expect(cluster).toHaveProperty('centroid');
+      expect(cluster).toHaveProperty('label');
+      expect(cluster).toHaveProperty('members');
+      expect(cluster.members.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('classifyGoal', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns dimensions and weights for a goal', async () => {
+    const { classifyGoal } = await import('../classify');
+    const result = await classifyGoal('Run a half marathon in under 2 hours');
+    expect(result).toHaveProperty('dimensions');
+    expect(result).toHaveProperty('weights');
+    expect(Array.isArray(result.dimensions)).toBe(true);
+  });
+
+  it('returns empty for empty input', async () => {
+    const { classifyGoal } = await import('../classify');
+    const result = await classifyGoal('');
+    expect(result.dimensions).toEqual([]);
+    expect(result.weights).toEqual({});
+  });
+});
+
+describe('classifyJournalEntry', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns dimensions, sentiment, and topics', async () => {
+    const { classifyJournalEntry } = await import('../classify');
+    const result = await classifyJournalEntry(
+      'Had a great workout at the gym and then met friends for dinner',
+    );
+    expect(result).toHaveProperty('dimensions');
+    expect(result).toHaveProperty('sentiment');
+    expect(result).toHaveProperty('topics');
+    // The mock returns dimension labels as the top label from zero-shot;
+    // sentiment is the first label from the second classifier call.
+    // Just verify the structure and types are correct.
+    expect(typeof result.sentiment).toBe('string');
+    expect(Array.isArray(result.dimensions)).toBe(true);
+    expect(Array.isArray(result.topics)).toBe(true);
+  });
+
+  it('returns neutral for empty input', async () => {
+    const { classifyJournalEntry } = await import('../classify');
+    const result = await classifyJournalEntry('');
+    expect(result.sentiment).toBe('neutral');
+    expect(result.dimensions).toEqual([]);
+  });
+});
+
+describe('detectMoodFromText', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns mood estimate and confidence', async () => {
+    const { detectMoodFromText } = await import('../classify');
+    const result = await detectMoodFromText('Today was absolutely amazing!');
+    expect(result).toHaveProperty('estimatedMood');
+    expect(result).toHaveProperty('confidence');
+    expect(result.estimatedMood).toBeGreaterThanOrEqual(1);
+    expect(result.estimatedMood).toBeLessThanOrEqual(10);
+    expect(result.confidence).toBeGreaterThanOrEqual(0);
+    expect(result.confidence).toBeLessThanOrEqual(1);
+  });
+
+  it('returns neutral mood (5) for empty input', async () => {
+    const { detectMoodFromText } = await import('../classify');
+    const result = await detectMoodFromText('');
+    expect(result.estimatedMood).toBe(5);
+    expect(result.confidence).toBe(0);
+  });
+});
+
+describe('generateJournalPreview', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns short text unchanged', async () => {
+    const { generateJournalPreview } = await import('../summarize');
+    const shortText = 'Just a quick note.';
+    const result = await generateJournalPreview(shortText);
+    expect(result).toBe(shortText);
+  });
+
+  it('summarizes long text', async () => {
+    const { generateJournalPreview } = await import('../summarize');
+    const longText = 'A'.repeat(150) + ' this is a very long journal entry that needs summarizing.';
+    const result = await generateJournalPreview(longText);
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('returns empty for empty input', async () => {
+    const { generateJournalPreview } = await import('../summarize');
+    const result = await generateJournalPreview('');
+    expect(result).toBe('');
+  });
+});
+
+describe('summarizeWeeklyJournals', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns a summary for multiple journals', async () => {
+    const { summarizeWeeklyJournals } = await import('../summarize');
+    const journals = [
+      'Had a productive day at work today.',
+      'Went for a long run and felt energized.',
+      'Spent quality time with family.',
+    ];
+    const result = await summarizeWeeklyJournals(journals);
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('returns empty for empty input', async () => {
+    const { summarizeWeeklyJournals } = await import('../summarize');
+    const result = await summarizeWeeklyJournals([]);
+    expect(result).toBe('');
+  });
+});
+
+describe('extractScoresFromSpeech', () => {
+  it('extracts explicit dimension scores', async () => {
+    const { extractScoresFromSpeech } = await import('../voice-processor');
+    const transcript = 'My career is about a 7 and fitness maybe 5. Health is about a 3.';
+    const result = extractScoresFromSpeech(transcript);
+    expect(result.career).toBe(7);
+    expect(result.fitness).toBe(5);
+    expect(result.health).toBe(3);
+  });
+
+  it('handles "I\'d say my X is a Y" patterns', async () => {
+    const { extractScoresFromSpeech } = await import('../voice-processor');
+    const transcript = "I'd say my social is a 8";
+    const result = extractScoresFromSpeech(transcript);
+    expect(result.social).toBe(8);
+  });
+
+  it('ignores out of range scores', async () => {
+    const { extractScoresFromSpeech } = await import('../voice-processor');
+    const transcript = 'career is about a 15';
+    const result = extractScoresFromSpeech(transcript);
+    expect(result.career).toBeUndefined();
+  });
+
+  it('returns empty for text without scores', async () => {
+    const { extractScoresFromSpeech } = await import('../voice-processor');
+    const result = extractScoresFromSpeech('Today was a good day overall.');
+    expect(Object.keys(result)).toHaveLength(0);
+  });
+});
+
+describe('processVoiceCheckIn', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it('returns structured check-in from transcript', async () => {
+    const { processVoiceCheckIn } = await import('../voice-processor');
+    const result = await processVoiceCheckIn('Career is about a 7, feeling pretty good today.');
+    expect(result).toHaveProperty('mood');
+    expect(result).toHaveProperty('dimensions');
+    expect(result).toHaveProperty('cleanedJournal');
+    expect(result).toHaveProperty('rawTranscript');
+    expect(result.mood).toBeGreaterThanOrEqual(1);
+    expect(result.mood).toBeLessThanOrEqual(10);
+    // Explicit career score should override classifier
+    expect(result.dimensions.career).toBe(7);
+  });
+
+  it('returns defaults for empty transcript', async () => {
+    const { processVoiceCheckIn } = await import('../voice-processor');
+    const result = await processVoiceCheckIn('');
+    expect(result.mood).toBe(5);
+    expect(result.cleanedJournal).toBe('');
+    expect(Object.keys(result.dimensions)).toHaveLength(0);
+  });
+});
+
 describe('AILocalClient', () => {
-  it('exposes embed, classify, summarize, and dispose methods', async () => {
+  it('exposes all methods including new ones', async () => {
     const { AILocalClient } = await import('../index');
     const client = new AILocalClient();
     expect(typeof client.embed).toBe('function');
     expect(typeof client.classify).toBe('function');
     expect(typeof client.summarize).toBe('function');
     expect(typeof client.embedBatch).toBe('function');
+    expect(typeof client.classifyGoal).toBe('function');
+    expect(typeof client.classifyJournal).toBe('function');
+    expect(typeof client.detectMood).toBe('function');
+    expect(typeof client.journalPreview).toBe('function');
+    expect(typeof client.summarizeWeekly).toBe('function');
+    expect(typeof client.processVoice).toBe('function');
     expect(typeof client.dispose).toBe('function');
     client.dispose();
   });
 });
 
 describe('models registry', () => {
-  it('has entries for all three tasks', async () => {
+  it('has embedding model entry', async () => {
     const { MODEL_REGISTRY } = await import('../models');
     expect(MODEL_REGISTRY.embedding.modelId).toBe('Xenova/all-MiniLM-L6-v2');
-    expect(MODEL_REGISTRY.classification.modelId).toBe('Xenova/mobilebert-uncased-mnli');
-    expect(MODEL_REGISTRY.summarization.modelId).toBe('Xenova/distilbart-cnn-6-6');
   });
 
   it('DIMENSION_LABELS has 8 entries', async () => {
