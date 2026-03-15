@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { GuestProvider } from '@/lib/guest-context';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
@@ -10,6 +10,12 @@ import { LifeDesignProvider } from '@/providers/LifeDesignProvider';
 const AppProviderErrorBoundary = ResilientErrorBoundary as any;
 
 export default function AppProviders({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
+
   return (
     <AppProviderErrorBoundary
       fallback={
