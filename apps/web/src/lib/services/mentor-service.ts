@@ -49,3 +49,13 @@ export async function saveChatMessage(
     .single();
   return { data, error };
 }
+
+export async function getUserMentorById(userMentorId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('user_mentors')
+    .select('*, mentor:mentors(mentor_type)')
+    .eq('id', userMentorId)
+    .single();
+  return { data, error };
+}

@@ -14,6 +14,7 @@ import {
   getUserMentors,
   getChatHistory,
   saveChatMessage,
+  getUserMentorById,
 } from '@/lib/services/mentor-service';
 
 beforeEach(() => {
@@ -130,5 +131,31 @@ describe('saveChatMessage', () => {
     expect(result.data).toEqual(message);
     expect(result.error).toBeNull();
     expect(mockFrom).toHaveBeenCalledWith('mentor_messages');
+  });
+});
+
+describe('getUserMentorById', () => {
+  it('returns user mentor with joined mentor type', async () => {
+    const userMentor = {
+      id: 'um-1',
+      user_id: 'u-1',
+      mentor_id: 'm-1',
+      is_active: true,
+      mentor: { mentor_type: 'stoic' },
+    };
+    mockFrom.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: userMentor, error: null }),
+        }),
+      }),
+    });
+
+    const result = await getUserMentorById('um-1');
+
+    expect(result.data).toEqual(userMentor);
+    expect(result.data?.mentor).toEqual({ mentor_type: 'stoic' });
+    expect(result.error).toBeNull();
+    expect(mockFrom).toHaveBeenCalledWith('user_mentors');
   });
 });
