@@ -1,3 +1,5 @@
+import { MentorType } from '@life-design/core';
+
 export type MentorArchetype = 'therapist' | 'coach' | 'sage';
 
 export interface ArchetypeConfig {
@@ -54,4 +56,24 @@ export function getArchetypeConfig(archetype: MentorArchetype): ArchetypeConfig 
 
 export function getRecommendedVoiceForArchetype(archetype: MentorArchetype): string {
   return getArchetypeConfig(archetype).preferredVoices[0];
+}
+
+const MENTOR_TYPE_TO_ARCHETYPE: Record<MentorType, MentorArchetype> = {
+  [MentorType.Stoic]: 'therapist',
+  [MentorType.Coach]: 'coach',
+  [MentorType.Scientist]: 'sage',
+};
+
+const ARCHETYPE_TO_MENTOR_TYPE: Record<MentorArchetype, MentorType> = {
+  therapist: MentorType.Stoic,
+  coach: MentorType.Coach,
+  sage: MentorType.Scientist,
+};
+
+export function mentorTypeToArchetype(type: MentorType): MentorArchetype {
+  return MENTOR_TYPE_TO_ARCHETYPE[type];
+}
+
+export function archetypeToMentorType(archetype: MentorArchetype): MentorType {
+  return ARCHETYPE_TO_MENTOR_TYPE[archetype];
 }

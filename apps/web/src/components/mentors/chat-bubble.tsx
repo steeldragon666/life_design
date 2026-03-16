@@ -3,12 +3,9 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Volume2, Clock } from 'lucide-react';
 import { InsightCardDS } from '@life-design/ui';
+import type { PersonaBlend } from '@/lib/mentor-types';
 
-export interface PersonaBlend {
-  therapist: number;
-  coach: number;
-  sage: number;
-}
+export type { PersonaBlend };
 
 export interface InsightData {
   headline: string;
