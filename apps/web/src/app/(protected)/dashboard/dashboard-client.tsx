@@ -673,7 +673,7 @@ export default function DashboardClient({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#F0F6FA] flex items-center justify-center">
-                  <PenIcon className="w-3.5 h-3.5 text-[#5E9BC4]" />
+                  <PenIcon className="w-3.5 h-3.5 text-accent-500" />
                 </div>
                 Journal Entry
               </Link>
@@ -722,7 +722,7 @@ export default function DashboardClient({
                   <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider">Mood</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-2 w-4 rounded-full bg-[#85B8D8]" />
+                  <div className="h-2 w-4 rounded-full bg-accent-400" />
                   <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider">Energy</span>
                 </div>
               </div>
