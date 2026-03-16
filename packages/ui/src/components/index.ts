@@ -13,3 +13,4 @@ export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
 export { Tooltip, Popover } from './Tooltip';
 export type { TooltipProps, PopoverProps } from './Tooltip';
+export * from './data-viz';
