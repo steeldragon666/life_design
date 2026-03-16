@@ -7,3 +7,5 @@ export { Input, Textarea, Select, FormField } from './Input';
 export type { InputProps, TextareaProps, SelectProps, FormFieldProps } from './Input';
 export { Badge } from './Badge';
 export type { BadgeProps, BadgeVariant } from './Badge';
+export { Skeleton, CardSkeleton, SparklineSkeleton, ProgressRingSkeleton, ScheduleWidgetSkeleton } from './Skeleton';
+export type { SkeletonProps } from './Skeleton';
