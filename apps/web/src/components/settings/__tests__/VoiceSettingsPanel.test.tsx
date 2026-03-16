@@ -19,6 +19,11 @@ describe('VoiceSettingsPanel', () => {
     expect(screen.getByText('Speak mentor responses aloud')).toBeDefined();
   });
 
+  it('renders auto-speak toggle', () => {
+    render(<VoiceSettingsPanel />);
+    expect(screen.getByText('Auto-speak in voice conversations')).toBeDefined();
+  });
+
   it('renders speed slider', () => {
     render(<VoiceSettingsPanel />);
     expect(screen.getByText(/voice speed/i)).toBeDefined();

@@ -281,7 +281,12 @@ export const imageAssets: Record<string, AssetDefinition> = {
   },
 };
 
-// Voice Sample Assets
+/**
+ * Pre-recorded voice samples for the cinematic onboarding experience.
+ * These are CDN-hosted MP3 files with static content — NOT part of the
+ * ElevenLabs mentor voice system. The mentor voice system uses real-time
+ * TTS via /api/tts and the useElevenLabsTTS hook.
+ */
 export const voiceSamples: VoiceSample[] = [
   {
     id: 'sage-welcome',
