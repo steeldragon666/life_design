@@ -5,36 +5,8 @@ import Link from 'next/link';
 import { DIMENSION_LABELS, type Dimension, computeTrend } from '@life-design/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-
-// ---------------------------------------------------------------------------
-// Inline SVG icons
-// ---------------------------------------------------------------------------
-
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  );
-}
-
-function AlertTriangleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
+import { Button, Badge, dimensionPalettes } from '@life-design/ui';
+import { Plus, Check, Warning } from '@phosphor-icons/react';
 
 // ---------------------------------------------------------------------------
 // Types & config
@@ -67,19 +39,10 @@ const HORIZON_TABS: { id: HorizonTab; label: string }[] = [
   { id: 'long', label: 'Long-term' },
 ];
 
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; bar: string }> = {
-  health: { bg: '#F4F7F4', text: '#5A7F5A', bar: '#9BB89B' },
-  career: { bg: '#F0F6FA', text: '#5E9BC4', bar: '#85B8D8' },
-  relationships: { bg: '#FEF7F0', text: '#D4864A', bar: '#E8A46D' },
-  growth: { bg: '#F5F0FA', text: '#8B7BA8', bar: '#C4B8D8' },
-  spirituality: { bg: '#F0F6FA', text: '#5E9BC4', bar: '#85B8D8' },
-  finance: { bg: '#FEF7F0', text: '#B86E3A', bar: '#D4864A' },
-  creativity: { bg: '#F4F7F4', text: '#5A7F5A', bar: '#9BB89B' },
-  environment: { bg: '#F9F7F3', text: '#A89B7B', bar: '#C4B8A0' },
-};
-
-function getCategoryColor(dimension: string) {
-  return CATEGORY_COLORS[dimension.toLowerCase()] ?? CATEGORY_COLORS.health;
+// Map dimensions to palette keys — fall back to health palette for unknowns
+function getDimensionPalette(dimension: string) {
+  const key = dimension.toLowerCase() as Dimension;
+  return dimensionPalettes[key] ?? dimensionPalettes.health;
 }
 
 // ---------------------------------------------------------------------------
@@ -150,28 +113,28 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">Goals</h1>
-          <p className="text-sm text-[#A8A198] mt-1">Track your progress across every time horizon</p>
+          <h1 className="font-serif text-3xl lg:text-4xl text-stone-900">Goals</h1>
+          <p className="text-sm text-stone-500 mt-1">Track your progress across every time horizon</p>
         </div>
         <Link
           href="/goals/new"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-[#E8E4DD] text-sm font-medium text-[#5A7F5A] hover:bg-[#F4F7F4] transition-colors"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[8px] text-xs font-semibold bg-stone-100 text-stone-700 border border-stone-200 hover:bg-stone-200/60 transition-all"
         >
-          <PlusIcon className="w-4 h-4" />
+          <Plus weight="regular" className="w-4 h-4" />
           Add Goal
         </Link>
       </div>
 
       {/* Horizon Tabs */}
-      <div className="flex gap-1 p-1 bg-[#F5F3EF] rounded-2xl mb-8 overflow-x-auto">
+      <div className="flex gap-1 p-1 bg-stone-100 rounded-2xl mb-8 overflow-x-auto">
         {HORIZON_TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 min-w-[80px] px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap
               ${activeTab === tab.id
-                ? 'bg-white text-[#2A2623] shadow-sm'
-                : 'text-[#A8A198] hover:text-[#7D756A]'
+                ? 'bg-white text-stone-800 shadow-sm'
+                : 'text-stone-500 hover:text-stone-600'
               }`}
           >
             {tab.label}
@@ -181,31 +144,31 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-          <p className="text-2xl font-['Instrument_Serif'] text-[#5A7F5A]">{totalProgress}%</p>
-          <p className="text-[10px] text-[#A8A198] uppercase tracking-wider mt-1">Overall Progress</p>
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
+          <p className="text-2xl font-serif text-sage-500">{totalProgress}%</p>
+          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Overall Progress</p>
         </div>
-        <div className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-          <p className="text-2xl font-['Instrument_Serif'] text-[#2A2623]">{activeCount}</p>
-          <p className="text-[10px] text-[#A8A198] uppercase tracking-wider mt-1">Active Goals</p>
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
+          <p className="text-2xl font-serif text-stone-800">{activeCount}</p>
+          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Active Goals</p>
         </div>
-        <div className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-          <p className="text-2xl font-['Instrument_Serif'] text-[#D4864A]">{completedCount}</p>
-          <p className="text-[10px] text-[#A8A198] uppercase tracking-wider mt-1">Completed</p>
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
+          <p className="text-2xl font-serif text-warm-400">{completedCount}</p>
+          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Completed</p>
         </div>
       </div>
 
       {/* Goals List */}
       {sorted.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-[#E8E4DD] bg-white p-16 text-center">
-          <p className="text-[#A8A198] text-lg mb-4 font-['Instrument_Serif'] italic">
+        <div className="rounded-2xl border-2 border-dashed border-stone-200 bg-white p-16 text-center">
+          <p className="text-stone-500 text-lg mb-4 font-serif italic">
             No goals found. Start designing your future.
           </p>
           <Link
             href="/goals/new"
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#5A7F5A] to-[#476447] px-6 py-3 text-sm font-medium text-white shadow-lg shadow-[#5A7F5A]/20 hover:shadow-[#5A7F5A]/30 transition-all"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-[13px] font-semibold bg-sage-600 text-white shadow-[0_2px_8px_rgba(90,127,90,0.3)] hover:bg-sage-600/90 transition-all"
           >
-            <PlusIcon className="w-4 h-4" />
+            <Plus weight="regular" className="w-4 h-4" />
             Create your first goal
           </Link>
         </div>
@@ -218,36 +181,36 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
             const dimLabel = dimension
               ? (DIMENSION_LABELS[dimension as Dimension] ?? dimension)
               : goal.horizon.charAt(0).toUpperCase() + goal.horizon.slice(1);
-            const colors = dimension
-              ? getCategoryColor(dimension)
-              : CATEGORY_COLORS.growth;
+            const palette = dimension
+              ? getDimensionPalette(dimension)
+              : dimensionPalettes.growth;
 
             return (
               <Link
                 key={goal.id}
                 href={`/goals/${goal.id}`}
-                className={`block p-5 rounded-2xl bg-white border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 transition-all group ${isCompleted ? 'opacity-60' : ''}`}
+                className={`block p-5 rounded-2xl bg-white border border-stone-200/60 hover:border-sage-200/50 transition-all group ${isCompleted ? 'opacity-60' : ''}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Circular checkbox */}
                   <div
                     className={`mt-0.5 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
                       isCompleted
-                        ? 'bg-[#9BB89B] border-[#9BB89B]'
-                        : 'border-[#D4CFC5] group-hover:border-[#9BB89B]'
+                        ? 'bg-sage-300 border-sage-300'
+                        : 'border-stone-300 group-hover:border-sage-300'
                     }`}
                   >
-                    {isCompleted && <CheckIcon className="w-3 h-3 text-white" />}
+                    {isCompleted && <Check weight="bold" className="w-3 h-3 text-white" />}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <p className={`text-sm font-medium ${isCompleted ? 'line-through text-[#A8A198]' : 'text-[#2A2623]'}`}>
+                      <p className={`text-sm font-medium ${isCompleted ? 'line-through text-stone-500' : 'text-stone-800'}`}>
                         {goal.title}
                       </p>
                       <span
-                        className="text-xs font-['DM_Mono'] font-medium ml-3"
-                        style={{ color: colors.text }}
+                        className="text-xs font-medium ml-3"
+                        style={{ color: palette.text }}
                       >
                         {progress}%
                       </span>
@@ -257,12 +220,12 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                     <div className="flex items-center gap-3">
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full font-medium capitalize"
-                        style={{ backgroundColor: colors.bg, color: colors.text }}
+                        style={{ backgroundColor: palette.bg, color: palette.text }}
                       >
                         {dimLabel}
                       </span>
                       {goal.target_date && (
-                        <span className="text-[10px] text-[#A8A198]">
+                        <span className="text-[10px] text-stone-500">
                           Due {new Date(goal.target_date).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })}
                         </span>
                       )}
@@ -277,10 +240,10 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                     </div>
 
                     {/* Progress bar */}
-                    <div className="mt-3 h-1.5 bg-[#F5F3EF] rounded-full overflow-hidden">
+                    <div className="mt-3 h-1.5 bg-stone-100 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${progress}%`, backgroundColor: colors.bar }}
+                        style={{ width: `${progress}%`, backgroundColor: palette.accent }}
                       />
                     </div>
 
@@ -294,8 +257,8 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                       const momentum = getMomentum(dimension);
                       if (daysLeft > 0 && daysLeft < totalDays * 0.3 && progress < 70 && momentum.slope <= 0) {
                         return (
-                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#D4864A] font-medium">
-                            <AlertTriangleIcon className="w-3 h-3" /> Timeline risk — momentum stalling
+                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-warm-400 font-medium">
+                            <Warning weight="regular" className="w-3 h-3" /> Timeline risk — momentum stalling
                           </div>
                         );
                       }

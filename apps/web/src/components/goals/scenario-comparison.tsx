@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { ALL_DIMENSIONS, DIMENSION_LABELS, type Dimension } from '@life-design/core';
+import { Card } from '@life-design/ui';
 
 interface PathwaySummary {
   title: string;
@@ -21,7 +22,8 @@ interface ScenarioComparisonProps {
   pathways: PathwaySummary[];
 }
 
-const PATHWAY_COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444'];
+// Token-aligned colors: sage-500, warm-400, accent-500, destructive
+const PATHWAY_COLORS = ['#5A7F5A', '#D4864A', '#5E9BC4', '#CC3333'];
 
 export default function ScenarioComparison({ pathways }: ScenarioComparisonProps) {
   if (pathways.length < 2) return null;
@@ -40,7 +42,7 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
 
   // Generate summary comparison
   const summaryParts: string[] = [];
-  pathways.forEach((pw, i) => {
+  pathways.forEach((pw) => {
     const positives = pw.dimensionImpacts.filter((d) => d.impact >= 2);
     const negatives = pw.dimensionImpacts.filter((d) => d.impact <= -2);
     if (positives.length > 0 || negatives.length > 0) {
@@ -57,16 +59,23 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">Pathway Comparison</h3>
+      <h3 className="text-sm font-semibold text-stone-800">Pathway Comparison</h3>
 
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <XAxis dataKey="dimension" tick={{ fontSize: 9 }} />
-            <YAxis domain={[-5, 5]} tick={{ fontSize: 10 }} />
-            <Tooltip />
-            <ReferenceLine y={0} stroke="#d1d5db" />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <XAxis dataKey="dimension" tick={{ fontSize: 9, fill: '#6B6459' }} />
+            <YAxis domain={[-5, 5]} tick={{ fontSize: 10, fill: '#6B6459' }} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E8E4DD',
+                borderRadius: '8px',
+                fontSize: 12,
+              }}
+            />
+            <ReferenceLine y={0} stroke="#E8E4DD" />
+            <Legend wrapperStyle={{ fontSize: 11, color: '#5C554C' }} />
             {pathways.map((pw, i) => (
               <Bar
                 key={i}
@@ -81,12 +90,12 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
       </div>
 
       {summaryParts.length > 0 && (
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-          <p className="text-xs font-semibold text-blue-700">Summary</p>
+        <Card className="p-3 bg-sage-50 border-sage-100">
+          <p className="text-xs font-semibold text-sage-700">Summary</p>
           {summaryParts.map((s, i) => (
-            <p key={i} className="text-xs text-blue-600 mt-1">- {s}</p>
+            <p key={i} className="text-xs text-sage-600 mt-1">- {s}</p>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   );
