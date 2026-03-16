@@ -11,3 +11,5 @@ export { Skeleton, CardSkeleton, SparklineSkeleton, ProgressRingSkeleton, Schedu
 export type { SkeletonProps } from './Skeleton';
 export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
+export { Tooltip, Popover } from './Tooltip';
+export type { TooltipProps, PopoverProps } from './Tooltip';
