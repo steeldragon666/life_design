@@ -42,7 +42,7 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#E8E4DD"
+        stroke="var(--color-stone-200, #E8E4DD)"
         strokeWidth={strokeWidth}
       />
       {/* Progress */}
@@ -94,13 +94,13 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
 
   if (active === undefined) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div
-            className="h-10 w-10 rounded-full border-2 border-[#5A7F5A] border-t-transparent animate-spin"
+            className="h-10 w-10 rounded-full border-2 border-sage-500 border-t-transparent animate-spin"
             aria-label="Loading challenge"
           />
-          <p className="text-[#7D756A] text-sm">Loading challenge...</p>
+          <p className="text-stone-500 text-sm">Loading challenge...</p>
         </div>
       </div>
     );
@@ -109,12 +109,12 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
   // Not found
   if (!active) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-[#2A2623] font-['Instrument_Serif'] text-xl mb-2">Challenge not found</p>
+          <p className="text-stone-800 font-serif text-xl mb-2">Challenge not found</p>
           <button
             onClick={() => router.push('/challenges')}
-            className="text-[#5A7F5A] underline text-sm"
+            className="text-sage-500 underline text-sm"
           >
             Back to challenges
           </button>
@@ -127,12 +127,12 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
 
   if (!challenge) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-[#2A2623] font-['Instrument_Serif'] text-xl mb-2">Challenge data unavailable</p>
+          <p className="text-stone-800 font-serif text-xl mb-2">Challenge data unavailable</p>
           <button
             onClick={() => router.push('/challenges')}
-            className="text-[#5A7F5A] underline text-sm"
+            className="text-sage-500 underline text-sm"
           >
             Back to challenges
           </button>
@@ -214,16 +214,16 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
   // -------------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
+    <div className="min-h-screen bg-stone-50">
       {/* ------------------------------------------------------------------ */}
       {/* Header                                                               */}
       {/* ------------------------------------------------------------------ */}
-      <header className="sticky top-0 z-10 bg-[#FAFAF8]/95 backdrop-blur-sm border-b border-[#E8E4DD]/60 px-4 py-3">
+      <header className="sticky top-0 z-10 bg-stone-50/95 backdrop-blur-sm border-b border-stone-200/60 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <button
             onClick={() => router.push('/challenges')}
             aria-label="Back to challenges"
-            className="flex items-center justify-center h-9 w-9 rounded-xl border border-[#E8E4DD]/60 bg-white text-[#7D756A] hover:text-[#2A2623] hover:border-[#5A7F5A]/40 transition-colors"
+            className="flex items-center justify-center h-9 w-9 rounded-xl border border-stone-200/60 bg-white text-stone-500 hover:text-stone-800 hover:border-sage-500/40 transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
@@ -236,10 +236,10 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
             </svg>
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="font-['Instrument_Serif'] text-xl text-[#2A2623] leading-tight truncate">
+            <h1 className="font-serif text-xl text-stone-800 leading-tight truncate">
               {challenge.title}
             </h1>
-            <p className="text-xs text-[#A8A198] mt-0.5 capitalize">
+            <p className="text-xs text-stone-500 mt-0.5 capitalize">
               {challenge.difficulty} · {challenge.durationDays} days
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
         {/* Progress ring + stats row                                         */}
         {/* ---------------------------------------------------------------- */}
         <section
-          className="bg-white border border-[#E8E4DD]/60 rounded-2xl p-5"
+          className="bg-white border border-stone-200/60 rounded-2xl p-5"
           aria-label="Overall progress"
         >
           <div className="flex items-center gap-6">
@@ -268,10 +268,10 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
               <ProgressRing percentage={progress.percentage} size={108} strokeWidth={9} />
               {/* Centered label */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-[#2A2623] leading-none">
+                <span className="text-2xl font-bold text-stone-800 leading-none">
                   {progress.percentage}
                 </span>
-                <span className="text-[10px] font-medium text-[#A8A198] uppercase tracking-wider mt-0.5">
+                <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider mt-0.5">
                   %
                 </span>
               </div>
@@ -280,33 +280,33 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
             {/* Stats */}
             <div className="flex-1 space-y-3">
               <div>
-                <p className="text-xs text-[#A8A198] uppercase tracking-wider mb-1">Days</p>
+                <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">Days</p>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 rounded-full bg-[#E8E4DD]/60">
+                  <div className="flex-1 h-2 rounded-full bg-stone-200/60">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-[#5A7F5A] to-[#476447] transition-all duration-500"
+                      className="h-2 rounded-full bg-gradient-to-r from-sage-500 to-sage-600 transition-all duration-500"
                       style={{
                         width: `${progress.totalDays > 0 ? (progress.completedDays / progress.totalDays) * 100 : 0}%`,
                       }}
                     />
                   </div>
-                  <span className="text-xs text-[#7D756A] whitespace-nowrap">
+                  <span className="text-xs text-stone-500 whitespace-nowrap">
                     {progress.completedDays}/{progress.totalDays}
                   </span>
                 </div>
               </div>
               <div>
-                <p className="text-xs text-[#A8A198] uppercase tracking-wider mb-1">Tasks</p>
+                <p className="text-xs text-stone-500 uppercase tracking-wider mb-1">Tasks</p>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 rounded-full bg-[#E8E4DD]/60">
+                  <div className="flex-1 h-2 rounded-full bg-stone-200/60">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-[#5A7F5A] to-[#476447] transition-all duration-500"
+                      className="h-2 rounded-full bg-gradient-to-r from-sage-500 to-sage-600 transition-all duration-500"
                       style={{
                         width: `${progress.totalTasks > 0 ? (progress.completedTasks / progress.totalTasks) * 100 : 0}%`,
                       }}
                     />
                   </div>
-                  <span className="text-xs text-[#7D756A] whitespace-nowrap">
+                  <span className="text-xs text-stone-500 whitespace-nowrap">
                     {progress.completedTasks}/{progress.totalTasks}
                   </span>
                 </div>
@@ -316,8 +316,8 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
               <div className="flex items-center gap-2 pt-0.5">
                 <span className="text-base" aria-hidden="true">🔥</span>
                 <div>
-                  <span className="text-sm font-semibold text-[#2A2623]">{streak}</span>
-                  <span className="text-xs text-[#7D756A] ml-1">
+                  <span className="text-sm font-semibold text-stone-800">{streak}</span>
+                  <span className="text-xs text-stone-500 ml-1">
                     {streak === 1 ? 'day streak' : 'day streak'}
                   </span>
                 </div>
@@ -330,7 +330,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
         {/* Day timeline                                                       */}
         {/* ---------------------------------------------------------------- */}
         <section aria-label="Day timeline">
-          <h2 className="text-xs font-semibold text-[#A8A198] uppercase tracking-wider mb-3 px-0.5">
+          <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3 px-0.5">
             Timeline
           </h2>
           <div className="overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -349,17 +349,17 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
 
                 if (isCurrentDay) {
                   circleClass +=
-                    'bg-gradient-to-br from-[#5A7F5A] to-[#476447] border-[#5A7F5A] text-white shadow-lg shadow-[#5A7F5A]/30 scale-110';
+                    'bg-gradient-to-br from-sage-500 to-sage-600 border-sage-500 text-white shadow-lg shadow-sage-500/30 scale-110';
                 } else if (isCompleted) {
                   circleClass +=
-                    'bg-[#5A7F5A]/10 border-[#5A7F5A]/40 text-[#5A7F5A]';
+                    'bg-sage-500/10 border-sage-500/40 text-sage-500';
                 } else if (isFutureDay) {
                   circleClass +=
-                    'bg-white border-[#E8E4DD]/60 text-[#A8A198]';
+                    'bg-white border-stone-200/60 text-stone-500';
                 } else {
                   // Past, incomplete
                   circleClass +=
-                    'bg-[#E8E4DD]/40 border-[#E8E4DD] text-[#A8A198]';
+                    'bg-stone-200/40 border-stone-200 text-stone-500';
                 }
 
                 return (
@@ -380,7 +380,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
                       )}
                     </div>
                     {isCurrentDay && (
-                      <div className="h-1 w-1 rounded-full bg-[#5A7F5A]" aria-hidden="true" />
+                      <div className="h-1 w-1 rounded-full bg-sage-500" aria-hidden="true" />
                     )}
                   </div>
                 );
@@ -394,25 +394,25 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
         {/* ---------------------------------------------------------------- */}
         {todaysResult ? (
           <section
-            className="bg-white border border-[#E8E4DD]/60 rounded-2xl overflow-hidden"
+            className="bg-white border border-stone-200/60 rounded-2xl overflow-hidden"
             aria-label="Today's tasks"
           >
-            <div className="px-5 py-4 border-b border-[#E8E4DD]/60 flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-stone-200/60 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-[#A8A198] uppercase tracking-wider">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
                   Day {todaysResult.day.day}
                 </p>
-                <h2 className="font-['Instrument_Serif'] text-lg text-[#2A2623] leading-snug mt-0.5">
+                <h2 className="font-serif text-lg text-stone-800 leading-snug mt-0.5">
                   {todaysResult.day.title}
                 </h2>
               </div>
-              <div className="text-xs text-[#7D756A] bg-[#FAFAF8] border border-[#E8E4DD]/60 rounded-full px-3 py-1 whitespace-nowrap">
+              <div className="text-xs text-stone-500 bg-stone-50 border border-stone-200/60 rounded-full px-3 py-1 whitespace-nowrap">
                 {todaysResult.tasks.filter((t) => active.taskCompletion[t.id]).length}/
                 {todaysResult.tasks.length} done
               </div>
             </div>
 
-            <ul className="divide-y divide-[#E8E4DD]/40" role="list">
+            <ul className="divide-y divide-stone-200/40" role="list">
               {todaysResult.tasks.map((task: ChallengeTask) => {
                 const isDone = active.taskCompletion[task.id] === true;
                 const isProcessing = completingTask === task.id;
@@ -445,10 +445,10 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
                           className={[
                             'h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all',
                             isDone
-                              ? 'bg-gradient-to-br from-[#5A7F5A] to-[#476447] border-[#5A7F5A]'
+                              ? 'bg-gradient-to-br from-sage-500 to-sage-600 border-sage-500'
                               : isProcessing
-                              ? 'border-[#5A7F5A]/40 bg-[#5A7F5A]/5 animate-pulse'
-                              : 'border-[#E8E4DD] bg-white group-hover:border-[#5A7F5A]/50',
+                              ? 'border-sage-500/40 bg-sage-500/5 animate-pulse'
+                              : 'border-stone-200 bg-white group-hover:border-sage-500/50',
                           ].join(' ')}
                         >
                           {isDone && (
@@ -471,13 +471,13 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
                           <span
                             className={[
                               'text-sm font-semibold leading-snug transition-colors',
-                              isDone ? 'text-[#A8A198] line-through' : 'text-[#2A2623]',
+                              isDone ? 'text-stone-500 line-through' : 'text-stone-800',
                             ].join(' ')}
                           >
                             {task.title}
                           </span>
                           <span
-                            className="text-xs px-2 py-0.5 rounded-full bg-[#FAFAF8] border border-[#E8E4DD]/60 text-[#A8A198]"
+                            className="text-xs px-2 py-0.5 rounded-full bg-stone-50 border border-stone-200/60 text-stone-500"
                             aria-label={`Task type: ${task.type.replace('_', ' ')}`}
                           >
                             {TASK_TYPE_ICONS[task.type]} {task.type.replace('_', ' ')}
@@ -486,7 +486,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
                         <p
                           className={[
                             'text-sm mt-1 leading-relaxed transition-colors',
-                            isDone ? 'text-[#A8A198]' : 'text-[#7D756A]',
+                            isDone ? 'text-stone-500' : 'text-stone-500',
                           ].join(' ')}
                         >
                           {task.description}
@@ -499,16 +499,16 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
             </ul>
           </section>
         ) : (
-          <section className="bg-white border border-[#E8E4DD]/60 rounded-2xl px-5 py-6 text-center">
+          <section className="bg-white border border-stone-200/60 rounded-2xl px-5 py-6 text-center">
             <p className="text-3xl mb-2" aria-hidden="true">
               {currentDayNumber > challenge.durationDays ? '🏁' : '⏳'}
             </p>
-            <p className="font-['Instrument_Serif'] text-lg text-[#2A2623]">
+            <p className="font-serif text-lg text-stone-800">
               {currentDayNumber > challenge.durationDays
                 ? 'All days completed!'
                 : 'No tasks available for today'}
             </p>
-            <p className="text-sm text-[#7D756A] mt-1">
+            <p className="text-sm text-stone-500 mt-1">
               {currentDayNumber > challenge.durationDays
                 ? 'Complete the challenge below to earn your badge.'
                 : 'Check back once the challenge has started.'}
@@ -521,24 +521,24 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
         {/* ---------------------------------------------------------------- */}
         {progress.percentage === 100 && active.status === 'active' && (
           <section
-            className="bg-gradient-to-br from-[#5A7F5A]/10 to-[#476447]/5 border border-[#5A7F5A]/30 rounded-2xl px-5 py-5"
+            className="bg-gradient-to-br from-sage-500/10 to-sage-600/5 border border-sage-500/30 rounded-2xl px-5 py-5"
             aria-label="Complete challenge"
           >
             <div className="flex items-start gap-3 mb-4">
               <span className="text-2xl" aria-hidden="true">🎉</span>
               <div>
-                <h3 className="font-['Instrument_Serif'] text-lg text-[#2A2623]">
+                <h3 className="font-serif text-lg text-stone-800">
                   All tasks complete!
                 </h3>
-                <p className="text-sm text-[#7D756A] mt-0.5">
-                  You've finished every task in this challenge. Mark it complete to earn your badge.
+                <p className="text-sm text-stone-500 mt-0.5">
+                  You&apos;ve finished every task in this challenge. Mark it complete to earn your badge.
                 </p>
               </div>
             </div>
             <button
               onClick={handleComplete}
               disabled={isCompleting}
-              className="w-full bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white font-semibold py-3 rounded-xl transition-all hover:opacity-90 hover:shadow-lg hover:shadow-[#5A7F5A]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-sage-500 to-sage-600 text-white font-semibold py-3 rounded-xl transition-all hover:opacity-90 hover:shadow-lg hover:shadow-sage-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCompleting ? 'Completing...' : 'Complete Challenge'}
             </button>
@@ -549,10 +549,10 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
         {/* Badge preview                                                      */}
         {/* ---------------------------------------------------------------- */}
         <section
-          className="bg-white border border-[#E8E4DD]/60 rounded-2xl px-5 py-4"
+          className="bg-white border border-stone-200/60 rounded-2xl px-5 py-4"
           aria-label="Badge reward preview"
         >
-          <p className="text-xs font-semibold text-[#A8A198] uppercase tracking-wider mb-3">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
             Badge Reward
           </p>
           <div className="flex items-center gap-4">
@@ -565,23 +565,22 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
             </div>
             <div className="min-w-0">
               <p
-                className="font-semibold text-[#2A2623] leading-snug"
-                style={{ fontFamily: 'Instrument Serif, serif' }}
+                className="font-semibold text-stone-800 leading-snug font-serif"
               >
                 {challenge.badge.name}
               </p>
-              <p className="text-sm text-[#7D756A] mt-0.5 leading-snug">
+              <p className="text-sm text-stone-500 mt-0.5 leading-snug">
                 {challenge.badge.description}
               </p>
               {active.status === 'completed' ? (
-                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-[#5A7F5A] bg-[#5A7F5A]/10 rounded-full px-2.5 py-0.5">
+                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-sage-500 bg-sage-500/10 rounded-full px-2.5 py-0.5">
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                     <path d="M1.5 5.5L4 8L8.5 2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Earned
                 </span>
               ) : (
-                <span className="inline-block mt-1.5 text-xs text-[#A8A198]">
+                <span className="inline-block mt-1.5 text-xs text-stone-500">
                   Complete the challenge to unlock
                 </span>
               )}
