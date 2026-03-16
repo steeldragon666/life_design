@@ -14,37 +14,8 @@ import { getSmartJournalPrompts } from '@/lib/smart-prompts';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
 import { useAnalysisPipeline } from '@/providers/LifeDesignProvider';
 import type { DBCheckIn } from '@/lib/db/schema';
-
-// ---------------------------------------------------------------------------
-// Inline SVG icons
-// ---------------------------------------------------------------------------
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
-    </svg>
-  );
-}
-
-function MicIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="13" rx="3" />
-      <path d="M19 10v2a7 7 0 01-14 0v-2" />
-      <path d="M12 19v3" />
-    </svg>
-  );
-}
+import { CheckCircle, ArrowLeft, Microphone } from '@phosphor-icons/react/dist/ssr';
+import { Button, Card, Textarea } from '@life-design/ui';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -179,22 +150,22 @@ export default function CheckInClient({ date }: CheckInClientProps) {
     <div className="px-5 lg:px-10 py-6 lg:py-8 max-w-2xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">Daily Check-in</h1>
-        <p className="text-sm text-[#A8A198] mt-1">Take a moment to reflect on your day</p>
+        <h1 className="font-serif text-3xl lg:text-4xl text-stone-900">Daily Check-in</h1>
+        <p className="text-sm text-stone-500 mt-1">Take a moment to reflect on your day</p>
       </div>
 
       {/* Progress Bar */}
       {step < 11 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-[#A8A198] uppercase tracking-wider font-medium">
+            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">
               Step {step + 1} of {totalSteps + 1}
             </span>
-            <span className="text-[10px] font-['DM_Mono'] text-[#5A7F5A]">{Math.round(progress)}%</span>
+            <span className="text-[10px] font-mono text-sage-500">{Math.round(progress)}%</span>
           </div>
-          <div className="h-1 bg-[#F5F3EF] rounded-full overflow-hidden">
+          <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#9BB89B] to-[#5A7F5A] rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-sage-300 to-sage-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -203,8 +174,8 @@ export default function CheckInClient({ date }: CheckInClientProps) {
 
       {/* Error */}
       {error && (
-        <div className="p-4 mb-6 rounded-2xl bg-[#FEF7F0] border border-[#E8A46D]/30">
-          <p className="text-sm text-[#D4864A]">{error}</p>
+        <div className="p-4 mb-6 rounded-2xl bg-warm-50 border border-warm-300/30">
+          <p className="text-sm text-warm-400">{error}</p>
         </div>
       )}
 
@@ -213,9 +184,9 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         {/* Step 0: Mood */}
         {step === 0 && (
           <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-              <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623] mb-2">How are you feeling overall?</h2>
-              <p className="text-sm text-[#A8A198] mb-6">Be honest &mdash; there&rsquo;s no wrong answer</p>
+            <Card>
+              <h2 className="font-serif text-2xl text-stone-800 mb-2">How are you feeling overall?</h2>
+              <p className="text-sm text-stone-500 mb-6">Be honest &mdash; there&rsquo;s no wrong answer</p>
 
               <div className="flex gap-3">
                 {moodOptions.map(option => (
@@ -224,8 +195,8 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                     onClick={() => setMood(option.value)}
                     className={`flex-1 p-4 rounded-2xl border-2 transition-all text-center
                       ${mood === option.value
-                        ? 'border-[#5A7F5A] bg-[#F4F7F4] shadow-sm'
-                        : 'border-[#E8E4DD] hover:border-[#C4D5C4] bg-white'
+                        ? 'border-sage-500 bg-sage-50 shadow-sm'
+                        : 'border-stone-200 hover:border-sage-200 bg-white'
                       }`}
                   >
                     <div
@@ -234,18 +205,18 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                     >
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: option.color }} />
                     </div>
-                    <p className="text-xs font-medium text-[#5C554C]">{option.label}</p>
+                    <p className="text-xs font-medium text-stone-600">{option.label}</p>
                   </button>
                 ))}
               </div>
 
               {/* Voice check-in option */}
-              <div className="mt-4 pt-4 border-t border-[#E8E4DD]/40">
+              <div className="mt-4 pt-4 border-t border-stone-200/40">
                 <button
                   onClick={() => setShowVoice(!showVoice)}
-                  className="flex items-center gap-2 text-sm text-[#7D756A] hover:text-[#5A7F5A] transition-colors"
+                  className="flex items-center gap-2 text-sm text-stone-500 hover:text-sage-500 transition-colors"
                 >
-                  <MicIcon className="w-4 h-4" />
+                  <Microphone size={16} weight="regular" />
                   {showVoice ? 'Hide voice check-in' : 'Or use voice check-in'}
                 </button>
                 {showVoice && (
@@ -254,7 +225,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
         )}
 
@@ -266,12 +237,12 @@ export default function CheckInClient({ date }: CheckInClientProps) {
 
           return (
             <div className="space-y-6">
-              <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
+              <Card>
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-2xl">{meta.emoji}</span>
                   <div>
-                    <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623]">{label}</h2>
-                    <p className="text-sm text-[#A8A198]">{meta.question}</p>
+                    <h2 className="font-serif text-2xl text-stone-800">{label}</h2>
+                    <p className="text-sm text-stone-500">{meta.question}</p>
                   </div>
                 </div>
 
@@ -285,10 +256,10 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                         onClick={() => handleDimensionScore(dim, score)}
                         className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all
                           ${isSelected
-                            ? 'bg-[#5A7F5A] text-white shadow-sm'
+                            ? 'bg-sage-500 text-white shadow-sm'
                             : isInRange
-                              ? 'bg-[#E4ECE4] text-[#5A7F5A]'
-                              : 'bg-[#F5F3EF] text-[#A8A198] hover:bg-[#E8E4DD]'
+                              ? 'bg-sage-100 text-sage-500'
+                              : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                           }`}
                       >
                         {score}
@@ -298,10 +269,10 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                 </div>
 
                 <div className="flex justify-between mt-2 px-1">
-                  <span className="text-[10px] text-[#A8A198]">Struggling</span>
-                  <span className="text-[10px] text-[#A8A198]">Thriving</span>
+                  <span className="text-[10px] text-stone-500">Struggling</span>
+                  <span className="text-[10px] text-stone-500">Thriving</span>
                 </div>
-              </div>
+              </Card>
             </div>
           );
         })()}
@@ -324,10 +295,10 @@ export default function CheckInClient({ date }: CheckInClientProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-                <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623] mb-2">Journal Prompt</h2>
-                <p className="text-sm text-[#A8A198]">No targeted prompt available — proceed to write your reflection freely.</p>
-              </div>
+              <Card>
+                <h2 className="font-serif text-2xl text-stone-800 mb-2">Journal Prompt</h2>
+                <p className="text-sm text-stone-500">No targeted prompt available — proceed to write your reflection freely.</p>
+              </Card>
             </div>
           );
         })()}
@@ -335,51 +306,51 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         {/* Step 10: Reflection */}
         {step === 10 && (
           <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-              <h2 className="font-['Instrument_Serif'] text-2xl text-[#2A2623] mb-2">Today&rsquo;s Reflection</h2>
-              <p className="text-sm text-[#A8A198] mb-4">What&rsquo;s on your mind? Any wins, challenges, or thoughts?</p>
-              <textarea
+            <Card>
+              <h2 className="font-serif text-2xl text-stone-800 mb-2">Today&rsquo;s Reflection</h2>
+              <p className="text-sm text-stone-500 mb-4">What&rsquo;s on your mind? Any wins, challenges, or thoughts?</p>
+              <Textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                className="w-full h-40 p-4 rounded-xl bg-[#FAFAF8] border border-[#E8E4DD] text-sm text-[#3D3833] resize-none focus:outline-none focus:ring-2 focus:ring-[#9BB89B]/50 focus:border-[#9BB89B] placeholder:text-[#C4C0B8]"
+                className="h-40"
                 placeholder="Today I felt grateful for..."
               />
-            </div>
+            </Card>
           </div>
         )}
 
         {/* Step 11: Complete */}
         {step === 11 && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E4ECE4] to-[#C4D5C4] flex items-center justify-center mx-auto">
-              <CheckCircleIcon className="w-10 h-10 text-[#5A7F5A]" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-100 to-sage-200 flex items-center justify-center mx-auto">
+              <CheckCircle size={40} weight="regular" className="text-sage-500" />
             </div>
             <div>
-              <h2 className="font-['Instrument_Serif'] text-3xl text-[#1A1816] mb-2">Check-in Complete</h2>
-              <p className="text-sm text-[#A8A198] max-w-sm mx-auto">
+              <h2 className="font-serif text-3xl text-stone-900 mb-2">Check-in Complete</h2>
+              <p className="text-sm text-stone-500 max-w-sm mx-auto">
                 Beautiful. Your reflections are saved and your AI coach will generate new insights shortly.
               </p>
             </div>
 
             {/* Mini summary */}
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60 max-w-sm mx-auto text-left">
-              <p className="text-xs text-[#A8A198] uppercase tracking-wider mb-3 font-medium">Today&rsquo;s Snapshot</p>
+            <Card className="max-w-sm mx-auto text-left">
+              <p className="text-xs text-stone-500 uppercase tracking-wider mb-3 font-medium">Today&rsquo;s Snapshot</p>
               <div className="grid grid-cols-2 gap-2">
                 {ALL_DIMENSIONS.filter(dim => scores[dim] !== undefined).map(dim => (
                   <div key={dim} className="flex items-center gap-2">
-                    <div className="w-6 h-1.5 rounded-full bg-[#F5F3EF] overflow-hidden">
-                      <div className="h-full rounded-full bg-[#9BB89B]" style={{ width: `${scores[dim] * 10}%` }} />
+                    <div className="w-6 h-1.5 rounded-full bg-stone-100 overflow-hidden">
+                      <div className="h-full rounded-full bg-sage-300" style={{ width: `${scores[dim] * 10}%` }} />
                     </div>
-                    <span className="text-[11px] text-[#7D756A]">{DIMENSION_LABELS[dim]}</span>
-                    <span className="text-[10px] font-['DM_Mono'] text-[#5A7F5A] ml-auto">{scores[dim]}</span>
+                    <span className="text-[11px] text-stone-500">{DIMENSION_LABELS[dim]}</span>
+                    <span className="text-[10px] font-mono text-sage-500 ml-auto">{scores[dim]}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
 
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-sm font-medium text-white shadow-sm hover:shadow-md transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-sage-500 to-sage-600 text-sm font-medium text-white shadow-sm hover:shadow-md transition-all"
             >
               View Dashboard
             </Link>
@@ -391,25 +362,24 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       {step < 11 && (
         <div className="flex gap-3 mt-8">
           {step > 0 && (
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl border border-[#E8E4DD] text-sm font-medium text-[#7D756A] hover:bg-[#F5F3EF] transition-colors"
+              className="flex items-center gap-2 rounded-2xl"
             >
-              <ArrowLeftIcon className="w-4 h-4" />
+              <ArrowLeft size={16} weight="regular" />
               Back
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant={canProceed() ? 'primary' : 'secondary'}
             onClick={handleNext}
             disabled={!canProceed()}
-            className={`flex-1 px-6 py-3 rounded-2xl text-sm font-medium transition-all
-              ${canProceed()
-                ? 'bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white shadow-sm hover:shadow-md'
-                : 'bg-[#F5F3EF] text-[#C4C0B8] cursor-not-allowed'
-              }`}
+            loading={submitting}
+            className="flex-1 rounded-2xl"
           >
             {step === 10 ? 'Complete Check-in' : 'Continue'}
-          </button>
+          </Button>
         </div>
       )}
 

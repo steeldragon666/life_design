@@ -15,7 +15,7 @@ export default function MoodSlider({ value, onChange }: MoodSliderProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Mood</span>
+        <span className="text-sm font-medium text-stone-800">Mood</span>
         <span className="text-lg">
           {getMoodEmoji(value)} {value}
         </span>
@@ -27,7 +27,7 @@ export default function MoodSlider({ value, onChange }: MoodSliderProps) {
         max="10"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full"
+        className="w-full accent-sage-500"
       />
     </div>
   );

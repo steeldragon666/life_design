@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { Badge } from '@life-design/ui';
 
 interface JournalPreviewProps {
   text: string;
@@ -52,17 +53,15 @@ export default function JournalPreview({ text, summarize, isReady }: JournalPrev
   if (!summary && !isSummarizing) return null;
 
   return (
-    <div className="mt-2 rounded-lg bg-white/5 px-3 py-2">
+    <div className="mt-2 rounded-lg bg-stone-50 border border-stone-200 px-3 py-2">
       <div className="mb-1 flex items-center gap-1.5">
-        <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-indigo-400">
-          AI Summary
-        </span>
+        <Badge variant="stone">AI Summary</Badge>
         {isSummarizing && (
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sage-400" />
         )}
       </div>
       {summary && (
-        <p className="text-sm leading-relaxed text-white/60">{summary}</p>
+        <p className="text-sm leading-relaxed text-stone-600">{summary}</p>
       )}
     </div>
   );
