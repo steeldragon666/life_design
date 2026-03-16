@@ -9,6 +9,10 @@ import type { VoiceRecorderResult } from '@/components/mentors/voice-recorder';
 import { sendMessage } from '../../actions';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import type { MentorArchetype } from '@/lib/mentor-archetypes';
+import { archetypeToMentorType } from '@/lib/mentor-archetypes';
+import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
+import MentorAvatar from '@/components/mentors/mentor-avatar';
 
 /* -------------------------------------------------------------------- */
 /* Types                                                                  */
@@ -31,6 +35,7 @@ interface ChatClientProps {
   userMentorId: string;
   initialMessages: Array<{ role: string; content: string }>;
   mentorName?: string;
+  archetype: MentorArchetype;
 }
 
 /* -------------------------------------------------------------------- */
@@ -75,6 +80,7 @@ export default function ChatClient({
   userMentorId,
   initialMessages,
   mentorName = 'Your Mentor',
+  archetype,
 }: ChatClientProps) {
   const [messages, setMessages] = useState<Message[]>(() =>
     initialMessages.map((m) => ({
@@ -90,6 +96,27 @@ export default function ChatClient({
   const [personaBlend] = useState<PersonaBlend>(DEFAULT_BLEND);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Voice settings from localStorage
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceSpeed, setVoiceSpeed] = useState(1.0);
+  const [speakingMessageIdx, setSpeakingMessageIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    setVoiceEnabled(localStorage.getItem('ld:voice-enabled') === 'true');
+    const saved = localStorage.getItem('ld:voice-speed');
+    if (saved) setVoiceSpeed(parseFloat(saved));
+  }, []);
+
+  const { speak, stop, isSpeaking, isLoading: ttsLoading } = useElevenLabsTTS({
+    speed: voiceSpeed,
+    onSpeakEnd: () => setSpeakingMessageIdx(null),
+  });
+
+  const handleSpeak = useCallback((text: string, idx: number) => {
+    setSpeakingMessageIdx(idx);
+    speak(text, archetype);
+  }, [speak, archetype]);
 
   /* Scroll to bottom on new messages */
   useEffect(() => {
@@ -113,7 +140,7 @@ export default function ChatClient({
       setLoading(true);
 
       try {
-        const result = await sendMessage(userMentorId, 'stoic', content);
+        const result = await sendMessage(userMentorId, archetypeToMentorType(archetype), content);
 
         if (result.text) {
           const followUps = extractFollowUps(result.text);
@@ -145,7 +172,7 @@ export default function ChatClient({
         setLoading(false);
       }
     },
-    [userMentorId, personaBlend],
+    [userMentorId, personaBlend, archetype],
   );
 
   /* ------------------------------------------------------------------ */
@@ -171,7 +198,7 @@ export default function ChatClient({
       try {
         const aiResult = await sendMessage(
           userMentorId,
-          'stoic',
+          archetypeToMentorType(archetype),
           `[Voice message, ${duration}s${detectedEmotion ? `, emotion: ${detectedEmotion}` : ''}]: ${transcription}`,
         );
 
@@ -204,7 +231,7 @@ export default function ChatClient({
         setLoading(false);
       }
     },
-    [userMentorId, personaBlend],
+    [userMentorId, personaBlend, archetype],
   );
 
   /* ------------------------------------------------------------------ */
@@ -234,15 +261,17 @@ export default function ChatClient({
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
-              <h1
-                className="text-lg font-semibold text-white"
-                style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
-              >
-                {mentorName}
-              </h1>
+              <MentorAvatar archetype={archetype} state={isSpeaking ? 'speaking' : 'idle'} size="md" />
+              <div>
+                <h1
+                  className="text-lg font-semibold text-white"
+                  style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
+                >
+                  {mentorName}
+                </h1>
+                <p className="text-xs text-white/50">{isSpeaking ? 'Speaking...' : archetype}</p>
+              </div>
             </div>
-            <PersonaDisplay blend={personaBlend} compact className="mt-0.5" />
           </div>
         </div>
       </div>
@@ -281,7 +310,7 @@ export default function ChatClient({
           </div>
         )}
 
-        {messages.map((msg) => {
+        {messages.map((msg, idx) => {
           const bubbleProps: ChatBubbleProps = {
             role: msg.role,
             content: msg.content,
@@ -291,11 +320,15 @@ export default function ChatClient({
             onFollowUpClick: (q) => handleSend(q),
             onRate: msg.role === 'assistant' ? (r) => handleRate(msg.id, r) : undefined,
             timestamp: msg.timestamp,
+            archetype: msg.role === 'assistant' ? archetype : undefined,
+            onSpeak: msg.role === 'assistant' ? (text) => handleSpeak(text, idx) : undefined,
+            speakingMessageId: speakingMessageIdx === idx ? String(idx) : undefined,
+            messageId: String(idx),
           };
           return <ChatBubble key={msg.id} {...bubbleProps} />;
         })}
 
-        {loading && <TypingIndicator personaBlend={personaBlend} />}
+        {loading && <TypingIndicator personaBlend={personaBlend} archetype={archetype} />}
 
         <div ref={bottomRef} aria-hidden="true" />
       </div>
