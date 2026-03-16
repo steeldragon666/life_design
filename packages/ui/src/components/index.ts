@@ -9,3 +9,5 @@ export { Badge } from './Badge';
 export type { BadgeProps, BadgeVariant } from './Badge';
 export { Skeleton, CardSkeleton, SparklineSkeleton, ProgressRingSkeleton, ScheduleWidgetSkeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+export { Modal } from './Modal';
+export type { ModalProps } from './Modal';
