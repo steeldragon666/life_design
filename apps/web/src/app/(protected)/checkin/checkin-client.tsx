@@ -158,10 +158,10 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       {step < 11 && (
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">
+            <span className="text-[11px] text-stone-500 uppercase tracking-wider font-medium">
               Step {step + 1} of {totalSteps + 1}
             </span>
-            <span className="text-[10px] font-mono text-sage-500">{Math.round(progress)}%</span>
+            <span className="text-[11px] font-mono text-sage-500">{Math.round(progress)}%</span>
           </div>
           <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
             <div
@@ -175,7 +175,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       {/* Error */}
       {error && (
         <div className="p-4 mb-6 rounded-2xl bg-warm-50 border border-warm-300/30">
-          <p className="text-sm text-warm-400">{error}</p>
+          <p className="text-sm text-warm-500">{error}</p>
         </div>
       )}
 
@@ -269,8 +269,8 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                 </div>
 
                 <div className="flex justify-between mt-2 px-1">
-                  <span className="text-[10px] text-stone-500">Struggling</span>
-                  <span className="text-[10px] text-stone-500">Thriving</span>
+                  <span className="text-[11px] text-stone-500">Struggling</span>
+                  <span className="text-[11px] text-stone-500">Thriving</span>
                 </div>
               </Card>
             </div>
@@ -342,7 +342,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                       <div className="h-full rounded-full bg-sage-300" style={{ width: `${scores[dim] * 10}%` }} />
                     </div>
                     <span className="text-[11px] text-stone-500">{DIMENSION_LABELS[dim]}</span>
-                    <span className="text-[10px] font-mono text-sage-500 ml-auto">{scores[dim]}</span>
+                    <span className="text-[11px] font-mono text-sage-500 ml-auto">{scores[dim]}</span>
                   </div>
                 ))}
               </div>

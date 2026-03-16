@@ -198,12 +198,12 @@ export default function GoalForm({
           <div className="space-y-1.5">
             {form.milestones.map((ms, i) => (
               <div key={i} className="flex items-center gap-2 rounded-xl border border-stone-200 px-3 py-1.5 text-sm bg-white">
-                <span className="text-stone-400">{i + 1}.</span>
+                <span className="text-stone-500">{i + 1}.</span>
                 <span className="flex-1 text-stone-700">{ms}</span>
                 <button
                   type="button"
                   onClick={() => removeMilestone(i)}
-                  className="text-stone-400 hover:text-red-500 transition-colors"
+                  className="text-stone-500 hover:text-red-500 transition-colors"
                 >
                   &times;
                 </button>

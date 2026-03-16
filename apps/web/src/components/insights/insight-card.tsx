@@ -17,7 +17,7 @@ interface InsightCardProps {
 const TYPE_CONFIG: Record<string, { icon: string; accent: string; bg: string; border: string }> = {
   goal_risk: {
     icon: '\u26A0',
-    accent: 'text-warm-400',
+    accent: 'text-warm-500',
     bg: 'bg-warm-400/8',
     border: 'border-warm-400/30',
   },
@@ -51,7 +51,7 @@ const TYPE_CONFIG: Record<string, { icon: string; accent: string; bg: string; bo
 function getConfig(insight: InsightInfo) {
   const base = TYPE_CONFIG[insight.type] ?? TYPE_CONFIG.trend;
   if (insight.type === 'trend' && insight.body.includes('declining')) {
-    return { ...base, accent: 'text-warm-400', bg: 'bg-warm-400/8', border: 'border-warm-400/30' };
+    return { ...base, accent: 'text-warm-500', bg: 'bg-warm-400/8', border: 'border-warm-400/30' };
   }
   return base;
 }
@@ -82,13 +82,13 @@ export default function InsightCard({ insight, onDismiss }: InsightCardProps) {
                 {insight.title}
               </h3>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-stone-500">
                   {insight.type.replace('_', ' ')}
                 </span>
                 {insight.dimension && (
                   <>
                     <span className="h-0.5 w-0.5 rounded-full bg-stone-300" />
-                    <span className={`text-[10px] font-medium uppercase tracking-wider ${config.accent}`}>
+                    <span className={`text-[11px] font-medium uppercase tracking-wider ${config.accent}`}>
                       {insight.dimension}
                     </span>
                   </>

@@ -293,7 +293,7 @@ function InsightsFeed({
             </div>
             <button
               onClick={() => onDismissNudge(activeNudge.id)}
-              className="text-stone-400 hover:text-stone-600 text-xs flex-shrink-0"
+              className="text-stone-500 hover:text-stone-600 text-xs flex-shrink-0"
             >
               ×
             </button>
@@ -518,7 +518,7 @@ export default function DashboardClient({
               <p className="text-3xl font-serif text-sage-500">
                 {loading ? '—' : Math.round(overallScore)}
               </p>
-              <p className="text-[10px] text-stone-500 uppercase tracking-wider">Overall</p>
+              <p className="text-[11px] text-stone-500 uppercase tracking-wider">Overall</p>
             </div>
           </div>
         </div>
@@ -619,7 +619,7 @@ export default function DashboardClient({
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="text-sm font-medium text-stone-800">{goal.title}</p>
-                        <p className="text-[10px] text-stone-500 mt-0.5">
+                        <p className="text-[11px] text-stone-500 mt-0.5">
                           {dimLabel}{dimLabel && goal.target_date ? ' · ' : ''}
                           {goal.target_date ? `Due ${formatDueDate(goal.target_date)}` : ''}
                         </p>
@@ -663,7 +663,7 @@ export default function DashboardClient({
                 </div>
                 Daily Check-in
                 {todaysCheckin && (
-                  <span className="ml-auto text-[10px] text-sage-300 font-medium flex items-center gap-1">
+                  <span className="ml-auto text-[11px] text-sage-500 font-medium flex items-center gap-1">
                     <CheckCircleIcon className="w-3 h-3" /> Done
                   </span>
                 )}
@@ -703,7 +703,7 @@ export default function DashboardClient({
         {/* Mood & Energy */}
         <Card className="p-6">
           <h3 className="font-serif text-lg text-stone-800 mb-1">Mood & Energy</h3>
-          <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-4">Last 14 days</p>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mb-4">Last 14 days</p>
 
           {loading ? (
             <Skeleton className="h-44 rounded-xl" />
@@ -719,11 +719,11 @@ export default function DashboardClient({
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-1.5">
                   <div className="h-2 w-4 rounded-full bg-sage-500" />
-                  <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider">Mood</span>
+                  <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider">Mood</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="h-2 w-4 rounded-full bg-accent-400" />
-                  <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider">Energy</span>
+                  <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider">Energy</span>
                 </div>
               </div>
               <div className="h-44">
@@ -768,7 +768,7 @@ export default function DashboardClient({
         {/* Correlation Spotlight */}
         <Card className="p-6">
           <h3 className="font-serif text-lg text-stone-800 mb-1">Correlation Spotlight</h3>
-          <p className="text-[10px] text-stone-500 uppercase tracking-wider mb-4">Cross-dimension pattern</p>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mb-4">Cross-dimension pattern</p>
 
           {loading ? (
             <Skeleton className="h-44 rounded-xl" />
@@ -799,7 +799,7 @@ export default function DashboardClient({
                   <p className="text-sm font-medium text-stone-800">
                     {Math.abs(topCorrelation.coefficient) >= 0.7 ? 'Strong' : Math.abs(topCorrelation.coefficient) >= 0.4 ? 'Moderate' : 'Weak'} correlation
                   </p>
-                  <p className="text-[10px] text-stone-500 uppercase tracking-wider font-medium mt-0.5">
+                  <p className="text-[11px] text-stone-500 uppercase tracking-wider font-medium mt-0.5">
                     {Math.round(topCorrelation.confidence * 100)}% confidence — {topCorrelation.sampleSize} data points
                   </p>
                 </div>
@@ -809,7 +809,7 @@ export default function DashboardClient({
                 <Badge variant="sage">
                   {DIMENSION_LABELS[topCorrelation.dimension1 as Dimension] ?? topCorrelation.dimension1}
                 </Badge>
-                <span className="text-[10px] text-stone-500 font-medium">linked to</span>
+                <span className="text-[11px] text-stone-500 font-medium">linked to</span>
                 <Badge variant="sage">
                   {DIMENSION_LABELS[topCorrelation.dimension2 as Dimension] ?? topCorrelation.dimension2}
                 </Badge>
@@ -852,7 +852,7 @@ export default function DashboardClient({
                       style={{ height: `${Math.max(height, 4)}%` }}
                     />
                   </div>
-                  <span className={`text-[10px] font-medium ${isToday ? 'text-sage-500' : 'text-stone-500'}`}>
+                  <span className={`text-[11px] font-medium ${isToday ? 'text-sage-500' : 'text-stone-500'}`}>
                     {day}
                   </span>
                 </div>
@@ -922,7 +922,7 @@ export default function DashboardClient({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-stone-800 font-medium truncate">{activity.description}</p>
                     </div>
-                    <span className="text-[10px] text-stone-500 font-mono font-medium flex-shrink-0">
+                    <span className="text-[11px] text-stone-500 font-mono font-medium flex-shrink-0">
                       {relativeTime(activity.timestamp)}
                     </span>
                   </div>

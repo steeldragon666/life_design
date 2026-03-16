@@ -154,7 +154,7 @@ export default function ChatBubble({
             </div>
           )}
           {timestamp && (
-            <p className="text-[10px] text-white/30 mt-1 text-right pr-1">{timestamp}</p>
+            <p className="text-[11px] text-white/30 mt-1 text-right pr-1">{timestamp}</p>
           )}
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function ChatBubble({
       <div className="flex-1 max-w-[75%]">
         {/* Persona label chip */}
         <p
-          className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 ml-0.5"
+          className="text-[11px] uppercase tracking-widest text-white/40 mb-1.5 ml-0.5"
           style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
         >
           {personaLabel(blend)}
@@ -228,7 +228,7 @@ export default function ChatBubble({
               <SpeakerHigh className="h-4 w-4 text-violet-400 flex-shrink-0" weight="regular" />
               <WaveformBars count={14} active={false} className="text-violet-400" />
               <span
-                className="text-xs text-stone-400 tabular-nums flex items-center gap-1"
+                className="text-xs text-stone-500 tabular-nums flex items-center gap-1"
                 style={{ fontFamily: '"JetBrains Mono", monospace' }}
               >
                 <Clock className="h-3 w-3" weight="regular" />
@@ -253,14 +253,14 @@ export default function ChatBubble({
               <div className="mt-2 border-t border-white/10">
                 <button
                   onClick={() => setTranscriptOpen((v) => !v)}
-                  className="flex items-center gap-1.5 mt-2 text-[10px] uppercase tracking-wider text-stone-500 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 mt-2 text-[11px] uppercase tracking-wider text-stone-500 hover:text-white transition-colors"
                 >
                   {transcriptOpen ? <CaretUp className="h-3 w-3" weight="regular" /> : <CaretDown className="h-3 w-3" weight="regular" />}
                   Transcription
                 </button>
                 {transcriptOpen && (
                   <p
-                    className="mt-2 text-xs text-stone-400 leading-relaxed italic"
+                    className="mt-2 text-xs text-stone-500 leading-relaxed italic"
                     style={{ fontFamily: '"Erode", Georgia, serif' }}
                   >
                     {voiceData.transcription}
@@ -325,7 +325,7 @@ export default function ChatBubble({
               <ThumbsDown className="h-3.5 w-3.5" weight="regular" />
             </button>
             {timestamp && (
-              <span className="text-[10px] text-white/20 ml-auto">{timestamp}</span>
+              <span className="text-[11px] text-white/20 ml-auto">{timestamp}</span>
             )}
           </div>
         )}

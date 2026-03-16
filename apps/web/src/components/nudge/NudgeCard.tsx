@@ -73,13 +73,13 @@ export default function NudgeCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg" aria-hidden="true">{timeIcon}</span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-stone-500">
               {nudge.type} nudge
             </span>
             {nudge.dimension && (
               <>
                 <span className="h-0.5 w-0.5 rounded-full bg-stone-300" aria-hidden="true" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-sage-500">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-sage-500">
                   {nudge.dimension}
                 </span>
               </>

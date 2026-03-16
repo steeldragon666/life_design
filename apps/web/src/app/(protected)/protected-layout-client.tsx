@@ -51,7 +51,7 @@ export default function ProtectedLayout({
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-stone-50">
         <div className="max-w-md w-full text-center space-y-3 p-8 rounded-2xl bg-white border border-stone-200/60">
-          <p className="text-sm text-stone-400">Preparing your space...</p>
+          <p className="text-sm text-stone-500">Preparing your space...</p>
           <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
             <div className="h-full w-1/2 bg-gradient-to-r from-sage-300 to-sage-500 animate-pulse rounded-full" />
           </div>
@@ -114,7 +114,7 @@ export default function ProtectedLayout({
                 ${isActive(item.href) ? 'text-sage-600' : 'text-stone-500'}`}
             >
               <item.icon size={20} weight="regular" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[11px] font-medium">{item.label}</span>
               {isActive(item.href) && (
                 <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
               )}
@@ -127,7 +127,7 @@ export default function ProtectedLayout({
             className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all ${moreOpen || isMoreActive ? 'text-sage-600' : 'text-stone-500'}`}
           >
             <DotsThreeVertical size={20} weight="regular" />
-            <span className="text-[10px] font-medium">More</span>
+            <span className="text-[11px] font-medium">More</span>
             {isMoreActive && !moreOpen && (
               <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
             )}

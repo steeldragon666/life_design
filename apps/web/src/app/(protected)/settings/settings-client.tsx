@@ -113,7 +113,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
                 <div className="flex-1">
                   <h3 className="font-semibold text-sm text-stone-800">{provider.name}</h3>
                   <p className="text-xs text-stone-500 mt-0.5">{provider.description}</p>
-                  <span className="text-xs text-stone-400">Dimensions: {provider.dimension}</span>
+                  <span className="text-xs text-stone-500">Dimensions: {provider.dimension}</span>
                 </div>
                 <div className="shrink-0 ml-4">
                   {isConnected ? (
@@ -189,7 +189,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
             </p>
           </div>
           {aiReady && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sage-50 text-sage-500 font-medium">Active</span>
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-sage-50 text-sage-500 font-medium">Active</span>
           )}
         </div>
       </SectionCard>
@@ -205,7 +205,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
                 <span className="text-sm text-stone-700 truncate flex-1">{mem.content}</span>
                 <button
                   onClick={async () => { if (mem.id) await db.mentorMemory.delete(mem.id); }}
-                  className="text-[10px] text-warm-400 hover:underline ml-2 flex-shrink-0"
+                  className="text-[11px] text-warm-500 hover:underline ml-2 flex-shrink-0"
                 >
                   Remove
                 </button>
@@ -223,7 +223,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
             {completedChallenges.map(ch => (
               <div key={ch.id} className="flex items-center justify-between py-1.5">
                 <span className="text-sm text-stone-700">{ch.challengeId}</span>
-                <span className="text-[10px] text-stone-500 font-mono">
+                <span className="text-[11px] text-stone-500 font-mono">
                   {ch.completedAt ? new Date(ch.completedAt).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' }) : ''}
                 </span>
               </div>

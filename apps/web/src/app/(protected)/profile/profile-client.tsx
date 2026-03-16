@@ -67,7 +67,7 @@ function TagInput({
           className="flex-1 min-w-[120px] border-none outline-none text-sm text-stone-800"
         />
       </div>
-      <p className="text-xs text-stone-400">Press Enter or comma to add</p>
+      <p className="text-xs text-stone-500">Press Enter or comma to add</p>
     </div>
   );
 }
@@ -121,7 +121,7 @@ export default function ProfileClient({ initialProfile, onSave }: ProfileClientP
             className="w-full rounded-lg border border-stone-200 p-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-500"
             maxLength={200}
           />
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500">
             Your mentor will track industry events relevant to your profession
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function ProfileClient({ initialProfile, onSave }: ProfileClientP
             placeholder="e.g. SW1A 1AA, 10001"
             className="w-full rounded-lg border border-stone-200 p-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-500"
           />
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500">
             Used for weather-aware suggestions (e.g. rainy day alternatives for outdoor plans)
           </p>
         </div>

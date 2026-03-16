@@ -291,7 +291,7 @@ export default function VoiceOnboardingAgent({
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-stone-400 text-sm">
+            <p className="text-stone-500 text-sm">
               Next, choose the mentor archetype that fits your journey
             </p>
           </div>
@@ -380,7 +380,7 @@ export default function VoiceOnboardingAgent({
 
           <div className="text-center">
             <h2 className="text-base font-semibold text-stone-800">Your Safe Space</h2>
-            <p className="text-xs text-stone-400">For reflection &amp; growth</p>
+            <p className="text-xs text-stone-500">For reflection &amp; growth</p>
           </div>
 
           <div className="w-16" />
@@ -406,7 +406,7 @@ export default function VoiceOnboardingAgent({
                         type="button"
                         onClick={dismissSessionNotice}
                         aria-label="Dismiss context notice"
-                        className="rounded-md p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+                        className="rounded-md p-1 text-stone-500 hover:text-stone-600 hover:bg-stone-100 transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -435,7 +435,7 @@ export default function VoiceOnboardingAgent({
                     )}
                   >
                     {isProcessing ? (
-                      <PhosphorSpinner className="h-8 w-8 text-stone-400 animate-spin" />
+                      <PhosphorSpinner className="h-8 w-8 text-stone-500 animate-spin" />
                     ) : isRecording ? (
                       <Square className="h-8 w-8 text-white" weight="fill" />
                     ) : (
@@ -453,7 +453,7 @@ export default function VoiceOnboardingAgent({
                     ) : null}
                   </button>
 
-                  <p className="text-stone-400 text-sm mt-3">
+                  <p className="text-stone-500 text-sm mt-3">
                     {isRecording
                       ? 'Listening... Tap to stop'
                       : isProcessing
@@ -466,13 +466,13 @@ export default function VoiceOnboardingAgent({
                   </p>
 
                   {transcript ? (
-                    <p className="text-xs text-stone-400 mt-1">{transcript}</p>
+                    <p className="text-xs text-stone-500 mt-1">{transcript}</p>
                   ) : null}
 
                   {isSpeaking ? (
                     <button
                       onClick={stopSpeaking}
-                      className="mt-2 text-xs text-stone-400 hover:text-stone-600 flex items-center gap-1 transition-colors"
+                      className="mt-2 text-xs text-stone-500 hover:text-stone-600 flex items-center gap-1 transition-colors"
                     >
                       <SpeakerHigh className="h-3 w-3" />
                       Stop speaking

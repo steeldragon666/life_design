@@ -190,7 +190,7 @@ function MentorSidebar({
             {sessions.length === 0 ? (
               <div className="text-center py-8">
                 <ChatCircle className="h-8 w-8 text-stone-200 mx-auto mb-2" weight="regular" />
-                <p className="text-xs text-stone-400" style={{ fontFamily: '"Erode", Georgia, serif' }}>
+                <p className="text-xs text-stone-500" style={{ fontFamily: '"Erode", Georgia, serif' }}>
                   No previous conversations
                 </p>
               </div>
@@ -203,7 +203,7 @@ function MentorSidebar({
                   aria-label={`Load conversation: ${session.title}`}
                 >
                   <div className="flex items-start gap-2">
-                    <Clock className="h-3.5 w-3.5 text-stone-300 mt-0.5 flex-shrink-0 group-hover:text-stone-400 transition-colors" weight="regular" />
+                    <Clock className="h-3.5 w-3.5 text-stone-300 mt-0.5 flex-shrink-0 group-hover:text-stone-500 transition-colors" weight="regular" />
                     <div className="flex-1 min-w-0">
                       <p
                         className="text-xs font-medium text-stone-600 group-hover:text-stone-800 truncate transition-colors"
@@ -211,13 +211,13 @@ function MentorSidebar({
                       >
                         {session.title}
                       </p>
-                      <p className="text-[10px] text-stone-400 mt-0.5 truncate"
+                      <p className="text-[11px] text-stone-500 mt-0.5 truncate"
                         style={{ fontFamily: '"Erode", Georgia, serif' }}
                       >
                         {session.preview}
                       </p>
                       <p
-                        className="text-[10px] text-stone-400 mt-1"
+                        className="text-[11px] text-stone-500 mt-1"
                         style={{ fontFamily: '"JetBrains Mono", monospace' }}
                       >
                         {session.date}
@@ -527,7 +527,7 @@ export default function MentorClient({
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200 transition-all duration-200"
+              className="p-1 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-200 transition-all duration-200"
               aria-label="Close sidebar"
             >
               <SidebarSimple className="h-4 w-4" weight="regular" />

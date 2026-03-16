@@ -131,7 +131,7 @@ export default function ChatInput({
             rows={1}
             aria-label="Message input"
             aria-multiline="true"
-            className="flex-1 resize-none bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none disabled:opacity-40 px-2 py-1.5 leading-relaxed min-h-[2.25rem] max-h-[12.5rem] overflow-y-auto"
+            className="flex-1 resize-none bg-transparent text-sm text-stone-800 placeholder:text-stone-500 focus:outline-none disabled:opacity-40 px-2 py-1.5 leading-relaxed min-h-[2.25rem] max-h-[12.5rem] overflow-y-auto"
             style={{ fontFamily: '"Erode", Georgia, serif' }}
           />
 
@@ -169,7 +169,7 @@ export default function ChatInput({
       )}
 
       {/* Helper text */}
-      <p className="text-[10px] text-stone-400 text-center select-none">
+      <p className="text-[11px] text-stone-500 text-center select-none">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

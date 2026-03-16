@@ -535,7 +535,7 @@ function OrbTooltip({ dimension, dims }: TooltipProps) {
       />
       <div>
         <p className="text-xs font-black text-white tracking-wide">{label}</p>
-        <p className="text-[10px] font-bold mt-0.5" style={{ color }}>
+        <p className="text-[11px] font-bold mt-0.5" style={{ color }}>
           {entry.score.toFixed(1)} / 10 &mdash; {trendLabel}
         </p>
       </div>
@@ -563,7 +563,7 @@ function OrbFallback({ overallScore }: { overallScore: number }) {
           {Math.round(overallScore)}
         </span>
       </div>
-      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
         WebGL unavailable
       </p>
     </div>
@@ -652,7 +652,7 @@ export default function LifeOrb({
           {Math.round(overallScore)}
           <span className="text-sm text-indigo-400 ml-0.5">%</span>
         </p>
-        <p className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-[0.2em] mt-0.5">
+        <p className="text-[11px] font-bold text-indigo-400/70 uppercase tracking-[0.2em] mt-0.5">
           Harmony Index
         </p>
       </div>

@@ -146,15 +146,15 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
           <p className="text-2xl font-serif text-sage-500">{totalProgress}%</p>
-          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Overall Progress</p>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mt-1">Overall Progress</p>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
           <p className="text-2xl font-serif text-stone-800">{activeCount}</p>
-          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Active Goals</p>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mt-1">Active Goals</p>
         </div>
         <div className="p-4 rounded-2xl bg-white border border-stone-200/60 text-center">
-          <p className="text-2xl font-serif text-warm-400">{completedCount}</p>
-          <p className="text-[10px] text-stone-500 uppercase tracking-wider mt-1">Completed</p>
+          <p className="text-2xl font-serif text-warm-500">{completedCount}</p>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mt-1">Completed</p>
         </div>
       </div>
 
@@ -219,20 +219,20 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                     {/* Category badge + target date + momentum indicator */}
                     <div className="flex items-center gap-3">
                       <span
-                        className="text-[10px] px-2 py-0.5 rounded-full font-medium capitalize"
+                        className="text-[11px] px-2 py-0.5 rounded-full font-medium capitalize"
                         style={{ backgroundColor: palette.bg, color: palette.text }}
                       >
                         {dimLabel}
                       </span>
                       {goal.target_date && (
-                        <span className="text-[10px] text-stone-500">
+                        <span className="text-[11px] text-stone-500">
                           Due {new Date(goal.target_date).toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })}
                         </span>
                       )}
                       {dimension && (() => {
                         const momentum = getMomentum(dimension);
                         return (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: momentum.color + '15', color: momentum.color }}>
+                          <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: momentum.color + '15', color: momentum.color }}>
                             {momentum.slope > 0.05 ? '↑' : momentum.slope < -0.05 ? '↓' : '→'} {momentum.label}
                           </span>
                         );
@@ -257,7 +257,7 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                       const momentum = getMomentum(dimension);
                       if (daysLeft > 0 && daysLeft < totalDays * 0.3 && progress < 70 && momentum.slope <= 0) {
                         return (
-                          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-warm-400 font-medium">
+                          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-warm-500 font-medium">
                             <Warning weight="regular" className="w-3 h-3" /> Timeline risk — momentum stalling
                           </div>
                         );

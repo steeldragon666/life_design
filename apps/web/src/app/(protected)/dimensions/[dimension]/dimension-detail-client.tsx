@@ -687,7 +687,7 @@ function EffortBadge({ effort }: { effort: RecommendedAction['effort'] }) {
 
   return (
     <span
-      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+      className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
       style={{ backgroundColor: config.bg, color: config.color }}
     >
       {config.label}
@@ -704,7 +704,7 @@ function CausalStrengthBadge({ strength }: { strength: CausalInsight['strength']
 
   return (
     <span
-      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+      className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
       style={{ backgroundColor: config.bg, color: config.color }}
     >
       {config.label}
@@ -830,7 +830,7 @@ export default function DimensionDetailClient({
           Dashboard
         </Link>
         <span className="text-slate-700">/</span>
-        <span className="text-stone-400 text-sm font-bold">{label}</span>
+        <span className="text-stone-500 text-sm font-bold">{label}</span>
       </div>
 
       {/* ── 1. HERO ─────────────────────────────────────────────────────────── */}
@@ -875,7 +875,7 @@ export default function DimensionDetailClient({
             </h1>
 
             <p
-              className="text-stone-400 text-base max-w-xl"
+              className="text-stone-500 text-base max-w-xl"
               style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
             >
               {description}
@@ -1090,11 +1090,11 @@ export default function DimensionDetailClient({
           <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/5">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Positive influence</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Positive influence</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-sm bg-red-500/70" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Negative influence</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Negative influence</span>
             </div>
           </div>
         </div>
@@ -1194,11 +1194,11 @@ export default function DimensionDetailClient({
           <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/5">
             <div className="flex items-center gap-2">
               <div className="h-3 w-6 rounded-sm bg-emerald-500/60" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Positive correlation</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Positive correlation</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-6 rounded-sm bg-red-500/60" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Negative correlation</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Negative correlation</span>
             </div>
           </div>
         </div>
@@ -1225,7 +1225,7 @@ export default function DimensionDetailClient({
                 More data needed for forecasting
               </p>
               <p
-                className="text-sm text-stone-400 leading-relaxed"
+                className="text-sm text-stone-500 leading-relaxed"
                 style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
               >
                 You have {serverData.totalCheckins} check-in
@@ -1243,7 +1243,7 @@ export default function DimensionDetailClient({
                   }}
                 />
               </div>
-              <p className="text-[10px] font-bold text-stone-600 mt-1.5">
+              <p className="text-[11px] font-bold text-stone-600 mt-1.5">
                 {serverData.totalCheckins}/30 days
               </p>
             </div>
@@ -1310,7 +1310,7 @@ export default function DimensionDetailClient({
               </AreaChart>
             </ResponsiveContainer>
 
-            <p className="text-[10px] font-bold text-stone-600 mt-3 text-center">
+            <p className="text-[11px] font-bold text-stone-600 mt-3 text-center">
               Shaded area represents the 80% confidence interval. Forecasts beyond 7 days are not shown.
             </p>
           </div>
@@ -1350,7 +1350,7 @@ export default function DimensionDetailClient({
 
               {/* Description */}
               <p
-                className="text-xs text-stone-400 leading-relaxed"
+                className="text-xs text-stone-500 leading-relaxed"
                 style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
               >
                 {action.description}
@@ -1359,7 +1359,7 @@ export default function DimensionDetailClient({
               {/* Impact metrics */}
               <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
                     Similar users saw
                   </p>
                   <p
@@ -1373,12 +1373,12 @@ export default function DimensionDetailClient({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
                     Timeframe
                   </p>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3 text-stone-500" weight="regular" />
-                    <p className="text-xs font-bold text-stone-400">{action.timeframe}</p>
+                    <p className="text-xs font-bold text-stone-500">{action.timeframe}</p>
                   </div>
                 </div>
               </div>
@@ -1466,7 +1466,7 @@ export default function DimensionDetailClient({
 
       {/* Dimension navigation */}
       <section className="space-y-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-600 px-1">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-600 px-1">
           Explore other dimensions
         </p>
         <div className="flex flex-wrap gap-2">

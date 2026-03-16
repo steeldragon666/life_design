@@ -271,7 +271,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
                 <span className="text-2xl font-bold text-stone-800 leading-none">
                   {progress.percentage}
                 </span>
-                <span className="text-[10px] font-medium text-stone-500 uppercase tracking-wider mt-0.5">
+                <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mt-0.5">
                   %
                 </span>
               </div>

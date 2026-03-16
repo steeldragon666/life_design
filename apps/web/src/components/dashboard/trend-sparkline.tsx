@@ -30,7 +30,7 @@ export default function TrendSparkline({
   const trend = computeTrend(scores);
   const trendIndicator = trend > 0.1 ? '▲' : trend < -0.1 ? '▼' : '—';
   const trendColor =
-    trend > 0.1 ? 'text-sage-500' : trend < -0.1 ? 'text-red-600' : 'text-stone-400';
+    trend > 0.1 ? 'text-sage-500' : trend < -0.1 ? 'text-red-600' : 'text-stone-500';
 
   const latest = data[data.length - 1]?.score ?? 0;
 

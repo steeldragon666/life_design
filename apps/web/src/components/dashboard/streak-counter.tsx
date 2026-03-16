@@ -13,7 +13,7 @@ export default function StreakCounter({ streak }: StreakCounterProps) {
           aria-label={streak > 0 ? 'Active streak' : 'No active streak'}
           size={28}
           weight="regular"
-          className={streak > 0 ? 'text-warm-500' : 'text-stone-400'}
+          className={streak > 0 ? 'text-warm-500' : 'text-stone-500'}
         />
       </div>
       <div>

@@ -97,7 +97,7 @@ export default function GoalCard({ goal }: GoalCardProps) {
         <Badge variant={statusVariant} className="capitalize">
           {goal.status}
         </Badge>
-        <span className={`text-xs ${days < 7 ? 'text-red-500 font-medium' : days < 30 ? 'text-amber-500' : 'text-stone-400'}`}>
+        <span className={`text-xs ${days < 7 ? 'text-red-500 font-medium' : days < 30 ? 'text-amber-500' : 'text-stone-500'}`}>
           {days > 0 ? `${days}d remaining` : days === 0 ? 'Due today' : `${Math.abs(days)}d overdue`}
         </span>
       </div>
