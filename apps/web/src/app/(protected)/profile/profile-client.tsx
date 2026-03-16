@@ -41,18 +41,18 @@ function TagInput({
 
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <div className="flex flex-wrap gap-1.5 rounded-lg border p-2 focus-within:ring-2 focus-within:ring-indigo-500">
+      <label className="block text-sm font-medium text-stone-700">{label}</label>
+      <div className="flex flex-wrap gap-1.5 rounded-lg border border-stone-200 p-2 focus-within:ring-2 focus-within:ring-sage-500 bg-white">
         {values.map((value, i) => (
           <span
             key={`${value}-${i}`}
-            className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2.5 py-0.5 text-sm text-indigo-800"
+            className="inline-flex items-center gap-1 rounded-full bg-sage-100 px-2.5 py-0.5 text-sm text-sage-600"
           >
             {value}
             <button
               type="button"
               onClick={() => removeTag(i)}
-              className="text-indigo-500 hover:text-indigo-700"
+              className="text-sage-500 hover:text-sage-700"
             >
               &times;
             </button>
@@ -64,10 +64,10 @@ function TagInput({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={values.length === 0 ? placeholder : ''}
-          className="flex-1 min-w-[120px] border-none outline-none text-sm"
+          className="flex-1 min-w-[120px] border-none outline-none text-sm text-stone-800"
         />
       </div>
-      <p className="text-xs text-gray-400">Press Enter or comma to add</p>
+      <p className="text-xs text-stone-400">Press Enter or comma to add</p>
     </div>
   );
 }
@@ -105,37 +105,37 @@ export default function ProfileClient({ initialProfile, onSave }: ProfileClientP
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Your Profile</h1>
-      <p className="text-gray-600">
+      <h1 className="text-2xl font-bold text-stone-900">Your Profile</h1>
+      <p className="text-stone-500">
         This information helps your AI mentors give more relevant, personalized advice.
       </p>
 
       <div className="space-y-4">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Profession</label>
+          <label className="block text-sm font-medium text-stone-700">Profession</label>
           <input
             type="text"
             value={profile.profession ?? ''}
             onChange={(e) => setProfile({ ...profile, profession: e.target.value })}
             placeholder="e.g. Commodities Trader, Retail Manager, Software Engineer"
-            className="w-full rounded-lg border p-2 text-sm"
+            className="w-full rounded-lg border border-stone-200 p-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-500"
             maxLength={200}
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-stone-400">
             Your mentor will track industry events relevant to your profession
           </p>
         </div>
 
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">Postcode</label>
+          <label className="block text-sm font-medium text-stone-700">Postcode</label>
           <input
             type="text"
             value={profile.postcode ?? ''}
             onChange={(e) => setProfile({ ...profile, postcode: e.target.value })}
             placeholder="e.g. SW1A 1AA, 10001"
-            className="w-full rounded-lg border p-2 text-sm"
+            className="w-full rounded-lg border border-stone-200 p-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-500"
           />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-stone-400">
             Used for weather-aware suggestions (e.g. rainy day alternatives for outdoor plans)
           </p>
         </div>
@@ -170,7 +170,7 @@ export default function ProfileClient({ initialProfile, onSave }: ProfileClientP
       </div>
 
       {message && (
-        <p className={`text-sm ${message.startsWith('Error') ? 'text-red-600' : 'text-green-600'}`}>
+        <p className={`text-sm ${message.startsWith('Error') ? 'text-red-600' : 'text-sage-600'}`}>
           {message}
         </p>
       )}
@@ -178,7 +178,7 @@ export default function ProfileClient({ initialProfile, onSave }: ProfileClientP
       <button
         onClick={handleSave}
         disabled={saving}
-        className="rounded-lg bg-indigo-600 px-6 py-2.5 text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-lg bg-sage-500 px-6 py-2.5 text-white hover:bg-sage-600 disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Save Profile'}
       </button>

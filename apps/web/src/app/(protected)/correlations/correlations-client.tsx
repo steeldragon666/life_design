@@ -33,7 +33,7 @@ import {
   ChevronUp,
   AlertCircle,
   Zap,
-} from 'lucide-react';
+} from 'lucide-react'; // kept: correlations uses complex UI, icons are minor
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -177,9 +177,9 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
           )}
         </div>
         {expanded ? (
-          <ChevronUp className="h-4 w-4 text-slate-500" />
+          <ChevronUp className="h-4 w-4 text-stone-500" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-slate-500" />
+          <ChevronDown className="h-4 w-4 text-stone-500" />
         )}
       </button>
 
@@ -187,7 +187,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
         <div className="px-6 pb-6 space-y-6 border-t border-white/5 pt-4">
           {/* Dimension multi-select */}
           <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500">
               Dimensions
             </p>
             <div className="flex flex-wrap gap-2">
@@ -212,7 +212,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
               {dimensions.length > 0 && (
                 <button
                   onClick={() => onChange({ ...filters, dimensions: [] })}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-400 transition-colors"
+                  className="px-3 py-1.5 rounded-full text-xs font-bold text-stone-600 hover:text-stone-400 transition-colors"
                 >
                   Clear
                 </button>
@@ -223,7 +223,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
           {/* Confidence slider */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500">
                 Min confidence
               </p>
               <span
@@ -248,7 +248,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
 
           {/* Time period */}
           <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500">
               Time period
             </p>
             <div className="flex gap-2">
@@ -259,7 +259,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
                   className={`px-4 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${
                     timePeriod === p
                       ? 'bg-primary-500/20 border-primary-500/40 text-primary-400'
-                      : 'border-white/5 text-slate-500 hover:text-white hover:border-white/10'
+                      : 'border-white/5 text-stone-500 hover:text-white hover:border-white/10'
                   }`}
                 >
                   {p === 'all' ? 'All time' : p}
@@ -307,17 +307,17 @@ function MatrixView({ correlations }: MatrixViewProps) {
       <div className="flex items-center gap-6 px-1">
         <div className="flex items-center gap-2">
           <div className="h-3 w-6 rounded-sm bg-emerald-500/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Positive</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Positive</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-6 rounded-sm bg-red-500/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Negative</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Negative</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-6 rounded-sm bg-white/5" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">No signal</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">No signal</span>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 ml-auto">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600 ml-auto">
           Click a cell to explore
         </span>
       </div>
@@ -426,12 +426,12 @@ function MatrixView({ correlations }: MatrixViewProps) {
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3 flex-wrap">
               <DimensionBadge dimension={selected.d1} size="md" />
-              <span className="text-slate-500 text-sm font-bold">↔</span>
+              <span className="text-stone-500 text-sm font-bold">↔</span>
               <DimensionBadge dimension={selected.d2} size="md" />
             </div>
             <button
               onClick={() => setSelected(null)}
-              className="text-slate-500 hover:text-white transition-colors p-1"
+              className="text-stone-500 hover:text-white transition-colors p-1"
             >
               ✕
             </button>
@@ -460,7 +460,7 @@ function MatrixView({ correlations }: MatrixViewProps) {
               },
             ].map(({ label, val }) => (
               <div key={label} className="glass rounded-2xl p-3">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-stone-500 mb-1">
                   {label}
                 </p>
                 <p
@@ -474,7 +474,7 @@ function MatrixView({ correlations }: MatrixViewProps) {
           </div>
 
           <p
-            className="text-sm text-slate-300 leading-relaxed mb-4"
+            className="text-sm text-stone-300 leading-relaxed mb-4"
             style={{ fontFamily: '"Erode", Georgia, serif' }}
           >
             {selected.data.best.narrative}
@@ -493,7 +493,7 @@ function MatrixView({ correlations }: MatrixViewProps) {
                 {CAUSAL_BADGE[selected.data.best.causalAssessment].label} causal signal
               </span>
             )}
-            <span className="text-[10px] font-bold text-slate-600">
+            <span className="text-[10px] font-bold text-stone-600">
               {selected.data.count} correlation{selected.data.count !== 1 ? 's' : ''} in this pair
             </span>
           </div>
@@ -515,8 +515,8 @@ function ListView({ correlations }: ListViewProps) {
   if (correlations.length === 0) {
     return (
       <div className="glass-dark rounded-3xl p-12 text-center border border-white/5">
-        <p className="text-slate-500 font-medium">No correlations match your current filters.</p>
-        <p className="text-slate-600 text-sm mt-1">Try lowering the confidence threshold.</p>
+        <p className="text-stone-500 font-medium">No correlations match your current filters.</p>
+        <p className="text-stone-600 text-sm mt-1">Try lowering the confidence threshold.</p>
       </div>
     );
   }
@@ -539,7 +539,7 @@ function ListView({ correlations }: ListViewProps) {
             {/* Rank badge */}
             <div className="absolute -left-3 top-4 z-10 h-6 w-6 rounded-full bg-white/5 border border-white/8 flex items-center justify-center">
               <span
-                className="text-[9px] font-black text-slate-500"
+                className="text-[9px] font-black text-stone-500"
                 style={{ fontFamily: '"JetBrains Mono", monospace' }}
               >
                 {idx + 1}
@@ -565,7 +565,7 @@ function ListView({ correlations }: ListViewProps) {
                 style={{ backgroundColor: dimensionColor(c.dimension1) }}
                 title={c.dimension1}
               />
-              <span className="text-slate-700 text-[8px]">↔</span>
+              <span className="text-stone-700 text-[8px]">↔</span>
               <div
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: dimensionColor(c.dimension2) }}
@@ -699,13 +699,13 @@ function NetworkView({ correlations }: NetworkViewProps) {
       <div className="flex items-center gap-6 px-1">
         <div className="flex items-center gap-2">
           <div className="h-0.5 w-8 bg-emerald-500/70" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Positive</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Positive</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-0.5 w-8 bg-red-500/70" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Negative</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Negative</span>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 ml-auto">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600 ml-auto">
           Line weight = strength
         </span>
       </div>
@@ -836,7 +836,7 @@ function NetworkView({ correlations }: NetworkViewProps) {
                     {DIMENSION_LABELS[edge.d2 as Dimension]}
                   </p>
                   <p
-                    className="text-[10px] font-black text-slate-400 mt-0.5"
+                    className="text-[10px] font-black text-stone-400 mt-0.5"
                     style={{ fontFamily: '"JetBrains Mono", monospace' }}
                   >
                     r = {edge.best.coefficient > 0 ? '+' : ''}
@@ -899,7 +899,7 @@ export default function CorrelationsClient() {
       <div className="space-y-1">
         <div className="flex items-center gap-2 mb-2">
           <span className="h-1.5 w-1.5 rounded-full bg-primary-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-[0.2em]">
             ML Engine · Correlation Analysis
           </span>
         </div>
@@ -910,7 +910,7 @@ export default function CorrelationsClient() {
           Correlation <span className="text-gradient-primary">Explorer</span>
         </h1>
         <p
-          className="text-slate-400 text-base"
+          className="text-stone-400 text-base"
           style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
         >
           Statistically validated patterns discovered across your 8 life dimensions.
@@ -944,7 +944,7 @@ export default function CorrelationsClient() {
             },
           ].map(({ label, value, color }) => (
             <div key={label} className="glass-dark rounded-3xl p-5 border border-white/5">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 mb-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-stone-500 mb-2">
                 {label}
               </p>
               <p
@@ -977,7 +977,7 @@ export default function CorrelationsClient() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                   view === tab.id
                     ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                    : 'text-slate-500 hover:text-white border border-transparent'
+                    : 'text-stone-500 hover:text-white border border-transparent'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -988,7 +988,7 @@ export default function CorrelationsClient() {
         </div>
 
         {!loading && (
-          <span className="text-xs text-slate-600 font-bold ml-2">
+          <span className="text-xs text-stone-600 font-bold ml-2">
             {stats.total} correlation{stats.total !== 1 ? 's' : ''}
           </span>
         )}
@@ -1027,7 +1027,7 @@ export default function CorrelationsClient() {
               About these correlations
             </p>
             <p
-              className="text-xs text-slate-400 leading-relaxed"
+              className="text-xs text-stone-400 leading-relaxed"
               style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
             >
               Correlations are computed using Pearson and Spearman methods with Bonferroni correction
