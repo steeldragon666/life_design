@@ -5,3 +5,5 @@ export { Card } from './Card';
 export type { CardProps, CardVariant } from './Card';
 export { Input, Textarea, Select, FormField } from './Input';
 export type { InputProps, TextareaProps, SelectProps, FormFieldProps } from './Input';
+export { Badge } from './Badge';
+export type { BadgeProps, BadgeVariant } from './Badge';
