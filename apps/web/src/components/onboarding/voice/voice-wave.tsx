@@ -12,7 +12,7 @@ export function VoiceWave({ isActive }: VoiceWaveProps) {
           key={index}
           className={cn(
             'w-[3px] rounded-sm transition-all duration-300',
-            isActive ? 'bg-gradient-to-t from-cyan-400 to-teal-300' : 'bg-white/20'
+            isActive ? 'bg-gradient-to-t from-sage-400 to-sage-300' : 'bg-stone-200'
           )}
           style={{
             height: isActive ? `${[8, 16, 12, 20, 10][index - 1]}px` : '4px',

@@ -1,4 +1,5 @@
-import { Flame } from 'lucide-react';
+import { Fire } from '@phosphor-icons/react/dist/ssr';
+import { Card } from '@life-design/ui';
 
 interface StreakCounterProps {
   streak: number;
@@ -6,20 +7,21 @@ interface StreakCounterProps {
 
 export default function StreakCounter({ streak }: StreakCounterProps) {
   return (
-    <div className="glass rounded-2xl p-4 flex items-center gap-4 border-white/5 shadow-xl shadow-orange-500/5 transition-all hover:scale-[1.02]">
-      <div className="h-12 w-12 rounded-xl bg-orange-500/10 flex items-center justify-center relative">
-        <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse" />
-        <Flame
+    <Card hoverable className="flex items-center gap-4 p-4">
+      <div className="h-12 w-12 rounded-xl bg-warm-100 flex items-center justify-center relative">
+        <Fire
           aria-label={streak > 0 ? 'Active streak' : 'No active streak'}
-          className={`h-7 w-7 ${streak > 0 ? 'text-orange-500 animate-bounce' : 'text-slate-600'}`}
+          size={28}
+          weight="regular"
+          className={streak > 0 ? 'text-warm-500' : 'text-stone-500'}
         />
       </div>
       <div>
-        <p className="text-2xl font-bold text-white leading-none">{streak}</p>
-        <p className="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">
-          {streak === 1 ? 'Day Streak' : 'Day Streak'}
+        <p className="text-2xl font-bold text-stone-900 leading-none">{streak}</p>
+        <p className="text-xs font-medium text-stone-500 mt-1 uppercase tracking-wider">
+          Day Streak
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

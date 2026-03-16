@@ -31,10 +31,10 @@ export default function SmartPrompts({ suggestions, onSelectPrompt }: SmartPromp
             onClick={() => onSelectPrompt(suggestion.prompt)}
           >
             <div className="mb-1 flex items-center gap-1.5">
-              <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-indigo-400">
+              <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-indigo-400">
                 {dimLabel}
               </span>
-              <span className="text-[10px] text-white/30">
+              <span className="text-[11px] text-white/30">
                 {suggestion.reason}
               </span>
             </div>

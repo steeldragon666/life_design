@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ALL_DIMENSIONS, Dimension, DurationType } from '@life-design/core';
+import { Button } from '@life-design/ui';
 import MoodSlider from './mood-slider';
 import MoodSegment from './mood-segment';
 import DimensionCard from './dimension-card';
@@ -75,7 +76,7 @@ export default function CheckInForm({ onSubmit, loading, initialValues }: CheckI
           role="tab"
           aria-selected={!isDeep}
           className={`px-4 py-2 rounded text-sm font-medium ${
-            !isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-slate-900'
+            !isDeep ? 'bg-sage-500 text-white' : 'bg-stone-100 text-stone-800'
           }`}
         >
           Quick mode
@@ -86,7 +87,7 @@ export default function CheckInForm({ onSubmit, loading, initialValues }: CheckI
           role="tab"
           aria-selected={isDeep}
           className={`px-4 py-2 rounded text-sm font-medium ${
-            isDeep ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-slate-900'
+            isDeep ? 'bg-sage-500 text-white' : 'bg-stone-100 text-stone-800'
           }`}
         >
           Deep mode
@@ -94,13 +95,13 @@ export default function CheckInForm({ onSubmit, loading, initialValues }: CheckI
       </div>
 
       {hasSmartDefaults && (
-        <p className="text-xs text-slate-300">Pre-filled from your most recent check-in. Adjust anything in one tap.</p>
+        <p className="text-xs text-stone-500">Pre-filled from your most recent check-in. Adjust anything in one tap.</p>
       )}
 
       {!isDeep ? <MoodSegment value={mood} onChange={setMood} /> : <MoodSlider value={mood} onChange={setMood} />}
 
       {!isDeep && (
-        <p className="text-sm text-slate-300">Quick mode focuses on your top 3 dimensions. Switch to deep mode for full detail.</p>
+        <p className="text-sm text-stone-500">Quick mode focuses on your top 3 dimensions. Switch to deep mode for full detail.</p>
       )}
 
       <div className={`grid grid-cols-1 gap-4 ${isDeep ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
@@ -117,14 +118,15 @@ export default function CheckInForm({ onSubmit, loading, initialValues }: CheckI
         ))}
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+        loading={loading}
+        className="w-full"
       >
         {loading ? 'Saving...' : 'Save Check-in'}
-      </button>
+      </Button>
     </div>
   );
 }

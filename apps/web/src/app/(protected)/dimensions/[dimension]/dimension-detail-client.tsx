@@ -34,15 +34,15 @@ import {
   DIMENSION_TW_COLORS,
 } from '@life-design/ui';
 import {
-  TrendingUp,
-  TrendingDown,
+  TrendUp,
+  TrendDown,
   ArrowLeft,
   Target,
-  Zap,
-  AlertTriangle,
+  Lightning,
+  Warning,
   Clock,
-  ChevronRight,
-} from 'lucide-react';
+  CaretRight,
+} from '@phosphor-icons/react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dynamic recharts imports (SSR disabled)
@@ -687,7 +687,7 @@ function EffortBadge({ effort }: { effort: RecommendedAction['effort'] }) {
 
   return (
     <span
-      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+      className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
       style={{ backgroundColor: config.bg, color: config.color }}
     >
       {config.label}
@@ -704,7 +704,7 @@ function CausalStrengthBadge({ strength }: { strength: CausalInsight['strength']
 
   return (
     <span
-      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+      className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
       style={{ backgroundColor: config.bg, color: config.color }}
     >
       {config.label}
@@ -824,13 +824,13 @@ export default function DimensionDetailClient({
       <div className="flex items-center gap-3">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-sm font-bold group"
+          className="flex items-center gap-2 text-stone-500 hover:text-white transition-colors text-sm font-bold group"
         >
-          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" weight="regular" />
           Dashboard
         </Link>
         <span className="text-slate-700">/</span>
-        <span className="text-slate-400 text-sm font-bold">{label}</span>
+        <span className="text-stone-500 text-sm font-bold">{label}</span>
       </div>
 
       {/* ── 1. HERO ─────────────────────────────────────────────────────────── */}
@@ -875,7 +875,7 @@ export default function DimensionDetailClient({
             </h1>
 
             <p
-              className="text-slate-400 text-base max-w-xl"
+              className="text-stone-500 text-base max-w-xl"
               style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
             >
               {description}
@@ -924,9 +924,9 @@ export default function DimensionDetailClient({
           action={
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-xs font-bold text-slate-500">Actual</span>
+              <span className="text-xs font-bold text-stone-500">Actual</span>
               <div className="h-2 w-2 rounded-full bg-slate-600 border border-dashed border-slate-500" />
-              <span className="text-xs font-bold text-slate-500">Forecast</span>
+              <span className="text-xs font-bold text-stone-500">Forecast</span>
             </div>
           }
         />
@@ -1021,7 +1021,7 @@ export default function DimensionDetailClient({
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-64">
-              <p className="text-slate-500 text-sm italic">Loading chart data...</p>
+              <p className="text-stone-500 text-sm italic">Loading chart data...</p>
             </div>
           )}
         </div>
@@ -1090,11 +1090,11 @@ export default function DimensionDetailClient({
           <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/5">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Positive influence</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Positive influence</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-sm bg-red-500/70" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Negative influence</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Negative influence</span>
             </div>
           </div>
         </div>
@@ -1112,7 +1112,7 @@ export default function DimensionDetailClient({
               className="flex items-center gap-1.5 text-xs font-bold text-primary-400 hover:text-primary-300 transition-colors"
             >
               Full Explorer
-              <ChevronRight className="h-3.5 w-3.5" />
+              <CaretRight className="h-3.5 w-3.5" weight="regular" />
             </Link>
           }
         />
@@ -1194,11 +1194,11 @@ export default function DimensionDetailClient({
           <div className="flex items-center gap-6 mt-4 pt-4 border-t border-white/5">
             <div className="flex items-center gap-2">
               <div className="h-3 w-6 rounded-sm bg-emerald-500/60" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Positive correlation</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Positive correlation</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-6 rounded-sm bg-red-500/60" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Negative correlation</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest text-stone-500">Negative correlation</span>
             </div>
           </div>
         </div>
@@ -1215,7 +1215,7 @@ export default function DimensionDetailClient({
         {isColdStart ? (
           <div className="glass-dark rounded-3xl border border-amber-500/20 p-8 flex items-start gap-4">
             <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <Warning className="h-5 w-5 text-amber-400" weight="regular" />
             </div>
             <div>
               <p
@@ -1225,7 +1225,7 @@ export default function DimensionDetailClient({
                 More data needed for forecasting
               </p>
               <p
-                className="text-sm text-slate-400 leading-relaxed"
+                className="text-sm text-stone-500 leading-relaxed"
                 style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
               >
                 You have {serverData.totalCheckins} check-in
@@ -1243,7 +1243,7 @@ export default function DimensionDetailClient({
                   }}
                 />
               </div>
-              <p className="text-[10px] font-bold text-slate-600 mt-1.5">
+              <p className="text-[11px] font-bold text-stone-600 mt-1.5">
                 {serverData.totalCheckins}/30 days
               </p>
             </div>
@@ -1310,7 +1310,7 @@ export default function DimensionDetailClient({
               </AreaChart>
             </ResponsiveContainer>
 
-            <p className="text-[10px] font-bold text-slate-600 mt-3 text-center">
+            <p className="text-[11px] font-bold text-stone-600 mt-3 text-center">
               Shaded area represents the 80% confidence interval. Forecasts beyond 7 days are not shown.
             </p>
           </div>
@@ -1335,7 +1335,7 @@ export default function DimensionDetailClient({
               <div className="flex items-start justify-between gap-2">
                 <div className="h-9 w-9 rounded-2xl flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${color}15` }}>
-                  <Target className="h-4 w-4" style={{ color }} />
+                  <Target className="h-4 w-4" style={{ color }} weight="regular" />
                 </div>
                 <EffortBadge effort={action.effort} />
               </div>
@@ -1350,7 +1350,7 @@ export default function DimensionDetailClient({
 
               {/* Description */}
               <p
-                className="text-xs text-slate-400 leading-relaxed"
+                className="text-xs text-stone-500 leading-relaxed"
                 style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
               >
                 {action.description}
@@ -1359,7 +1359,7 @@ export default function DimensionDetailClient({
               {/* Impact metrics */}
               <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-600 mb-0.5">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
                     Similar users saw
                   </p>
                   <p
@@ -1373,12 +1373,12 @@ export default function DimensionDetailClient({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-600 mb-0.5">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-stone-600 mb-0.5">
                     Timeframe
                   </p>
                   <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-slate-500" />
-                    <p className="text-xs font-bold text-slate-400">{action.timeframe}</p>
+                    <Clock className="h-3 w-3 text-stone-500" weight="regular" />
+                    <p className="text-xs font-bold text-stone-500">{action.timeframe}</p>
                   </div>
                 </div>
               </div>
@@ -1412,14 +1412,16 @@ export default function DimensionDetailClient({
                     }}
                   >
                     {insight.direction === 'positive' ? (
-                      <TrendingUp
+                      <TrendUp
                         className="h-5 w-5"
                         style={{ color: '#10b981' }}
+                        weight="regular"
                       />
                     ) : (
-                      <TrendingDown
+                      <TrendDown
                         className="h-5 w-5"
                         style={{ color: '#ef4444' }}
+                        weight="regular"
                       />
                     )}
                   </div>
@@ -1436,7 +1438,7 @@ export default function DimensionDetailClient({
                     </div>
 
                     <p
-                      className="text-sm text-slate-300 leading-relaxed"
+                      className="text-sm text-stone-300 leading-relaxed"
                       style={{ fontFamily: '"Erode", Georgia, serif', fontWeight: 300 }}
                     >
                       {insight.narrative}
@@ -1449,9 +1451,9 @@ export default function DimensionDetailClient({
 
           {/* Methodology disclaimer */}
           <div className="glass rounded-2xl p-4 border border-white/5 flex items-start gap-3">
-            <Zap className="h-4 w-4 text-primary-400 flex-shrink-0 mt-0.5" />
+            <Lightning className="h-4 w-4 text-primary-400 flex-shrink-0 mt-0.5" weight="regular" />
             <p
-              className="text-xs text-slate-500 leading-relaxed"
+              className="text-xs text-stone-500 leading-relaxed"
               style={{ fontFamily: '"Erode", Georgia, serif' }}
             >
               Causal language is intentionally hedged. These findings are based on Granger
@@ -1464,7 +1466,7 @@ export default function DimensionDetailClient({
 
       {/* Dimension navigation */}
       <section className="space-y-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 px-1">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-600 px-1">
           Explore other dimensions
         </p>
         <div className="flex flex-wrap gap-2">

@@ -8,15 +8,14 @@ import PersonaDisplay from '@/components/mentors/persona-display';
 import type { VoiceRecorderResult } from '@/components/mentors/voice-recorder';
 import { createClient } from '@/lib/supabase/client';
 import {
-  Sparkles,
-  PanelLeftClose,
-  PanelLeftOpen,
-  MessageSquare,
-  History,
+  Sparkle,
+  SidebarSimple,
+  ChatCircle,
+  ClockCounterClockwise,
   Sliders,
   Plus,
   Clock,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 
 /* -------------------------------------------------------------------- */
 /* Types                                                                  */
@@ -147,7 +146,7 @@ function MentorSidebar({
       {/* New chat button */}
       <button
         onClick={onNewChat}
-        className="flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all duration-200 mb-4 active:scale-95"
+        className="flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-800 transition-all duration-200 mb-4 active:scale-95"
         aria-label="Start new chat"
       >
         <Plus className="h-4 w-4 flex-shrink-0" />
@@ -155,18 +154,18 @@ function MentorSidebar({
       </button>
 
       {/* Tab switcher */}
-      <div className="flex rounded-xl bg-white/5 p-0.5 mb-4" role="tablist">
+      <div className="flex rounded-xl bg-stone-100 p-0.5 mb-4" role="tablist">
         <button
           role="tab"
           aria-selected={activeTab === 'history'}
           onClick={() => setActiveTab('history')}
           className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
             activeTab === 'history'
-              ? 'bg-white/10 text-white shadow'
-              : 'text-white/40 hover:text-white/60'
+              ? 'bg-white text-stone-800 shadow'
+              : 'text-stone-500 hover:text-stone-700'
           }`}
         >
-          <History className="h-3.5 w-3.5" />
+          <ClockCounterClockwise className="h-3.5 w-3.5" weight="regular" />
           History
         </button>
         <button
@@ -175,11 +174,11 @@ function MentorSidebar({
           onClick={() => setActiveTab('persona')}
           className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
             activeTab === 'persona'
-              ? 'bg-white/10 text-white shadow'
-              : 'text-white/40 hover:text-white/60'
+              ? 'bg-white text-stone-800 shadow'
+              : 'text-stone-500 hover:text-stone-700'
           }`}
         >
-          <Sliders className="h-3.5 w-3.5" />
+          <Sliders className="h-3.5 w-3.5" weight="regular" />
           Persona
         </button>
       </div>
@@ -190,8 +189,8 @@ function MentorSidebar({
           <div className="space-y-1.5">
             {sessions.length === 0 ? (
               <div className="text-center py-8">
-                <MessageSquare className="h-8 w-8 text-white/15 mx-auto mb-2" />
-                <p className="text-xs text-white/30" style={{ fontFamily: '"Erode", Georgia, serif' }}>
+                <ChatCircle className="h-8 w-8 text-stone-200 mx-auto mb-2" weight="regular" />
+                <p className="text-xs text-stone-500" style={{ fontFamily: '"Erode", Georgia, serif' }}>
                   No previous conversations
                 </p>
               </div>
@@ -200,25 +199,25 @@ function MentorSidebar({
                 <button
                   key={session.id}
                   onClick={() => onLoadSession(session.id)}
-                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all duration-200 group"
+                  className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-stone-50 transition-all duration-200 group"
                   aria-label={`Load conversation: ${session.title}`}
                 >
                   <div className="flex items-start gap-2">
-                    <Clock className="h-3.5 w-3.5 text-white/20 mt-0.5 flex-shrink-0 group-hover:text-white/40 transition-colors" />
+                    <Clock className="h-3.5 w-3.5 text-stone-300 mt-0.5 flex-shrink-0 group-hover:text-stone-500 transition-colors" weight="regular" />
                     <div className="flex-1 min-w-0">
                       <p
-                        className="text-xs font-medium text-white/60 group-hover:text-white/80 truncate transition-colors"
+                        className="text-xs font-medium text-stone-600 group-hover:text-stone-800 truncate transition-colors"
                         style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
                       >
                         {session.title}
                       </p>
-                      <p className="text-[10px] text-white/25 mt-0.5 truncate"
+                      <p className="text-[11px] text-stone-500 mt-0.5 truncate"
                         style={{ fontFamily: '"Erode", Georgia, serif' }}
                       >
                         {session.preview}
                       </p>
                       <p
-                        className="text-[10px] text-white/20 mt-1"
+                        className="text-[11px] text-stone-500 mt-1"
                         style={{ fontFamily: '"JetBrains Mono", monospace' }}
                       >
                         {session.date}
@@ -234,7 +233,7 @@ function MentorSidebar({
         {activeTab === 'persona' && (
           <div className="space-y-3">
             <p
-              className="text-xs text-white/40 leading-relaxed mb-4"
+              className="text-xs text-stone-500 leading-relaxed mb-4"
               style={{ fontFamily: '"Erode", Georgia, serif' }}
             >
               Adjust the blend to shape how your mentor communicates with you.
@@ -245,7 +244,7 @@ function MentorSidebar({
                 <div key={p.key} className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span
-                      className="text-xs text-white/60"
+                      className="text-xs text-stone-600"
                       style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
                     >
                       {p.emoji} {p.label}
@@ -276,7 +275,7 @@ function MentorSidebar({
                 </div>
               );
             })}
-            <div className="mt-4 pt-3 border-t border-white/5">
+            <div className="mt-4 pt-3 border-t border-stone-200">
               <PersonaDisplay blend={blend} />
             </div>
           </div>
@@ -513,14 +512,14 @@ export default function MentorClient({
       {/* ---- SIDEBAR ---- */}
       {sidebarOpen && (
         <aside
-          className="w-64 flex-shrink-0 rounded-2xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm p-4 flex flex-col"
+          className="w-64 flex-shrink-0 rounded-2xl bg-stone-50 border border-stone-200 p-4 flex flex-col"
           aria-label="Mentor sidebar"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <Sparkle className="h-4 w-4 text-sage-500" weight="regular" />
               <span
-                className="text-sm font-semibold text-white"
+                className="text-sm font-semibold text-stone-800"
                 style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
               >
                 Mentor
@@ -528,10 +527,10 @@ export default function MentorClient({
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 rounded-lg text-white/30 hover:text-white/70 hover:bg-white/10 transition-all duration-200"
+              className="p-1 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-200 transition-all duration-200"
               aria-label="Close sidebar"
             >
-              <PanelLeftClose className="h-4 w-4" />
+              <SidebarSimple className="h-4 w-4" weight="regular" />
             </button>
           </div>
           <MentorSidebar
@@ -552,15 +551,15 @@ export default function MentorClient({
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 rounded-xl text-white/40 hover:text-white/80 hover:bg-white/10 transition-all duration-200"
+                className="p-1.5 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-all duration-200"
                 aria-label="Open sidebar"
               >
-                <PanelLeftOpen className="h-4 w-4" />
+                <SidebarSimple className="h-4 w-4" weight="regular" />
               </button>
             )}
             <div>
               <h1
-                className="text-xl font-bold text-white"
+                className="text-xl font-bold text-stone-900"
                 style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
               >
                 AI Mentor
@@ -570,7 +569,7 @@ export default function MentorClient({
           </div>
           <button
             onClick={handleNewChat}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60 hover:bg-white/10 hover:text-white transition-all duration-200 active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 hover:bg-stone-100 hover:text-stone-800 transition-all duration-200 active:scale-95"
             aria-label="Start new conversation"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -580,7 +579,7 @@ export default function MentorClient({
 
         {/* Message list */}
         <div
-          className="flex-1 overflow-y-auto rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-sm px-4 py-4"
+          className="flex-1 overflow-y-auto rounded-2xl bg-stone-50 border border-stone-200 px-4 py-4"
           role="log"
           aria-label="Chat conversation"
           aria-live="polite"

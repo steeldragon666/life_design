@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useGuest } from '@/lib/guest-context';
 import { FlowStateProvider, useFlowState } from '@/components/onboarding/flow-state';
 import StepDots, { StepDotsCompact } from '@/components/onboarding/step-dots';
-import CinematicOpener, { BeachBackground } from '@/components/onboarding/cinematic-opener';
+import CinematicOpener from '@/components/onboarding/cinematic-opener';
 import VoiceOnboardingAgent from '@/components/onboarding/voice-onboarding-agent';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+import { Button } from '@life-design/ui';
 import { cn } from '@/lib/utils';
 
 const ErrorBoundary = ResilientErrorBoundary as any;
@@ -67,7 +68,7 @@ function OnboardingContent() {
     goToStep('theme');
   }, [goToStep]);
 
-  // Video stage - show cinematic opener
+  // Video stage — cinematic opener
   if (currentStep === 'video') {
     return (
       <CinematicOpener
@@ -79,72 +80,75 @@ function OnboardingContent() {
     );
   }
 
-  // Other stages - show beach background with floating UI
+  // All other stages — neutral white background with centered card layout
   return (
-    <BeachBackground>
-      <div className={cn(
-        'min-h-screen flex flex-col transition-opacity duration-500',
-        isTransitioning ? 'opacity-0' : 'opacity-100'
-      )}>
-        {/* Top navigation bar */}
-        <header className="sticky top-0 z-50 px-4 py-4 md:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-cyan-400/30 to-teal-400/30 flex items-center justify-center">
-                  <span className="text-cyan-300 text-lg">◉</span>
-                </div>
-                <span className="text-white font-semibold tracking-tight hidden sm:block">Life Design</span>
+    <div className="min-h-screen bg-stone-50">
+      {/* Top navigation bar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-stone-100 px-4 py-4 md:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-sage-100 flex items-center justify-center">
+                <span className="text-sage-600 text-sm font-bold">LD</span>
               </div>
-
-              {/* Step indicators - desktop */}
-              <div className="hidden md:block">
-                <StepDots />
-              </div>
-
-              {/* Step indicators - mobile */}
-              <div className="md:hidden">
-                <StepDotsCompact />
-              </div>
-
-              {/* Exit option */}
-              <button
-                onClick={handleExitOnboarding}
-                className="text-cyan-300/60 hover:text-cyan-300 text-sm transition-colors"
-              >
-                Exit
-              </button>
+              <span className="text-stone-800 font-semibold tracking-tight hidden sm:block">
+                Life Design
+              </span>
             </div>
-          </div>
-        </header>
 
-        {/* Main content area */}
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
-            <ErrorBoundary
-              fallback={
-                <GlassErrorFallbackCard
-                  title="Onboarding paused"
-                  description="Your guide ran into an issue. Refresh to continue your onboarding journey."
-                  className="min-h-[360px]"
-                />
-              }
-              resetKeys={[currentStep]}
+            {/* Step indicators — desktop */}
+            <div className="hidden md:block">
+              <StepDots />
+            </div>
+
+            {/* Step indicators — mobile */}
+            <div className="md:hidden">
+              <StepDotsCompact />
+            </div>
+
+            {/* Exit option */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleExitOnboarding}
             >
-              <VoiceOnboardingAgent
-                onComplete={handleComplete}
-                onSaveProfile={handleSaveProfile}
-                onCreateGoals={handleCreateGoals}
-              />
-            </ErrorBoundary>
+              Exit
+            </Button>
           </div>
-        </main>
+        </div>
+      </header>
 
-        {/* Bottom safe area for mobile */}
-        <div className="h-safe-bottom" />
-      </div>
-    </BeachBackground>
+      {/* Main content area */}
+      <main
+        className={cn(
+          'flex-1 px-4 py-10 md:px-8 overflow-y-auto transition-opacity duration-500',
+          isTransitioning ? 'opacity-0' : 'opacity-100',
+        )}
+      >
+        <div className="max-w-5xl mx-auto">
+          <ErrorBoundary
+            fallback={
+              <GlassErrorFallbackCard
+                title="Onboarding paused"
+                description="Your guide ran into an issue. Refresh to continue your onboarding journey."
+                className="min-h-[360px]"
+              />
+            }
+            resetKeys={[currentStep]}
+          >
+            <VoiceOnboardingAgent
+              onComplete={handleComplete}
+              onSaveProfile={handleSaveProfile}
+              onCreateGoals={handleCreateGoals}
+            />
+          </ErrorBoundary>
+        </div>
+      </main>
+
+      {/* Bottom safe area for mobile */}
+      <div className="h-safe-bottom" />
+    </div>
   );
 }
 

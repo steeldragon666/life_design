@@ -1,6 +1,12 @@
 import { Dimension } from '@life-design/core';
 
 /**
+ * @deprecated This entire file is superseded by the new token system.
+ * Import from '@life-design/ui' instead.
+ * Will be removed after migration is complete.
+ */
+
+/**
  * Life Design OS — Complete Design System Tokens
  * Typography: Cabinet Grotesk (headings) + Erode (body) + JetBrains Mono (data)
  * Palette: Indigo/Violet primary with dimension-specific accents
@@ -10,6 +16,7 @@ import { Dimension } from '@life-design/core';
 export type GlassIntensity = 'light' | 'medium' | 'heavy' | 'card';
 export type SizeVariant = 'sm' | 'md' | 'lg';
 
+/** @deprecated Use the new token system from '@life-design/ui' instead */
 export const designTokens = {
   colors: {
     primary: {

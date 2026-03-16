@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Volume2, Clock } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, CaretDown, CaretUp, SpeakerHigh, Clock } from '@phosphor-icons/react';
 import { InsightCardDS } from '@life-design/ui';
 import type { PersonaBlend } from '@/lib/mentor-types';
 import MentorAvatar from './mentor-avatar';
@@ -124,7 +124,7 @@ export default function ChatBubble({
               style={{ background: 'linear-gradient(135deg, #4f46e5, #6d28d9)' }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <Volume2 className="h-4 w-4 text-indigo-200 flex-shrink-0" />
+                <SpeakerHigh className="h-4 w-4 text-indigo-200 flex-shrink-0" weight="regular" />
                 <WaveformBars count={12} active={false} className="opacity-70" />
                 <span
                   className="text-xs text-indigo-200 tabular-nums"
@@ -161,7 +161,7 @@ export default function ChatBubble({
             </div>
           )}
           {timestamp && (
-            <p className="text-[10px] text-white/30 mt-1 text-right pr-1">{timestamp}</p>
+            <p className="text-[11px] text-white/30 mt-1 text-right pr-1">{timestamp}</p>
           )}
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function ChatBubble({
       <div className="flex-1 max-w-[75%]">
         {/* Persona label chip */}
         <p
-          className="text-[10px] uppercase tracking-widest text-white/40 mb-1.5 ml-0.5"
+          className="text-[11px] uppercase tracking-widest text-white/40 mb-1.5 ml-0.5"
           style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
         >
           {personaLabel(blend)}
@@ -228,7 +228,7 @@ export default function ChatBubble({
                 className="mt-3 rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 px-4 py-3 backdrop-blur-sm"
               >
                 <p
-                  className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap"
+                  className="text-sm text-stone-200 leading-relaxed whitespace-pre-wrap"
                   style={{ fontFamily: '"Erode", Georgia, serif' }}
                 >
                   {content}
@@ -240,13 +240,13 @@ export default function ChatBubble({
           /* ----- VOICE TYPE ----- */
           <div className="rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 px-4 py-3 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-2">
-              <Volume2 className="h-4 w-4 text-violet-400 flex-shrink-0" />
+              <SpeakerHigh className="h-4 w-4 text-violet-400 flex-shrink-0" weight="regular" />
               <WaveformBars count={14} active={false} className="text-violet-400" />
               <span
-                className="text-xs text-slate-400 tabular-nums flex items-center gap-1"
+                className="text-xs text-stone-500 tabular-nums flex items-center gap-1"
                 style={{ fontFamily: '"JetBrains Mono", monospace' }}
               >
-                <Clock className="h-3 w-3" />
+                <Clock className="h-3 w-3" weight="regular" />
                 {formatDuration(voiceData.duration)}
               </span>
               {voiceData.detectedEmotion && (
@@ -259,7 +259,7 @@ export default function ChatBubble({
               )}
             </div>
             <p
-              className="text-sm text-slate-200 leading-relaxed"
+              className="text-sm text-stone-200 leading-relaxed"
               style={{ fontFamily: '"Erode", Georgia, serif' }}
             >
               {content}
@@ -268,14 +268,14 @@ export default function ChatBubble({
               <div className="mt-2 border-t border-white/10">
                 <button
                   onClick={() => setTranscriptOpen((v) => !v)}
-                  className="flex items-center gap-1.5 mt-2 text-[10px] uppercase tracking-wider text-slate-500 hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 mt-2 text-[11px] uppercase tracking-wider text-stone-500 hover:text-white transition-colors"
                 >
-                  {transcriptOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  {transcriptOpen ? <CaretUp className="h-3 w-3" weight="regular" /> : <CaretDown className="h-3 w-3" weight="regular" />}
                   Transcription
                 </button>
                 {transcriptOpen && (
                   <p
-                    className="mt-2 text-xs text-slate-400 leading-relaxed italic"
+                    className="mt-2 text-xs text-stone-500 leading-relaxed italic"
                     style={{ fontFamily: '"Erode", Georgia, serif' }}
                   >
                     {voiceData.transcription}
@@ -288,7 +288,7 @@ export default function ChatBubble({
           /* ----- DEFAULT TEXT TYPE ----- */
           <div className="rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 px-4 py-3 backdrop-blur-sm">
             <p
-              className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap"
+              className="text-sm text-stone-200 leading-relaxed whitespace-pre-wrap"
               style={{ fontFamily: '"Erode", Georgia, serif' }}
             >
               {content}
@@ -303,7 +303,7 @@ export default function ChatBubble({
               <button
                 key={q}
                 onClick={() => onFollowUpClick?.(q)}
-                className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-300 hover:bg-white/10 hover:border-white/25 hover:text-white transition-all duration-200 active:scale-95"
+                className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/15 text-stone-300 hover:bg-white/10 hover:border-white/25 hover:text-white transition-all duration-200 active:scale-95"
                 style={{ fontFamily: '"Erode", Georgia, serif' }}
               >
                 {q}
@@ -325,7 +325,7 @@ export default function ChatBubble({
               aria-label="Rate helpful"
               aria-pressed={rated === 'up'}
             >
-              <ThumbsUp className="h-3.5 w-3.5" />
+              <ThumbsUp className="h-3.5 w-3.5" weight="regular" />
             </button>
             <button
               onClick={() => handleRate('down')}
@@ -337,10 +337,10 @@ export default function ChatBubble({
               aria-label="Rate unhelpful"
               aria-pressed={rated === 'down'}
             >
-              <ThumbsDown className="h-3.5 w-3.5" />
+              <ThumbsDown className="h-3.5 w-3.5" weight="regular" />
             </button>
             {timestamp && (
-              <span className="text-[10px] text-white/20 ml-auto">{timestamp}</span>
+              <span className="text-[11px] text-white/20 ml-auto">{timestamp}</span>
             )}
           </div>
         )}
@@ -432,7 +432,7 @@ export function TypingIndicator({ personaBlend, archetype }: { personaBlend?: Pe
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="h-2 w-2 rounded-full bg-slate-400"
+            className="h-2 w-2 rounded-full bg-stone-400"
             style={{
               animation: `typingDot 1.2s ease-in-out ${(i * 0.2).toFixed(1)}s infinite`,
             }}

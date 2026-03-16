@@ -9,7 +9,7 @@ import { CHALLENGE_LIBRARY } from '@/lib/challenges/challenge-library';
 import type { Challenge } from '@/lib/challenges/types';
 
 // ---------------------------------------------------------------------------
-// Dimension colour map
+// Dimension colour map (using design token values)
 // ---------------------------------------------------------------------------
 
 const DIMENSION_COLORS: Record<Dimension, string> = {
@@ -24,9 +24,9 @@ const DIMENSION_COLORS: Record<Dimension, string> = {
 };
 
 const DIFFICULTY_CONFIG = {
-  beginner:     { label: 'Beginner',     dot: 'bg-[#9BB89B]', text: 'text-[#4A7A4A]' },
-  intermediate: { label: 'Intermediate', dot: 'bg-[#D4864A]', text: 'text-[#A05A20]' },
-  advanced:     { label: 'Advanced',     dot: 'bg-[#8B7BA8]', text: 'text-[#5E4E7A]' },
+  beginner:     { label: 'Beginner',     dot: 'bg-sage-300', text: 'text-sage-600' },
+  intermediate: { label: 'Intermediate', dot: 'bg-warm-400', text: 'text-warm-500' },
+  advanced:     { label: 'Advanced',     dot: 'bg-violet-400', text: 'text-violet-600' },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -74,18 +74,18 @@ function ActiveChallengeRow({ challengeId, activeId, taskCompletion }: ActiveCha
 
   return (
     <div
-      className="bg-white border border-[#E8E4DD]/60 rounded-2xl p-4 flex flex-col gap-3"
+      className="bg-white border border-stone-200/60 rounded-2xl p-4 flex flex-col gap-3"
       style={{ borderLeftColor: primaryColor, borderLeftWidth: 4 }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-lg leading-none">{challenge.badge.icon}</span>
-            <h3 className="font-['Instrument_Serif'] text-base text-[#2A2623] truncate">
+            <h3 className="font-serif text-base text-stone-800 truncate">
               {challenge.title}
             </h3>
           </div>
-          <p className="text-xs text-[#7D756A]">{pct}% complete</p>
+          <p className="text-xs text-stone-500">{pct}% complete</p>
         </div>
         <button
           onClick={() => router.push(`/challenges/${activeId}`)}
@@ -97,7 +97,7 @@ function ActiveChallengeRow({ challengeId, activeId, taskCompletion }: ActiveCha
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 w-full rounded-full bg-[#E8E4DD]">
+      <div className="h-1.5 w-full rounded-full bg-stone-200">
         <div
           className="h-1.5 rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, backgroundColor: primaryColor }}
@@ -120,14 +120,14 @@ function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCard
 
   return (
     <article
-      className="bg-white border border-[#E8E4DD]/60 rounded-2xl overflow-hidden flex flex-col"
+      className="bg-white border border-stone-200/60 rounded-2xl overflow-hidden flex flex-col"
       style={{ borderLeftColor: primaryColor, borderLeftWidth: 4 }}
     >
       {/* Card body */}
       <div className="flex-1 p-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
-          <h3 className="font-['Instrument_Serif'] text-lg leading-tight text-[#2A2623]">
+          <h3 className="font-serif text-lg leading-tight text-stone-800">
             {challenge.title}
           </h3>
           {/* Duration badge */}
@@ -139,7 +139,7 @@ function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCard
           </span>
         </div>
 
-        <p className="text-sm text-[#7D756A] leading-relaxed mb-4">
+        <p className="text-sm text-stone-500 leading-relaxed mb-4">
           {challenge.description}
         </p>
 
@@ -173,7 +173,7 @@ function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCard
             >
               {challenge.badge.icon}
             </span>
-            <span className="text-xs text-[#A8A198]">{challenge.badge.name}</span>
+            <span className="text-xs text-stone-500">{challenge.badge.name}</span>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCard
       {/* CTA */}
       <div className="px-5 pb-5">
         {isActive ? (
-          <div className="w-full rounded-xl py-2.5 text-center text-sm font-medium text-[#7D756A] bg-[#F0EDE8]">
+          <div className="w-full rounded-xl py-2.5 text-center text-sm font-medium text-stone-500 bg-stone-100">
             Already Active
           </div>
         ) : (
@@ -237,15 +237,15 @@ export default function ChallengeLibrary() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] pb-24">
+    <div className="min-h-screen bg-stone-50 pb-24">
       <div className="max-w-3xl mx-auto px-4 pt-10 space-y-8">
 
         {/* Page header */}
         <header>
-          <h1 className="font-['Instrument_Serif'] text-3xl text-[#2A2623]">
+          <h1 className="font-serif text-3xl text-stone-800">
             Challenges
           </h1>
-          <p className="mt-1 text-sm text-[#7D756A]">
+          <p className="mt-1 text-sm text-stone-500">
             Structured programs to level up specific areas of your life.
           </p>
         </header>
@@ -268,7 +268,7 @@ export default function ChallengeLibrary() {
           <section aria-labelledby="active-challenges-heading">
             <h2
               id="active-challenges-heading"
-              className="font-['Instrument_Serif'] text-lg text-[#2A2623] mb-3"
+              className="font-serif text-lg text-stone-800 mb-3"
             >
               In Progress
             </h2>
@@ -298,8 +298,8 @@ export default function ChallengeLibrary() {
               className={[
                 'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all',
                 filter === null
-                  ? 'text-white bg-[#5A7F5A]'
-                  : 'text-[#7D756A] bg-white border border-[#E8E4DD]',
+                  ? 'text-white bg-sage-500'
+                  : 'text-stone-500 bg-white border border-stone-200',
               ].join(' ')}
             >
               All
@@ -314,7 +314,7 @@ export default function ChallengeLibrary() {
                   onClick={() => setFilter(active ? null : dim)}
                   className={[
                     'shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all border',
-                    active ? 'text-white' : 'text-[#7D756A] bg-white',
+                    active ? 'text-white' : 'text-stone-500 bg-white',
                   ].join(' ')}
                   style={
                     active
@@ -332,7 +332,7 @@ export default function ChallengeLibrary() {
         {/* Challenge grid */}
         <section aria-label="Challenge library">
           {filteredChallenges.length === 0 ? (
-            <p className="py-12 text-center text-sm text-[#A8A198]">
+            <p className="py-12 text-center text-sm text-stone-500">
               No challenges found for this dimension yet.
             </p>
           ) : (
