@@ -7,7 +7,9 @@ CREATE TABLE tts_rate_limits (
 
 ALTER TABLE tts_rate_limits ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users manage own rate limit"
+-- Users can only read their own rate limit data.
+-- Writes are handled server-side via the service role key.
+CREATE POLICY "Users read own rate limit"
   ON tts_rate_limits
-  FOR ALL
+  FOR SELECT
   USING (auth.uid() = user_id);

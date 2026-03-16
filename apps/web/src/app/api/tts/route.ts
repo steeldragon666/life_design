@@ -47,8 +47,8 @@ export async function POST(request: NextRequest): Promise<NextResponse | Respons
     return NextResponse.json({ error: 'Invalid archetype' }, { status: 400 });
   }
 
-  if (speed != null && (typeof speed !== 'number' || speed < 0.7 || speed > 1.2)) {
-    return NextResponse.json({ error: 'speed must be between 0.7 and 1.2' }, { status: 400 });
+  if (speed != null && (typeof speed !== 'number' || speed < 0.75 || speed > 1.25)) {
+    return NextResponse.json({ error: 'speed must be between 0.75 and 1.25' }, { status: 400 });
   }
 
   // 4. Rate limiting via Supabase (survives serverless cold starts)

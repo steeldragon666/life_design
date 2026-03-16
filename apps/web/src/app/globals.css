@@ -178,6 +178,18 @@
 .stagger-4 { animation-delay: 0.4s; opacity: 0; }
 .stagger-5 { animation-delay: 0.5s; opacity: 0; }
 
+/* Mentor avatar state animations */
+@keyframes mentorSpeaking {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent, rgba(139,92,246,0.6)); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+@keyframes mentorBreathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.animate-mentor-speaking { animation: mentorSpeaking 1.2s ease-in-out infinite; }
+.animate-mentor-breathing { animation: mentorBreathing 3s ease-in-out infinite; }
+
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }

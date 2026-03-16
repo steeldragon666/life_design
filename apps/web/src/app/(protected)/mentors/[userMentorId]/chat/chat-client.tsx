@@ -4,13 +4,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ChatBubble, { TypingIndicator } from '@/components/mentors/chat-bubble';
 import type { ChatBubbleProps, PersonaBlend } from '@/components/mentors/chat-bubble';
 import ChatInput from '@/components/mentors/chat-input';
-import PersonaDisplay from '@/components/mentors/persona-display';
 import type { VoiceRecorderResult } from '@/components/mentors/voice-recorder';
 import { sendMessage } from '../../actions';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { MentorArchetype } from '@/lib/mentor-archetypes';
-import { archetypeToMentorType } from '@/lib/mentor-archetypes';
+import { archetypeToMentorType, getArchetypeConfig } from '@/lib/mentor-archetypes';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
 import MentorAvatar from '@/components/mentors/mentor-avatar';
 
@@ -269,7 +268,7 @@ export default function ChatClient({
                 >
                   {mentorName}
                 </h1>
-                <p className="text-xs text-white/50">{isSpeaking ? 'Speaking...' : archetype}</p>
+                <p className="text-xs text-white/50">{isSpeaking ? 'Speaking...' : getArchetypeConfig(archetype).label}</p>
               </div>
             </div>
           </div>
@@ -321,7 +320,7 @@ export default function ChatClient({
             onRate: msg.role === 'assistant' ? (r) => handleRate(msg.id, r) : undefined,
             timestamp: msg.timestamp,
             archetype: msg.role === 'assistant' ? archetype : undefined,
-            onSpeak: msg.role === 'assistant' ? (text) => handleSpeak(text, idx) : undefined,
+            onSpeak: msg.role === 'assistant' && voiceEnabled ? (text) => handleSpeak(text, idx) : undefined,
             speakingMessageId: speakingMessageIdx === idx ? String(idx) : undefined,
             messageId: String(idx),
           };
