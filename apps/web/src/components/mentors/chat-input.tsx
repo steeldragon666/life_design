@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mic, Loader2 } from 'lucide-react';
+import { PaperPlaneTilt, Microphone, CircleNotch } from '@phosphor-icons/react';
 import VoiceRecorder from './voice-recorder';
 import type { VoiceRecorderResult } from './voice-recorder';
 
@@ -95,7 +95,7 @@ export default function ChatInput({
             role="listitem"
             onClick={() => handleQuickAction(action)}
             disabled={!isInteractive}
-            className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
+            className="text-xs px-3 py-1.5 rounded-full bg-stone-50 border border-stone-200 text-stone-600 hover:bg-stone-100 hover:border-stone-300 hover:text-stone-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
             style={{ fontFamily: '"Erode", Georgia, serif' }}
           >
             {action}
@@ -116,7 +116,7 @@ export default function ChatInput({
       {!showVoice && (
         <form
           onSubmit={handleSubmit}
-          className="relative flex items-end gap-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm p-2 transition-all duration-200 focus-within:border-white/20 focus-within:bg-white/[0.07]"
+          className="relative flex items-end gap-2 rounded-2xl bg-stone-50 border border-stone-200 p-2 transition-all duration-200 focus-within:border-stone-300 focus-within:bg-white"
           role="search"
           aria-label="Chat input"
         >
@@ -131,7 +131,7 @@ export default function ChatInput({
             rows={1}
             aria-label="Message input"
             aria-multiline="true"
-            className="flex-1 resize-none bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none disabled:opacity-40 px-2 py-1.5 leading-relaxed min-h-[2.25rem] max-h-[12.5rem] overflow-y-auto"
+            className="flex-1 resize-none bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none disabled:opacity-40 px-2 py-1.5 leading-relaxed min-h-[2.25rem] max-h-[12.5rem] overflow-y-auto"
             style={{ fontFamily: '"Erode", Georgia, serif' }}
           />
 
@@ -140,11 +140,11 @@ export default function ChatInput({
             type="button"
             onClick={() => setShowVoice(true)}
             disabled={!isInteractive}
-            className="flex-shrink-0 h-9 w-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
+            className="flex-shrink-0 h-9 w-9 rounded-xl flex items-center justify-center text-stone-500 hover:text-stone-800 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
             aria-label="Record voice message"
             title="Record voice message"
           >
-            <Mic className="h-4 w-4" />
+            <Microphone className="h-4 w-4" weight="regular" />
           </button>
 
           {/* Send button */}
@@ -160,16 +160,16 @@ export default function ChatInput({
             aria-label={loading ? 'Sending…' : 'Send message'}
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 text-white animate-spin" />
+              <CircleNotch className="h-4 w-4 text-white animate-spin" weight="bold" />
             ) : (
-              <Send className="h-4 w-4 text-white" />
+              <PaperPlaneTilt className="h-4 w-4 text-white" weight="regular" />
             )}
           </button>
         </form>
       )}
 
       {/* Helper text */}
-      <p className="text-[10px] text-white/20 text-center select-none">
+      <p className="text-[10px] text-stone-400 text-center select-none">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

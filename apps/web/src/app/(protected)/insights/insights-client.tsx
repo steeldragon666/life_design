@@ -26,7 +26,7 @@ export default function InsightsClient({ insights }: InsightsClientProps) {
 
   if (insights.length === 0) {
     return (
-      <p className="py-12 text-center text-gray-400">
+      <p className="py-12 text-center text-stone-500">
         No insights yet. Keep checking in to get personalized analysis.
       </p>
     );
