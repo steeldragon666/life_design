@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import { LifeDesignProvider } from '@/providers/LifeDesignProvider';
+import { ToastProvider } from '@/components/toast/ToastProvider';
 
 const AppProviderErrorBoundary = ResilientErrorBoundary as any;
 
@@ -31,7 +32,9 @@ export default function AppProviders({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <GuestProvider>
           <LifeDesignProvider>
-            <SoundscapeProvider>{children}</SoundscapeProvider>
+            <SoundscapeProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </SoundscapeProvider>
           </LifeDesignProvider>
         </GuestProvider>
       </ThemeProvider>
