@@ -23,5 +23,13 @@ export async function GET() {
   });
   
   const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
-  return NextResponse.redirect(url);
+  const response = NextResponse.redirect(url);
+  response.cookies.set('oauth_state_spotify', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 10, // 10 minutes
+  });
+  return response;
 }

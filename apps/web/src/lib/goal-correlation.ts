@@ -67,6 +67,34 @@ function inferGoalDimension(goal: GoalCorrelationGoal): string {
   return bestDimension;
 }
 
+type ClassifyFn = (text: string) => Promise<Record<string, number>>;
+
+/**
+ * Semantic dimension inference using zero-shot classification.
+ * Falls back to keyword matching if the classify function is unavailable or fails.
+ */
+export async function inferGoalDimensionSemantic(
+  goal: GoalCorrelationGoal,
+  classify: ClassifyFn,
+): Promise<string> {
+  try {
+    const text = `${goal.title} ${goal.description ?? ''}`.trim();
+    const scores = await classify(text);
+
+    let bestDimension = 'growth';
+    let bestScore = 0;
+    for (const [dimension, score] of Object.entries(scores)) {
+      if (score > bestScore) {
+        bestScore = score;
+        bestDimension = dimension;
+      }
+    }
+    return bestDimension;
+  } catch {
+    return inferGoalDimension(goal);
+  }
+}
+
 function computeTimelineProgress(goal: GoalCorrelationGoal): number {
   const horizonDays = goal.horizon === 'short' ? 180 : goal.horizon === 'medium' ? 540 : 1825;
   const targetTime = new Date(goal.target_date).getTime();

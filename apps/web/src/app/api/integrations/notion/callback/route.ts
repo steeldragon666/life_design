@@ -12,6 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=notion_denied`);
   }
 
+  // Validate CSRF state
+  const state = searchParams.get('state');
+  const expectedState = request.cookies.get('oauth_state_notion')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=notion_invalid_state`);
+  }
+
   try {
     const redirectUri = `${appUrl}/api/integrations/notion/callback`;
     
@@ -36,15 +43,29 @@ export async function GET(request: NextRequest) {
     }
 
     const tokens = await response.json();
-    
-    const tokenData = encodeURIComponent(JSON.stringify({
+
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('notion returned no access token');
+    }
+
+    const tokenPayload = {
       provider: 'notion',
       access_token: tokens.access_token,
       workspace_id: tokens.workspace_id,
       workspace_name: tokens.workspace_name,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=notion&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=notion`);
+    redirectResponse.cookies.set('life-design-oauth-notion', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_notion', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Notion callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=notion_failed`);

@@ -47,7 +47,7 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
 
         <div className="flex flex-col items-center">
           <h1 className="text-sm font-black text-white tracking-tight uppercase">Life Orb</h1>
-          <p className="text-[9px] font-bold text-indigo-400/70 uppercase tracking-[0.25em]">
+          <p className="text-[11px] font-bold text-indigo-400/70 uppercase tracking-[0.25em]">
             Dynamic Balance Visualisation
           </p>
         </div>
@@ -95,7 +95,7 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
             </span>
             <span className="text-xl font-bold text-indigo-400">%</span>
           </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">
             Overall Harmony Index
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
 
                 {/* Trend indicator */}
                 <span
-                  className="text-[9px] font-bold uppercase tracking-wider"
+                  className="text-[11px] font-bold uppercase tracking-wider"
                   style={{
                     color: d.trend > 0.05
                       ? '#10b981'

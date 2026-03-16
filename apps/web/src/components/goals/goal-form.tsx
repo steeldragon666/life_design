@@ -8,6 +8,7 @@ import {
   DIMENSION_LABELS,
   GOAL_HORIZON_LABELS,
 } from '@life-design/core';
+import { Button, Input, Textarea, FormField } from '@life-design/ui';
 
 export interface GoalFormData {
   title: string;
@@ -81,44 +82,40 @@ export default function GoalForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Title */}
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">Goal Title</label>
-        <input
+      <FormField label="Goal Title">
+        <Input
           type="text"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           placeholder="e.g. Learn Spanish, Save £10,000, Run a marathon"
-          className="w-full rounded-lg border p-2.5 text-sm"
           maxLength={200}
           required
         />
-      </div>
+      </FormField>
 
       {/* Description */}
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea
+      <FormField label="Description">
+        <Textarea
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           placeholder="What does achieving this goal look like?"
-          className="w-full rounded-lg border p-2.5 text-sm"
           rows={3}
         />
-      </div>
+      </FormField>
 
       {/* Horizon */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Time Horizon</label>
+        <label className="block text-sm font-medium text-stone-700">Time Horizon</label>
         <div className="grid grid-cols-3 gap-2">
           {Object.values(GoalHorizon).map((h) => (
             <button
               key={h}
               type="button"
               onClick={() => setForm({ ...form, horizon: h })}
-              className={`rounded-lg border p-2.5 text-sm font-medium transition-all ${
+              className={`rounded-xl border p-2.5 text-sm font-medium transition-all ${
                 form.horizon === h
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                  : 'hover:border-gray-400'
+                  ? 'border-sage-500 bg-sage-50 text-sage-700'
+                  : 'border-stone-200 hover:border-stone-400 text-stone-700'
               }`}
             >
               {GOAL_HORIZON_LABELS[h]}
@@ -128,20 +125,18 @@ export default function GoalForm({
       </div>
 
       {/* Target Date */}
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">Target Date</label>
-        <input
+      <FormField label="Target Date">
+        <Input
           type="date"
           value={form.targetDate}
           onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
-          className="w-full rounded-lg border p-2.5 text-sm"
           required
         />
-      </div>
+      </FormField>
 
       {/* Dimensions (max 3) */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-stone-700">
           Life Dimensions (select 1-3)
         </label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -150,12 +145,12 @@ export default function GoalForm({
               key={dim}
               type="button"
               onClick={() => toggleDimension(dim)}
-              className={`rounded-lg border p-2 text-xs font-medium transition-all ${
+              className={`rounded-xl border p-2 text-xs font-medium transition-all ${
                 form.dimensions.includes(dim)
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                  ? 'border-sage-500 bg-sage-50 text-sage-700'
                   : form.dimensions.length >= 3
-                    ? 'opacity-40 cursor-not-allowed'
-                    : 'hover:border-gray-400'
+                    ? 'opacity-40 cursor-not-allowed border-stone-200 text-stone-600'
+                    : 'border-stone-200 hover:border-stone-400 text-stone-600'
               }`}
               disabled={!form.dimensions.includes(dim) && form.dimensions.length >= 3}
             >
@@ -167,31 +162,31 @@ export default function GoalForm({
 
       {/* Tracking Type */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">How will you track progress?</label>
+        <label className="block text-sm font-medium text-stone-700">How will you track progress?</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setForm({ ...form, trackingType: GoalTrackingType.Milestone })}
-            className={`rounded-lg border p-3 text-left transition-all ${
+            className={`rounded-xl border p-3 text-left transition-all ${
               form.trackingType === GoalTrackingType.Milestone
-                ? 'border-indigo-500 bg-indigo-50'
-                : 'hover:border-gray-400'
+                ? 'border-sage-500 bg-sage-50'
+                : 'border-stone-200 hover:border-stone-400'
             }`}
           >
-            <div className="text-sm font-medium">Milestones</div>
-            <div className="text-xs text-gray-500">Qualitative steps to complete</div>
+            <div className="text-sm font-medium text-stone-800">Milestones</div>
+            <div className="text-xs text-stone-500">Qualitative steps to complete</div>
           </button>
           <button
             type="button"
             onClick={() => setForm({ ...form, trackingType: GoalTrackingType.Metric })}
-            className={`rounded-lg border p-3 text-left transition-all ${
+            className={`rounded-xl border p-3 text-left transition-all ${
               form.trackingType === GoalTrackingType.Metric
-                ? 'border-indigo-500 bg-indigo-50'
-                : 'hover:border-gray-400'
+                ? 'border-sage-500 bg-sage-50'
+                : 'border-stone-200 hover:border-stone-400'
             }`}
           >
-            <div className="text-sm font-medium">Metric</div>
-            <div className="text-xs text-gray-500">Measurable number to track</div>
+            <div className="text-sm font-medium text-stone-800">Metric</div>
+            <div className="text-xs text-stone-500">Measurable number to track</div>
           </button>
         </div>
       </div>
@@ -199,28 +194,34 @@ export default function GoalForm({
       {/* Conditional: Milestones */}
       {form.trackingType === GoalTrackingType.Milestone && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Milestones</label>
+          <label className="block text-sm font-medium text-stone-700">Milestones</label>
           <div className="space-y-1.5">
             {form.milestones.map((ms, i) => (
-              <div key={i} className="flex items-center gap-2 rounded border px-3 py-1.5 text-sm">
-                <span className="text-gray-400">{i + 1}.</span>
-                <span className="flex-1">{ms}</span>
-                <button type="button" onClick={() => removeMilestone(i)} className="text-red-400 hover:text-red-600">&times;</button>
+              <div key={i} className="flex items-center gap-2 rounded-xl border border-stone-200 px-3 py-1.5 text-sm bg-white">
+                <span className="text-stone-500">{i + 1}.</span>
+                <span className="flex-1 text-stone-700">{ms}</span>
+                <button
+                  type="button"
+                  onClick={() => removeMilestone(i)}
+                  className="text-stone-500 hover:text-red-500 transition-colors"
+                >
+                  &times;
+                </button>
               </div>
             ))}
           </div>
           <div className="flex gap-2">
-            <input
+            <Input
               type="text"
               value={milestoneInput}
               onChange={(e) => setMilestoneInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMilestone(); } }}
               placeholder="Add a milestone..."
-              className="flex-1 rounded-lg border p-2 text-sm"
+              className="flex-1"
             />
-            <button type="button" onClick={addMilestone} className="rounded-lg bg-gray-100 px-3 text-sm hover:bg-gray-200">
+            <Button type="button" variant="secondary" size="sm" onClick={addMilestone}>
               Add
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -228,39 +229,37 @@ export default function GoalForm({
       {/* Conditional: Metric */}
       {form.trackingType === GoalTrackingType.Metric && (
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Target Value</label>
-            <input
+          <FormField label="Target Value">
+            <Input
               type="number"
               value={form.metricTarget ?? ''}
               onChange={(e) => setForm({ ...form, metricTarget: e.target.value ? Number(e.target.value) : null })}
               placeholder="e.g. 10000"
-              className="w-full rounded-lg border p-2.5 text-sm"
               min={0}
             />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Unit</label>
-            <input
+          </FormField>
+          <FormField label="Unit">
+            <Input
               type="text"
               value={form.metricUnit ?? ''}
               onChange={(e) => setForm({ ...form, metricUnit: e.target.value || null })}
               placeholder="e.g. GBP, km, hours"
-              className="w-full rounded-lg border p-2.5 text-sm"
             />
-          </div>
+          </FormField>
         </div>
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        size="default"
         disabled={submitting}
-        className="w-full rounded-lg bg-indigo-600 py-2.5 text-white font-medium hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full"
       >
         {submitting ? 'Saving...' : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

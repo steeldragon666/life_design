@@ -294,6 +294,35 @@ export function buildWeeklyDigestSeed(input: WeeklyDigestSeedInput): WeeklyDiges
   return { stats, insights };
 }
 
+type SummarizeFn = (text: string, maxLength?: number) => Promise<string>;
+
+/**
+ * Enhanced fallback that uses local AI summarization when available.
+ * If summarizeFn is provided, journal entries are summarized locally
+ * to produce a richer mentor note instead of the static template.
+ */
+export async function buildFallbackWeeklyDigestWithAI(
+  seed: WeeklyDigestSeed,
+  journalEntries: string[],
+  summarizeFn: SummarizeFn,
+): Promise<WeeklyDigestSections> {
+  const base = buildFallbackWeeklyDigest(seed);
+
+  if (journalEntries.length === 0) return base;
+
+  try {
+    const combined = journalEntries.join(' ').slice(0, 2000);
+    const summary = await summarizeFn(combined, 80);
+    if (summary.trim()) {
+      base.mentorNote = `This week's theme: ${summary.trim()} Keep building on that momentum.`;
+    }
+  } catch {
+    // Fall through to deterministic mentorNote
+  }
+
+  return base;
+}
+
 export function buildFallbackWeeklyDigest(seed: WeeklyDigestSeed): WeeklyDigestSections {
   const wins = [
     ...seed.insights.progressHighlights.slice(0, 2),

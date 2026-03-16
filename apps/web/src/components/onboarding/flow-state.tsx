@@ -9,12 +9,13 @@ import {
   parseOnboardingSession,
 } from '@/lib/onboarding-session';
 
-export type OnboardingStep = 
+export type OnboardingStep =
   | 'video'
-  | 'theme' 
+  | 'theme'
   | 'archetype'
-  | 'voice' 
-  | 'conversation' 
+  | 'voice'
+  | 'conversation'
+  | 'calendar_connect'
   | 'complete';
 
 interface FlowState {
@@ -52,7 +53,7 @@ interface FlowContextType extends FlowState {
   progress: number;
 }
 
-const stepOrder: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'complete'];
+const stepOrder: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'calendar_connect', 'complete'];
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 

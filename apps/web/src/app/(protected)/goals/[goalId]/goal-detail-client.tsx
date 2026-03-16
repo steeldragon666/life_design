@@ -8,6 +8,8 @@ import PathwayBuilder from '@/components/goals/pathway-builder';
 import TradeoffDashboard from '@/components/goals/tradeoff-dashboard';
 import ScenarioComparison from '@/components/goals/scenario-comparison';
 import { DIMENSION_LABELS, GOAL_HORIZON_LABELS, GoalStatus, type Dimension, type GoalHorizon } from '@life-design/core';
+import { Button, Badge, Select, Card } from '@life-design/ui';
+import { ArrowLeft } from '@phosphor-icons/react';
 import {
   updateGoalAction,
   deleteGoalAction,
@@ -70,7 +72,7 @@ interface GoalDetailClientProps {
   currentScores?: Record<string, number>;
 }
 
-const STATUS_ACTIONS = [
+const STATUS_OPTIONS = [
   { value: 'active', label: 'Resume' },
   { value: 'paused', label: 'Pause' },
   { value: 'completed', label: 'Complete' },
@@ -113,54 +115,57 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{goal.title}</h1>
+          <h1 className="text-2xl font-bold text-stone-900">{goal.title}</h1>
           {goal.description && (
-            <p className="mt-1 text-gray-600">{goal.description}</p>
+            <p className="mt-1 text-stone-600">{goal.description}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <select
+          <Select
             value={goal.status}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="rounded-lg border px-2 py-1 text-sm"
+            className="text-sm"
           >
-            {STATUS_ACTIONS.map((s) => (
+            {STATUS_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
-          </select>
-          <button
+          </Select>
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-lg border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Meta badges */}
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+        <Badge variant="sage">
           {GOAL_HORIZON_LABELS[goal.horizon as GoalHorizon]}
-        </span>
+        </Badge>
         {goal.goal_dimensions.map((d) => (
-          <span key={d.dimension} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 capitalize">
+          <Badge key={d.dimension} variant="stone" className="capitalize">
             {DIMENSION_LABELS[d.dimension as Dimension] ?? d.dimension}
-          </span>
+          </Badge>
         ))}
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-          daysRemaining < 7 ? 'bg-red-100 text-red-700' :
-          daysRemaining < 30 ? 'bg-amber-100 text-amber-700' :
-          'bg-gray-100 text-gray-600'
-        }`}>
+        <Badge
+          variant={
+            daysRemaining < 7 ? 'destructive' :
+            daysRemaining < 30 ? 'warm' :
+            'stone'
+          }
+        >
           {daysRemaining > 0 ? `${daysRemaining} days remaining` :
            daysRemaining === 0 ? 'Due today' :
            `${Math.abs(daysRemaining)} days overdue`}
-        </span>
+        </Badge>
       </div>
 
       {/* Progress section */}
-      <div className="rounded-lg border p-4">
+      <Card className="p-4">
         <GoalProgress
           trackingType={goal.tracking_type as 'milestone' | 'metric'}
           milestones={goal.goal_milestones}
@@ -172,11 +177,11 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
           onAddMilestone={handleAddMilestone}
           onLogProgress={goal.tracking_type === 'metric' ? handleLogProgress : undefined}
         />
-      </div>
+      </Card>
 
       {/* Pathways section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Pathways</h2>
+        <h2 className="text-lg font-semibold text-stone-800">Pathways</h2>
 
         {pathways.map((pw) => (
           <PathwayCard
@@ -199,7 +204,7 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
 
       {/* Trade-off dashboard */}
       {pathways.length > 0 && pathways[0].dimension_impacts?.length > 0 && (
-        <div className="rounded-lg border p-4 space-y-6">
+        <Card className="p-4 space-y-6">
           <TradeoffDashboard
             currentScores={currentScores}
             dimensionImpacts={pathways[0].dimension_impacts}
@@ -214,15 +219,16 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
               }))}
             />
           )}
-        </div>
+        </Card>
       )}
 
       {/* Back link */}
       <button
         onClick={() => router.push('/goals')}
-        className="text-sm text-gray-500 hover:underline"
+        className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 hover:underline transition-colors"
       >
-        &larr; Back to all goals
+        <ArrowLeft weight="regular" className="w-4 h-4" />
+        Back to all goals
       </button>
     </div>
   );

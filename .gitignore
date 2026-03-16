@@ -39,3 +39,8 @@ pnpm-debug.log*
 .vercel
 .env*.local
 life_design/
+.gstack/
+.github/workflows/
+
+# Worktrees
+.worktrees/

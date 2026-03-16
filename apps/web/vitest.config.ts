@@ -12,6 +12,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Stubs for mobile-only imports used in apple-health.ts (iOS connector)
+      'react-native': path.resolve(__dirname, './src/__mocks__/react-native.ts'),
+      'expo-health': path.resolve(__dirname, './src/__mocks__/expo-health.ts'),
     },
   },
 });

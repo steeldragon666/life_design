@@ -2,22 +2,35 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { ThemeSelectorCompact } from '@/components/theme/theme-selector';
-import { 
-  LayoutDashboard, 
-  Target, 
-  Lightbulb, 
-  Users, 
-  Sparkles,
-  ChevronRight,
-  UserCircle,
-  CheckCircle2,
-  Compass,
-  Palette,
-  Waves
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVertical, Leaf, CalendarBlank } from '@phosphor-icons/react';
+
+// ---------------------------------------------------------------------------
+// Nav config
+// ---------------------------------------------------------------------------
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string; size?: number; weight?: string }>;
+};
+
+const navItems: NavItem[] = [
+  { href: '/dashboard', label: 'Home', icon: House },
+  { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/checkin', label: 'Check-in', icon: Sun },
+  { href: '/mentor', label: 'Mentor', icon: ChatCircle },
+  { href: '/schedule', label: 'Schedule', icon: CalendarBlank },
+  { href: '/simulator', label: 'Simulate', icon: Flask },
+  { href: '/challenges', label: 'Challenges', icon: Fire },
+  { href: '/achievements', label: 'Badges', icon: Trophy },
+  { href: '/settings', label: 'Settings', icon: Gear },
+];
+
+// ---------------------------------------------------------------------------
+// Layout
+// ---------------------------------------------------------------------------
 
 export default function ProtectedLayout({
   children,
@@ -25,179 +38,123 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { profile, isHydrated } = useGuest();
-  const [isMobile, setIsMobile] = useState(false);
+  const { isHydrated } = useGuest();
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  const mobileMainItems = navItems.slice(0, 4); // Home, Goals, Check-in, Mentor
+  const mobileMoreItems = navItems.slice(4); // Schedule, Simulate, Challenges, Badges, Settings
+  const isMoreActive = mobileMoreItems.some(i => isActive(i.href));
+  const [moreOpen, setMoreOpen] = useState(false);
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="glass-card max-w-md w-full text-center space-y-3">
-          <p className="text-sm text-slate-400">Preparing your companion space...</p>
-          <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full w-1/2 bg-gradient-to-r from-blue-400 to-cyan-400 animate-pulse" />
+      <div className="min-h-screen flex items-center justify-center p-6 bg-stone-50">
+        <div className="max-w-md w-full text-center space-y-3 p-8 rounded-2xl bg-white border border-stone-200/60">
+          <p className="text-sm text-stone-500">Preparing your space...</p>
+          <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
+            <div className="h-full w-1/2 bg-gradient-to-r from-sage-300 to-sage-500 animate-pulse rounded-full" />
           </div>
         </div>
       </div>
     );
   }
 
-  const currentHour = new Date().getHours();
-  const ritualWindow = currentHour < 12 ? 'Morning' : 'Evening';
-  const primaryNavItems = [
-    { name: 'Today', mobileName: 'Today', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Rituals', mobileName: 'Rituals', href: '/checkin', icon: Compass },
-    { name: 'Meditations', mobileName: 'Meditations', href: '/meditations', icon: Waves },
-    { name: 'Future Self', mobileName: 'Future', href: '/future-self', icon: Sparkles },
-    { name: 'Mentor', mobileName: 'Mentor', href: '/mentors', icon: Users },
-    { name: 'Goals', mobileName: 'Goals', href: '/goals', icon: Target },
-  ];
-  const secondaryNavItems = [
-    { name: 'Insights', href: '/insights', icon: Lightbulb },
-    { name: 'Settings', href: '/settings', icon: Palette },
-  ];
-
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
-
   return (
-    <div className="flex min-h-screen bg-[#0a0e17]">
-      {/* Desktop Sidebar - iOS Style Glass */}
-      <aside className="hidden lg:flex w-72 flex-col fixed inset-y-0 z-50 glass border-r border-white/5">
-        {/* Logo Section */}
-        <div className="p-6">
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-2xl gradient-blue flex items-center justify-center shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105">
-              <Sparkles className="h-5 w-5 text-white" />
+    <div className="flex min-h-screen">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex flex-col w-[260px] border-r border-stone-200 bg-white/60 backdrop-blur-xl fixed h-full z-30">
+        <div className="p-6 pb-2">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
+              <Leaf size={20} weight="regular" className="text-white" />
             </div>
-            <div>
-              <span className="text-lg font-bold text-gradient-blue tracking-tight">Life Design</span>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wide">COMPANION SPACE</p>
-            </div>
+            <span className="font-['Instrument_Serif'] text-xl text-stone-800">Life Design</span>
           </Link>
         </div>
 
-        {/* User Profile Preview */}
-        {profile?.name && (
-          <div className="px-4 mb-4">
-            <div className="glass-card p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                <span className="text-sm font-bold text-white">
-                  {profile.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{profile.name}</p>
-                <p className="text-xs text-slate-500 truncate">{profile.profession || 'Life Designer'}</p>
-              </div>
-              <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Navigation - iOS Style */}
-        <nav className="flex-1 px-4 space-y-1">
-          <p className="section-subheader px-2">Your Flow</p>
-          {primaryNavItems.map((item) => (
+        <nav className="flex-1 px-3 pt-6 space-y-1">
+          {navItems.map(item => (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                isActive(item.href)
-                  ? 'bg-white/10 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                ${isActive(item.href)
+                  ? 'bg-sage-100 text-sage-600 shadow-sm'
+                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
+                }`}
             >
-              <item.icon className={`h-5 w-5 transition-transform ${
-                isActive(item.href) ? 'text-blue-400' : 'group-hover:scale-110'
-              }`} />
-              <span className="font-medium text-sm">{item.name}</span>
-              {isActive(item.href) && (
-                <ChevronRight className="h-4 w-4 ml-auto text-slate-500" />
-              )}
+              <item.icon size={20} weight="regular" className={isActive(item.href) ? 'text-sage-600' : 'text-stone-500'} />
+              {item.label}
             </Link>
           ))}
-          <div className="pt-5 space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-slate-600 px-2">More</p>
-            {secondaryNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group ${
-                  isActive(item.href)
-                    ? 'bg-white/8 text-slate-100'
-                    : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="font-medium text-sm">{item.name}</span>
-              </Link>
-            ))}
-          </div>
         </nav>
 
-        {/* Bottom Section */}
-        <div className="p-4 space-y-3 border-t border-white/5">
-          {/* Theme Quick Switch */}
-          <div className="px-4 py-2">
-            <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Theme</p>
-            <ThemeSelectorCompact />
-          </div>
-
-          {/* Daily Check-in CTA */}
-          <Link
-            href="/checkin"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-teal-500/10 to-transparent border border-teal-500/20 hover:border-teal-500/40 transition-all group"
-          >
-            <div className="h-8 w-8 rounded-lg bg-teal-500/20 flex items-center justify-center">
-              <Compass className="h-4 w-4 text-teal-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white">{ritualWindow} Ritual</p>
-              <p className="text-xs text-slate-500">Quick start your current ritual</p>
-            </div>
-          </Link>
+        <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-sage-50 to-sage-100 border border-sage-200/30">
+          <p className="text-xs text-sage-500 font-medium">Daily Intention</p>
+          <p className="text-[13px] text-stone-700 mt-1 font-['Instrument_Serif'] italic text-lg leading-snug">&ldquo;Be present in every moment&rdquo;</p>
         </div>
       </aside>
 
-      {/* Mobile Navigation - iOS Tab Bar Style */}
-      {isMobile && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 tab-bar">
-          {primaryNavItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`tab-item ${isActive(item.href) ? 'active' : ''}`}
-            >
-              <item.icon className="h-6 w-6" strokeWidth={isActive(item.href) ? 2.5 : 2} />
-              <span>{item.mobileName}</span>
-            </Link>
-          ))}
-          <Link href="/settings" className={`tab-item ${isActive('/settings') ? 'active' : ''}`}>
-            <UserCircle className="h-6 w-6" strokeWidth={isActive('/settings') ? 2.5 : 2} />
-            <span>Profile</span>
-          </Link>
-        </nav>
-      )}
-
       {/* Main Content */}
-      <main className={`flex-1 ${isMobile ? 'pb-24' : 'lg:ml-72'} relative overflow-hidden`}>
-        {/* Background Ambient Effects */}
-        <div className="fixed top-0 right-0 h-[600px] w-[600px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none" />
-        <div className="fixed bottom-0 left-1/4 h-[400px] w-[400px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* Content Container */}
-        <div className="relative z-10 p-4 lg:p-8 max-w-7xl mx-auto">
+      <main className="flex-1 lg:ml-[260px] pb-24 lg:pb-8">
+        <div className="animate-fade-up">
           {children}
         </div>
       </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-2xl border-t border-stone-200 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around py-2">
+          {mobileMainItems.map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all
+                ${isActive(item.href) ? 'text-sage-600' : 'text-stone-500'}`}
+            >
+              <item.icon size={20} weight="regular" />
+              <span className="text-[11px] font-medium">{item.label}</span>
+              {isActive(item.href) && (
+                <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
+              )}
+            </Link>
+          ))}
+
+          {/* "More" button */}
+          <button
+            onClick={() => setMoreOpen(!moreOpen)}
+            className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all ${moreOpen || isMoreActive ? 'text-sage-600' : 'text-stone-500'}`}
+          >
+            <DotsThreeVertical size={20} weight="regular" />
+            <span className="text-[11px] font-medium">More</span>
+            {isMoreActive && !moreOpen && (
+              <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* More drawer overlay */}
+      {moreOpen && (
+        <>
+          <div className="lg:hidden fixed inset-0 z-30 bg-black/20" onClick={() => setMoreOpen(false)} />
+          <div className="lg:hidden fixed bottom-[calc(60px+env(safe-area-inset-bottom))] inset-x-0 z-35 bg-white rounded-t-2xl border-t border-stone-200 shadow-xl p-4 space-y-1">
+            {mobileMoreItems.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMoreOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
+                  ${isActive(item.href) ? 'bg-sage-100 text-sage-600' : 'text-stone-500 hover:bg-stone-100'}`}
+              >
+                <item.icon size={20} weight="regular" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

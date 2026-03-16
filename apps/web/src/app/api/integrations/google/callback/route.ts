@@ -13,7 +13,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=google_denied`);
   }
 
-  // State format: "scope:random" — extract which Google service was requested
+  // Validate CSRF state
+  const expectedState = request.cookies.get('oauth_state_google')?.value;
+  if (!state || !expectedState || state !== expectedState) {
+    return NextResponse.redirect(`${appUrl}/settings?error=google_invalid_state`);
+  }
+
+  // State format: "scope:random" -- extract which Google service was requested
   const provider = state.split(':')[0] || 'google';
 
   try {
@@ -40,16 +46,29 @@ export async function GET(request: NextRequest) {
 
     const tokens = await response.json();
 
-    // For guest mode, redirect with tokens in URL
-    const tokenData = encodeURIComponent(JSON.stringify({
+    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
+      throw new Error('google returned no access token');
+    }
+
+    const tokenPayload = {
       provider: provider,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expires_at: Date.now() + (tokens.expires_in * 1000),
       scope: tokens.scope,
-    }));
-
-    return NextResponse.redirect(`${appUrl}/settings?connected=${provider}&token=${tokenData}`);
+    };
+    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
+    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=${provider}`);
+    redirectResponse.cookies.set('life-design-oauth-google', encodedToken, {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 5,
+    });
+    // Clear the CSRF state cookie
+    redirectResponse.cookies.set('oauth_state_google', '', { path: '/', maxAge: 0 });
+    return redirectResponse;
   } catch (err) {
     console.error('Google callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=google_failed`);

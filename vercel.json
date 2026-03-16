@@ -1,6 +1,6 @@
 {
-  "buildCommand": "turbo build --filter=web",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "turbo build --filter=@life-design/web",
+  "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["syd1"],
   "headers": [

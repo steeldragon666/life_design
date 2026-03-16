@@ -1,6 +1,29 @@
 import type { Metadata } from 'next';
+import { DM_Sans, DM_Mono, Instrument_Serif } from 'next/font/google';
 import './globals.css';
 import AppProviders from '@/components/app-providers';
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Life Design — Your entire life, intelligently connected',
@@ -28,46 +51,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`${dmSans.variable} ${instrumentSerif.variable} ${dmMono.variable}`}>
       <head>
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
 
         {/* Theme colour for browser chrome and mobile status bar */}
-        <meta name="theme-color" content="#6366f1" />
+        <meta name="theme-color" content="#FAFAF8" />
 
         {/* iOS PWA support */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Life Design" />
         <link rel="apple-touch-icon" href="/icons/icon-512.png" />
-
-        {/* Cabinet Grotesk — Headings */}
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,500&display=swap"
-        />
-        {/* Erode — Body text */}
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/v2/css?f[]=erode@300,400,500&display=swap"
-        />
-        {/* JetBrains Mono — Data/Numbers */}
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
-        />
       </head>
-      <body className="antialiased selection:bg-indigo-500/30">
+      <body className="font-sans antialiased selection:bg-sage-500/30">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
