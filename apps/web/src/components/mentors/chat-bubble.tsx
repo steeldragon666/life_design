@@ -353,7 +353,7 @@ export default function ChatBubble({
               className="p-1.5 rounded-lg text-white/25 hover:text-indigo-400 hover:bg-indigo-400/10 transition-all duration-200"
               aria-label="Speak this message"
             >
-              <Volume2 className="h-3.5 w-3.5" />
+              <SpeakerHigh className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
