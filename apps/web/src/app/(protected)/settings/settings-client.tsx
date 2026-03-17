@@ -8,6 +8,7 @@ import { useNudges, useAIStatus } from '@/providers/LifeDesignProvider';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 
+import VoiceSettingsPanel from '@/components/settings/VoiceSettingsPanel';
 interface Integration {
   id: string;
   provider: string;
@@ -193,6 +194,10 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
           )}
         </div>
       </SectionCard>
+      <SectionCard title="Voice & Personality">
+        <VoiceSettingsPanel />
+      </SectionCard>
+
 
       <SectionCard title="Mentor Memory">
         <p className="text-xs text-stone-500 mb-1">Facts your AI mentor has learned about you</p>
