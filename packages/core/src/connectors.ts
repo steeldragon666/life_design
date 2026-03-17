@@ -158,6 +158,38 @@ export class SpotifyConnector extends BaseLifeConnector {
       { headers: { Authorization: `Bearer ${this.accessToken}` } },
     );
   }
+
+  /**
+   * Fetch audio features (valence, energy) for a list of Spotify track IDs.
+   * Falls back to { valence: 0.5, energy: 0.5 } per track if data is unavailable.
+   */
+  async extractAudioFeatures(
+    trackIds: string[],
+  ): Promise<{ valence: number; energy: number }[]> {
+    if (trackIds.length === 0) return [];
+
+    const defaultFeature = { valence: 0.5, energy: 0.5 };
+
+    try {
+      const ids = trackIds.join(',');
+      const data = await this.safeFetch(
+        `https://api.spotify.com/v1/audio-features?ids=${ids}`,
+        { headers: { Authorization: `Bearer ${this.accessToken}` } },
+      );
+
+      return (data.audio_features ?? []).map(
+        (af: { valence?: number; energy?: number } | null) =>
+          af
+            ? {
+                valence: af.valence ?? 0.5,
+                energy: af.energy ?? 0.5,
+              }
+            : defaultFeature,
+      );
+    } catch {
+      return trackIds.map(() => defaultFeature);
+    }
+  }
 }
 
 export class SlackConnector extends BaseLifeConnector {

@@ -1,12 +1,7 @@
 'use client';
 
 import React from 'react';
-
-export interface PersonaBlend {
-  therapist: number;
-  coach: number;
-  sage: number;
-}
+import type { PersonaBlend } from '@/lib/mentor-types';
 
 interface PersonaDisplayProps {
   blend: PersonaBlend;

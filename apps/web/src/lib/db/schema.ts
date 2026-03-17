@@ -6,6 +6,14 @@ import {
   InsightType,
   IntegrationProvider,
 } from '@life-design/core';
+import type {
+  FeatureLogRecord,
+  ModelWeightsRecord,
+  GuardianLogEntry,
+  SeasonRecord,
+  NormalisationStatsRecord,
+  SpotifyReflectionRecord,
+} from '../ml/types';
 
 // ---------------------------------------------------------------------------
 // Helper types
@@ -43,6 +51,7 @@ export interface DBCheckIn {
   dimensionScores: Partial<Record<Dimension, number>>;
   tags: string[];
   embedding?: number[]; // Float32Array serialized for Dexie storage (384 dims from MiniLM)
+  ai_accepted?: boolean;
   createdAt: Date;
 }
 
@@ -157,6 +166,12 @@ export class LifeDesignDB extends Dexie {
   activeChallenges!: EntityTable<DBActiveChallenge, 'id'>;
   badges!: EntityTable<DBBadge, 'id'>;
   scheduleBlocks!: EntityTable<DBScheduleBlock, 'id'>;
+  featureLogs!: EntityTable<FeatureLogRecord, 'date'>;
+  mlModelWeights!: EntityTable<ModelWeightsRecord, 'id'>;
+  guardianLogs!: EntityTable<GuardianLogEntry, 'id'>;
+  seasons!: EntityTable<SeasonRecord, 'id'>;
+  normalisationStats!: EntityTable<NormalisationStatsRecord, 'feature'>;
+  spotifyReflections!: EntityTable<SpotifyReflectionRecord, 'id'>;
 
   constructor() {
     super('LifeDesignDB');
@@ -188,6 +203,15 @@ export class LifeDesignDB extends Dexie {
 
     this.version(4).stores({
       scheduleBlocks: '++id, date, dimension, source, calendarEventId',
+    });
+
+    this.version(5).stores({
+      featureLogs: 'date, extractedAt',
+      mlModelWeights: 'id, tier, version',
+      guardianLogs: '++id, timestamp, triggerType',
+      seasons: '++id, name, isActive',
+      normalisationStats: 'feature',
+      spotifyReflections: '++id, date',
     });
   }
 }

@@ -9,23 +9,17 @@ import {
   parseOnboardingSession,
 } from '@/lib/onboarding-session';
 
-export type OnboardingStep =
-  | 'video'
-  | 'theme'
-  | 'archetype'
-  | 'voice'
-  | 'conversation'
-  | 'calendar_connect'
-  | 'complete';
+export type OnboardingStep = 'welcome' | 'name' | 'about' | 'mentor' | 'complete';
+
+export const stepOrder: OnboardingStep[] = ['welcome', 'name', 'about', 'mentor', 'complete'];
 
 interface FlowState {
   currentStep: OnboardingStep;
-  isVideoComplete: boolean;
-  hasSkippedVideo: boolean;
-  selectedTheme: string | null;
-  selectedArchetype: string | null;
-  selectedVoice: string | null;
-  canSkipVideo: boolean;
+  userName: string | null;
+  profession: string | null;
+  interests: string[];
+  postcode: string | null;
+  selectedMentor: string | null;
   isTransitioning: boolean;
 }
 
@@ -34,26 +28,21 @@ interface FlowContextType extends FlowState {
   goToStep: (step: OnboardingStep) => void;
   goBack: () => void;
   nextStep: () => void;
-  
-  // Video
-  markVideoComplete: () => void;
-  skipVideo: () => void;
-  enableVideoSkip: () => void;
-  
-  // Selections
-  setTheme: (theme: string) => void;
-  setArchetype: (archetype: string) => void;
-  setVoice: (voice: string) => void;
-  
+
+  // Setters
+  setUserName: (name: string) => void;
+  setProfession: (profession: string) => void;
+  setInterests: (interests: string[]) => void;
+  setPostcode: (postcode: string) => void;
+  setMentor: (mentor: string) => void;
+
   // Reset
   resetFlow: () => void;
-  
+
   // Progress
   canGoBack: boolean;
   progress: number;
 }
-
-const stepOrder: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'calendar_connect', 'complete'];
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -65,15 +54,14 @@ interface FlowStateProviderProps {
 export function FlowStateProvider({ children, onComplete }: FlowStateProviderProps) {
   const [mounted, setMounted] = useState(false);
   const patchQueueRef = React.useRef<ReturnType<typeof createOnboardingSessionPatchQueue> | null>(null);
-  
+
   const [state, setState] = useState<FlowState>({
-    currentStep: 'video',
-    isVideoComplete: false,
-    hasSkippedVideo: false,
-    selectedTheme: null,
-    selectedArchetype: null,
-    selectedVoice: null,
-    canSkipVideo: false,
+    currentStep: 'welcome',
+    userName: null,
+    profession: null,
+    interests: [],
+    postcode: null,
+    selectedMentor: null,
     isTransitioning: false,
   });
 
@@ -84,12 +72,11 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     setState((prev) => ({
       ...prev,
       currentStep: session.flow.currentStep,
-      isVideoComplete: session.flow.isVideoComplete,
-      hasSkippedVideo: session.flow.hasSkippedVideo,
-      selectedTheme: session.flow.selectedTheme,
-      selectedArchetype: session.flow.selectedArchetype,
-      selectedVoice: session.flow.selectedVoice,
-      canSkipVideo: false,
+      userName: session.flow.userName,
+      profession: session.flow.profession,
+      interests: session.flow.interests,
+      postcode: session.flow.postcode,
+      selectedMentor: session.flow.selectedMentor,
       isTransitioning: false,
     }));
     setMounted(true);
@@ -108,11 +95,11 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
       setState((prev) => ({
         ...prev,
         currentStep: session.flow.currentStep,
-        isVideoComplete: session.flow.isVideoComplete,
-        hasSkippedVideo: session.flow.hasSkippedVideo,
-        selectedTheme: session.flow.selectedTheme,
-        selectedArchetype: session.flow.selectedArchetype,
-        selectedVoice: session.flow.selectedVoice,
+        userName: session.flow.userName,
+        profession: session.flow.profession,
+        interests: session.flow.interests,
+        postcode: session.flow.postcode,
+        selectedMentor: session.flow.selectedMentor,
       }));
     };
     window.addEventListener('storage', onStorage);
@@ -125,18 +112,18 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     patchQueueRef.current.schedule({
       flow: {
         currentStep: state.currentStep,
-        isVideoComplete: state.isVideoComplete,
-        hasSkippedVideo: state.hasSkippedVideo,
-        selectedTheme: state.selectedTheme,
-        selectedArchetype: state.selectedArchetype,
-        selectedVoice: state.selectedVoice,
+        userName: state.userName,
+        profession: state.profession,
+        interests: state.interests,
+        postcode: state.postcode,
+        selectedMentor: state.selectedMentor,
       },
     });
   }, [state, mounted]);
 
   const goToStep = useCallback((step: OnboardingStep) => {
     setState(prev => ({ ...prev, isTransitioning: true }));
-    
+
     // Smooth transition delay
     setTimeout(() => {
       setState(prev => ({
@@ -144,7 +131,7 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
         currentStep: step,
         isTransitioning: false,
       }));
-      
+
       if (step === 'complete') {
         onComplete?.();
       }
@@ -161,45 +148,28 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
   const goBack = useCallback(() => {
     const currentIdx = stepOrder.indexOf(state.currentStep);
     if (currentIdx > 0) {
-      // Can't go back to video once completed
-      if (state.currentStep === 'theme' && state.isVideoComplete) {
-        return;
-      }
       goToStep(stepOrder[currentIdx - 1]);
     }
-  }, [state.currentStep, state.isVideoComplete, goToStep]);
+  }, [state.currentStep, goToStep]);
 
-  const markVideoComplete = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      isVideoComplete: true,
-      currentStep: 'theme',
-    }));
+  const setUserName = useCallback((name: string) => {
+    setState(prev => ({ ...prev, userName: name }));
   }, []);
 
-  const skipVideo = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      hasSkippedVideo: true,
-      isVideoComplete: true,
-    }));
-    goToStep('theme');
-  }, [goToStep]);
-
-  const enableVideoSkip = useCallback(() => {
-    setState(prev => ({ ...prev, canSkipVideo: true }));
+  const setProfession = useCallback((profession: string) => {
+    setState(prev => ({ ...prev, profession }));
   }, []);
 
-  const setTheme = useCallback((theme: string) => {
-    setState(prev => ({ ...prev, selectedTheme: theme }));
+  const setInterests = useCallback((interests: string[]) => {
+    setState(prev => ({ ...prev, interests }));
   }, []);
 
-  const setVoice = useCallback((voice: string) => {
-    setState(prev => ({ ...prev, selectedVoice: voice }));
+  const setPostcode = useCallback((postcode: string) => {
+    setState(prev => ({ ...prev, postcode }));
   }, []);
 
-  const setArchetype = useCallback((archetype: string) => {
-    setState(prev => ({ ...prev, selectedArchetype: archetype }));
+  const setMentor = useCallback((mentor: string) => {
+    setState(prev => ({ ...prev, selectedMentor: mentor }));
   }, []);
 
   const resetFlow = useCallback(() => {
@@ -207,19 +177,18 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     clearOnboardingSessionInStorage(localStorage);
     patchQueueRef.current = createOnboardingSessionPatchQueue(localStorage);
     setState({
-      currentStep: 'video',
-      isVideoComplete: false,
-      hasSkippedVideo: false,
-      selectedTheme: null,
-      selectedArchetype: null,
-      selectedVoice: null,
-      canSkipVideo: false,
+      currentStep: 'welcome',
+      userName: null,
+      profession: null,
+      interests: [],
+      postcode: null,
+      selectedMentor: null,
       isTransitioning: false,
     });
   }, []);
 
   const currentIdx = stepOrder.indexOf(state.currentStep);
-  const canGoBack = currentIdx > 0 && !(state.currentStep === 'theme' && state.isVideoComplete);
+  const canGoBack = currentIdx > 0;
   const progress = ((currentIdx + 1) / stepOrder.length) * 100;
 
   const value: FlowContextType = {
@@ -227,12 +196,11 @@ export function FlowStateProvider({ children, onComplete }: FlowStateProviderPro
     goToStep,
     goBack,
     nextStep,
-    markVideoComplete,
-    skipVideo,
-    enableVideoSkip,
-    setTheme,
-    setArchetype,
-    setVoice,
+    setUserName,
+    setProfession,
+    setInterests,
+    setPostcode,
+    setMentor,
     resetFlow,
     canGoBack,
     progress,

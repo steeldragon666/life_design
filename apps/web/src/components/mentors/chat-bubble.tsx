@@ -3,12 +3,11 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, CaretDown, CaretUp, SpeakerHigh, Clock } from '@phosphor-icons/react';
 import { InsightCardDS } from '@life-design/ui';
+import type { PersonaBlend } from '@/lib/mentor-types';
+import MentorAvatar from './mentor-avatar';
+import type { MentorArchetype } from '@/lib/mentor-archetypes';
 
-export interface PersonaBlend {
-  therapist: number;
-  coach: number;
-  sage: number;
-}
+export type { PersonaBlend };
 
 export interface InsightData {
   headline: string;
@@ -34,6 +33,10 @@ export interface ChatBubbleProps {
   onFollowUpClick?: (question: string) => void;
   onRate?: (rating: 'up' | 'down') => void;
   timestamp?: string;
+  archetype?: MentorArchetype;
+  onSpeak?: (text: string) => void;
+  speakingMessageId?: string;
+  messageId?: string;
 }
 
 /** Compute the dominant persona label from a blend */
@@ -94,6 +97,10 @@ export default function ChatBubble({
   onFollowUpClick,
   onRate,
   timestamp,
+  archetype,
+  onSpeak,
+  speakingMessageId,
+  messageId,
 }: ChatBubbleProps) {
   const isUser = role === 'user';
   const [transcriptOpen, setTranscriptOpen] = useState(false);
@@ -173,14 +180,22 @@ export default function ChatBubble({
     <div className="flex justify-start mb-4 gap-3">
       {/* Persona orb avatar */}
       <div className="flex-shrink-0 mt-1">
-        <div
-          className="h-8 w-8 rounded-full shadow-lg flex items-center justify-center text-xs font-bold text-white"
-          style={{ background: gradient }}
-          title={personaLabel(blend)}
-          aria-label={`Mentor persona: ${personaLabel(blend)}`}
-        >
-          M
-        </div>
+        {archetype ? (
+          <MentorAvatar
+            archetype={archetype}
+            state={speakingMessageId === messageId ? 'speaking' : 'idle'}
+            size="sm"
+          />
+        ) : (
+          <div
+            className="h-8 w-8 rounded-full shadow-lg flex items-center justify-center text-xs font-bold text-white"
+            style={{ background: gradient }}
+            title={personaLabel(blend)}
+            aria-label={`Mentor persona: ${personaLabel(blend)}`}
+          >
+            M
+          </div>
+        )}
       </div>
 
       <div className="flex-1 max-w-[75%]">
@@ -329,6 +344,19 @@ export default function ChatBubble({
             )}
           </div>
         )}
+
+        {/* Speak button */}
+        {onSpeak && (
+          <div className="flex items-center gap-2 mt-2 ml-0.5">
+            <button
+              onClick={() => onSpeak(content)}
+              className="p-1.5 rounded-lg text-white/25 hover:text-indigo-400 hover:bg-indigo-400/10 transition-all duration-200"
+              aria-label="Speak this message"
+            >
+              <SpeakerHigh className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -380,7 +408,7 @@ export function WaveformBars({ count = 12, active = false, className = '' }: Wav
 /* -------------------------------------------------------------------- */
 /* TYPING INDICATOR                                                       */
 /* -------------------------------------------------------------------- */
-export function TypingIndicator({ personaBlend }: { personaBlend?: PersonaBlend }) {
+export function TypingIndicator({ personaBlend, archetype }: { personaBlend?: PersonaBlend; archetype?: MentorArchetype }) {
   const defaultBlend: PersonaBlend = { therapist: 0.33, coach: 0.33, sage: 0.34 };
   const blend = personaBlend ?? defaultBlend;
   const gradient = personaGradient(blend);
@@ -388,13 +416,17 @@ export function TypingIndicator({ personaBlend }: { personaBlend?: PersonaBlend 
   return (
     <div className="flex justify-start mb-4 gap-3">
       <div className="flex-shrink-0 mt-1">
-        <div
-          className="h-8 w-8 rounded-full shadow-lg flex items-center justify-center text-xs font-bold text-white"
-          style={{ background: gradient }}
-          aria-label="Mentor is thinking"
-        >
-          M
-        </div>
+        {archetype ? (
+          <MentorAvatar archetype={archetype} state="thinking" size="sm" />
+        ) : (
+          <div
+            className="h-8 w-8 rounded-full shadow-lg flex items-center justify-center text-xs font-bold text-white"
+            style={{ background: gradient }}
+            aria-label="Mentor is thinking"
+          >
+            M
+          </div>
+        )}
       </div>
       <div className="rounded-2xl rounded-tl-sm bg-white/5 border border-white/10 px-4 py-3 backdrop-blur-sm flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (

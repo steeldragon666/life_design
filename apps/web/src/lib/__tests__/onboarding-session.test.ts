@@ -48,19 +48,19 @@ describe('onboarding-session', () => {
   it('builds and parses a normalized session payload', () => {
     const payload = buildOnboardingSession({
       flow: {
-        currentStep: 'voice',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'therapist',
-        selectedVoice: 'calm-british-female',
+        currentStep: 'about',
+        userName: 'Aaron',
+        profession: null,
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'Welcome back' }],
       extractedProfile: { name: 'Aaron' },
     });
 
     const parsed = parseOnboardingSession(JSON.stringify(payload));
-    expect(parsed?.flow.currentStep).toBe('voice');
+    expect(parsed?.flow.currentStep).toBe('about');
     expect(parsed?.messages).toHaveLength(1);
     expect(parsed?.extractedProfile.name).toBe('Aaron');
     expect(typeof parsed?.checksum).toBe('string');
@@ -70,11 +70,12 @@ describe('onboarding-session', () => {
   it('migrates legacy progress + checkpoint into unified session', () => {
     const session = migrateLegacyOnboardingSession(
       JSON.stringify({
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        selectedTheme: 'botanical',
-        selectedArchetype: 'sage',
-        selectedVoice: 'soft-australian-female',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: ['coding'],
+        postcode: null,
+        selectedMentor: null,
       }),
       JSON.stringify({
         messages: [{ role: 'user', content: 'My name is Aaron' }],
@@ -82,22 +83,22 @@ describe('onboarding-session', () => {
       }),
     );
 
-    expect(session?.flow.currentStep).toBe('conversation');
-    expect(session?.flow.selectedTheme).toBe('botanical');
+    expect(session?.flow.currentStep).toBe('mentor');
+    expect(session?.flow.userName).toBe('Aaron');
     expect(session?.messages[0]?.content).toContain('Aaron');
     expect(session?.extractedProfile.location).toBe('Sydney');
   });
 
   it('auto-upgrades old payload shape without checksum metadata', () => {
     const legacySession = JSON.stringify({
-      v: 2,
+      v: 3,
       flow: {
-        currentStep: 'voice',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'soft-female',
+        currentStep: 'about',
+        userName: 'Aaron',
+        profession: null,
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'hello' }],
       extractedProfile: { name: 'Aaron' },
@@ -107,7 +108,7 @@ describe('onboarding-session', () => {
     });
 
     const loaded = loadOnboardingSessionFromStorage(storage);
-    expect(loaded.flow.currentStep).toBe('voice');
+    expect(loaded.flow.currentStep).toBe('about');
     expect(loaded.checksum.length).toBeGreaterThan(0);
 
     const repairLogRaw = storage.getItem(ONBOARDING_SESSION_REPAIR_LOG_KEY);
@@ -117,12 +118,12 @@ describe('onboarding-session', () => {
   it('resets corrupted checksum payload and records repair event', () => {
     const valid = buildOnboardingSession({
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'botanical',
-        selectedArchetype: 'therapist',
-        selectedVoice: 'calm',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: ['coding'],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'safe session' }],
       extractedProfile: { name: 'Aaron' },
@@ -136,7 +137,7 @@ describe('onboarding-session', () => {
     });
 
     const loaded = loadOnboardingSessionFromStorage(storage);
-    expect(loaded.flow.currentStep).toBe('video');
+    expect(loaded.flow.currentStep).toBe('welcome');
     expect(loaded.messages).toHaveLength(0);
     expect(loaded.extractedProfile.name).toBeUndefined();
 
@@ -147,12 +148,12 @@ describe('onboarding-session', () => {
   it('treats stale session as expired and starts clean', () => {
     const stale = buildOnboardingSession({
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'sage',
-        selectedVoice: 'slow-voice',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'user', content: 'resume me' }],
       extractedProfile: { name: 'Aaron' },
@@ -163,7 +164,7 @@ describe('onboarding-session', () => {
     });
 
     const loaded = loadOnboardingSessionFromStorage(storage);
-    expect(loaded.flow.currentStep).toBe('video');
+    expect(loaded.flow.currentStep).toBe('welcome');
     expect(loaded.messages).toHaveLength(0);
 
     const repairLogRaw = storage.getItem(ONBOARDING_SESSION_REPAIR_LOG_KEY);
@@ -173,12 +174,12 @@ describe('onboarding-session', () => {
   it('rebases patch write when newer cross-tab session is detected', () => {
     const older = buildOnboardingSession({
       flow: {
-        currentStep: 'voice',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'old-theme',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'about',
+        userName: 'Aaron',
+        profession: null,
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'older tab' }],
       extractedProfile: { name: 'Aaron' },
@@ -186,12 +187,12 @@ describe('onboarding-session', () => {
     });
     const newer = buildOnboardingSession({
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'new-theme',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: ['coding'],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'newer tab message' }],
       extractedProfile: { name: 'Aaron' },
@@ -230,12 +231,12 @@ describe('onboarding-session', () => {
     const patched = patchOnboardingSessionInStorage(storage, {
       flow: {
         ...newer.flow,
-        selectedTheme: 'patched-theme',
+        profession: 'patched-profession',
       },
     });
 
     expect(patched.messages[0]?.content).toBe('newer tab message');
-    expect(patched.flow.selectedTheme).toBe('patched-theme');
+    expect(patched.flow.profession).toBe('patched-profession');
     expect(patched.updatedAt).toBeGreaterThan(newer.updatedAt);
 
     const repairLogRaw = storage.getItem(ONBOARDING_SESSION_REPAIR_LOG_KEY);
@@ -245,12 +246,12 @@ describe('onboarding-session', () => {
   it('skips no-op patch writes to avoid churn', () => {
     const existing = buildOnboardingSession({
       flow: {
-        currentStep: 'voice',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'about',
+        userName: 'Aaron',
+        profession: null,
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: 'steady' }],
       extractedProfile: { name: 'Aaron' },
@@ -296,12 +297,12 @@ describe('onboarding-session', () => {
     const queue = createOnboardingSessionPatchQueue(storage, 1000);
     queue.schedule({
       flow: {
-        currentStep: 'voice',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'about',
+        userName: 'Aaron',
+        profession: null,
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
     });
     queue.schedule({
@@ -309,7 +310,7 @@ describe('onboarding-session', () => {
     });
 
     const flushed = queue.flush();
-    expect(flushed.flow.currentStep).toBe('voice');
+    expect(flushed.flow.currentStep).toBe('about');
     expect(flushed.extractedProfile.name).toBe('Aaron');
     queue.dispose();
   });
@@ -318,12 +319,12 @@ describe('onboarding-session', () => {
     const oversized = 'a'.repeat(12000);
     const session = buildOnboardingSession({
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: [{ role: 'assistant', content: oversized }],
       extractedProfile: { name: 'Aaron' },
@@ -340,12 +341,12 @@ describe('onboarding-session', () => {
     }));
     const session = buildOnboardingSession({
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: largeMessages,
       extractedProfile: { name: 'Aaron' },
@@ -364,12 +365,12 @@ describe('onboarding-session', () => {
 
     patchOnboardingSessionInStorage(storage, {
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: largeMessages,
       extractedProfile: { name: 'Aaron' },
@@ -385,12 +386,12 @@ describe('onboarding-session', () => {
     const sessionStorage = createMemoryStorage();
     patchOnboardingSessionInStorage(repairStorage, {
       flow: {
-        currentStep: 'conversation',
-        isVideoComplete: true,
-        hasSkippedVideo: false,
-        selectedTheme: 'ocean',
-        selectedArchetype: 'coach',
-        selectedVoice: 'voice-a',
+        currentStep: 'mentor',
+        userName: 'Aaron',
+        profession: 'Developer',
+        interests: [],
+        postcode: null,
+        selectedMentor: null,
       },
       messages: Array.from({ length: 220 }, (_, index) => ({
         role: 'assistant' as const,
