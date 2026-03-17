@@ -8,8 +8,8 @@ export const LEGACY_ONBOARDING_CHECKPOINT_KEY = 'life-design-onboarding-checkpoi
 export const ONBOARDING_SESSION_REPAIR_LOG_KEY = 'life-design-onboarding-session-repair-log';
 export const ONBOARDING_SESSION_NOTICE_DISMISSED_KEY = 'life-design-onboarding-session-notice-dismissed';
 
-const STEP_ORDER: OnboardingStep[] = ['video', 'theme', 'archetype', 'voice', 'conversation', 'complete'];
-const ONBOARDING_SESSION_VERSION = 3;
+const STEP_ORDER: OnboardingStep[] = ['welcome', 'name', 'about', 'mentor', 'complete'];
+const ONBOARDING_SESSION_VERSION = 4;
 const ONBOARDING_SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
 const MAX_REPAIR_EVENTS = 20;
 const MAX_SESSION_PAYLOAD_BYTES = 200_000;
@@ -21,11 +21,11 @@ const MAX_GOAL_DESCRIPTION_CHARS = 500;
 
 export interface OnboardingFlowSnapshot {
   currentStep: OnboardingStep;
-  isVideoComplete: boolean;
-  hasSkippedVideo: boolean;
-  selectedTheme: string | null;
-  selectedArchetype: string | null;
-  selectedVoice: string | null;
+  userName: string | null;
+  profession: string | null;
+  interests: string[];
+  postcode: string | null;
+  selectedMentor: string | null;
 }
 
 export interface OnboardingSessionPayload {
@@ -74,40 +74,47 @@ function asStringOrNull(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    .map((item) => item.trim());
+}
+
 function sanitizeFlow(value: unknown): OnboardingFlowSnapshot {
   const source = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
-  const selectedTheme = asStringOrNull(source.selectedTheme);
-  const selectedArchetype = asStringOrNull(source.selectedArchetype);
-  const selectedVoice = asStringOrNull(source.selectedVoice);
-  const isVideoComplete = Boolean(source.isVideoComplete);
+  const userName = asStringOrNull(source.userName);
+  const profession = asStringOrNull(source.profession);
+  const interests = asStringArray(source.interests);
+  const postcode = asStringOrNull(source.postcode);
+  const selectedMentor = asStringOrNull(source.selectedMentor);
   const currentStepRaw = source.currentStep;
   let currentStep: OnboardingStep =
     typeof currentStepRaw === 'string' && STEP_ORDER.includes(currentStepRaw as OnboardingStep)
       ? (currentStepRaw as OnboardingStep)
-      : 'video';
+      : 'welcome';
 
-  if (!isVideoComplete && currentStep !== 'video') currentStep = 'video';
-  else if (STEP_ORDER.indexOf(currentStep) >= STEP_ORDER.indexOf('archetype') && !selectedTheme) currentStep = 'theme';
-  else if (STEP_ORDER.indexOf(currentStep) >= STEP_ORDER.indexOf('voice') && !selectedArchetype) currentStep = 'archetype';
-  else if (STEP_ORDER.indexOf(currentStep) >= STEP_ORDER.indexOf('conversation') && !selectedVoice) currentStep = 'voice';
+  // Sequential validation: ensure prior steps have required data
+  if (STEP_ORDER.indexOf(currentStep) >= STEP_ORDER.indexOf('about') && !userName) currentStep = 'name';
+  else if (STEP_ORDER.indexOf(currentStep) >= STEP_ORDER.indexOf('mentor') && !profession) currentStep = 'about';
 
   return {
     currentStep,
-    isVideoComplete,
-    hasSkippedVideo: Boolean(source.hasSkippedVideo),
-    selectedTheme,
-    selectedArchetype,
-    selectedVoice,
+    userName,
+    profession,
+    interests,
+    postcode,
+    selectedMentor,
   };
 }
 
 const EMPTY_FLOW: OnboardingFlowSnapshot = {
-  currentStep: 'video',
-  isVideoComplete: false,
-  hasSkippedVideo: false,
-  selectedTheme: null,
-  selectedArchetype: null,
-  selectedVoice: null,
+  currentStep: 'welcome',
+  userName: null,
+  profession: null,
+  interests: [],
+  postcode: null,
+  selectedMentor: null,
 };
 
 function stableStringify(value: unknown): string {
