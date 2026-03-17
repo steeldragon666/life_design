@@ -57,17 +57,20 @@ Replace the voice-first conversational onboarding with a clean, traditional mult
 **Replace** `apps/web/src/components/onboarding/voice-onboarding-agent.tsx` (519 lines) with a simpler `apps/web/src/components/onboarding/onboarding-wizard.tsx`.
 
 **Keep:**
-- `FlowStateProvider` context (simplify states to match new flow)
+- `FlowStateProvider` context (rewrite `OnboardingStep` union and `stepOrder` to match new flow)
 - `GUEST_ONBOARDED_COOKIE` middleware gate (unchanged)
 - Guest mode localStorage persistence via `GuestProvider`
-- Mentor card voice preview (from voice-mentors branch)
+- Mentor card voice preview (browser TTS only during onboarding — see Voice Preview Note below)
 
 **Delete:**
-- `apps/web/src/components/onboarding-client.tsx` (old duplicate, unused)
-- `apps/web/src/components/cinematic-opener.tsx` (old duplicate in root components/)
+- `apps/web/src/app/(protected)/onboarding/onboarding-client.tsx` (old form-based onboarding, unused)
+- `apps/web/src/components/onboarding/cinematic-opener.tsx` (video opener component)
+- `apps/web/src/components/cinematic-opener/index.ts` (barrel re-export for above)
 - Speech recognition dependency in onboarding flow
 - Video file requirements and `BeachBackground` if only used here
-- Complex AI profile extraction logic
+- Complex AI profile extraction logic from `apps/web/src/lib/onboarding-session.ts`
+
+**Voice Preview Note:** The `/api/tts` route requires Supabase authentication, which onboarding users don't have yet. The "Hear Voice" button in Step 4 uses **browser `speechSynthesis` only** (not ElevenLabs). The `useElevenLabsTTS` hook already handles this gracefully — when `/api/tts` returns 401/503, it falls back to browser TTS silently. No special handling needed.
 
 ### New Onboarding Flow (5 steps)
 
@@ -85,14 +88,14 @@ Replace the voice-first conversational onboarding with a clean, traditional mult
 
 #### Step 3: About You
 - Profession text input (required)
-- Optional interest tag chips (pre-defined categories + custom input)
+- Optional interest tag chips from pre-defined list: `['Fitness', 'Meditation', 'Career Growth', 'Relationships', 'Finance', 'Creative Arts', 'Travel', 'Cooking', 'Reading', 'Music', 'Parenting', 'Entrepreneurship']` + custom text input for unlisted interests
 - Optional postcode/location
 - These feed downstream AI mentor context and dimension weighting
 
 #### Step 4: Choose Your Mentor
 - Three `MentorCard` components (reuse from voice-mentors work)
 - Eleanor (Compassionate Therapist), Theo (Focused Coach), Maya (Reflective Sage)
-- Voice preview via "Hear Voice" button (ElevenLabs TTS with browser fallback)
+- Voice preview via "Hear Voice" button (browser TTS — ElevenLabs requires auth, which onboarding users don't have)
 - Select one → highlight with accent ring
 - Brief description of each mentor's personality and approach
 
@@ -127,14 +130,16 @@ Replace the voice-first conversational onboarding with a clean, traditional mult
 #### Modified Files
 | File | Change |
 |------|--------|
-| `apps/web/src/app/` (login or onboarding route) | Point to new `onboarding-wizard.tsx` |
-| `FlowStateProvider` | Simplify states: `welcome → name → about → mentor → complete → dashboard` |
+| `apps/web/src/app/(protected)/onboarding/page.tsx` | Import and render new `onboarding-wizard.tsx` instead of old client |
+| `apps/web/src/components/onboarding/flow-state.tsx` | Rewrite `OnboardingStep` union type to `'welcome' \| 'name' \| 'about' \| 'mentor' \| 'complete'` and update `stepOrder` array. Simplify `goBack()` logic (remove `isVideoComplete` special case). |
+| `apps/web/src/lib/onboarding-session.ts` | Update session schema to match new step names. Clear old localStorage session key on first load (migration: if old key exists, delete it and start fresh). |
 
 #### Deleted Files
 | File | Reason |
 |------|--------|
-| `apps/web/src/components/onboarding-client.tsx` | Old duplicate, unused |
-| `apps/web/src/components/cinematic-opener.tsx` | Old duplicate in root components/ |
+| `apps/web/src/app/(protected)/onboarding/onboarding-client.tsx` | Old form-based onboarding, replaced by wizard |
+| `apps/web/src/components/onboarding/cinematic-opener.tsx` | Video opener component, no longer needed |
+| `apps/web/src/components/cinematic-opener/index.ts` | Barrel re-export for cinematic opener |
 | `apps/web/src/components/onboarding/voice-onboarding-agent.tsx` | Replaced by onboarding-wizard |
 | `public/videos/brain-cinematic.mp4` (if exists) | No longer needed |
 | `public/videos/beach-hero.mp4` (if exists) | No longer needed |
@@ -156,17 +161,18 @@ Implement all 6 subsystems from the approved predictive engine spec (`docs/super
 ### Reference Spec
 This phase implements the spec exactly as written. No modifications to the approved design. The spec defines:
 
-- **19 new files** across 6 subsystems
+- **17 new files** across 6 subsystems
 - **4 modified files**
 - **0 new npm dependencies** (Dexie already installed)
-- **6 new Dexie tables** (version 4 migration)
+- **6 new Dexie tables** (version **5** migration — version 4 is already taken by `scheduleBlocks` from the visual-design-system branch)
 
 ### Subsystem Summary
 
 #### Subsystem 1: Foundation — Types & Persistence
 - `apps/web/src/lib/ml/types.ts` — 11 interfaces/types for ML pipeline
-- `apps/web/src/lib/db/schema.ts` — Version 4 migration with `featureLogs`, `mlModelWeights`, `guardianLogs`, `seasons`, `normalisationStats`, `spotifyReflections` tables
+- `apps/web/src/lib/db/schema.ts` — **Version 5** migration (v4 is taken by `scheduleBlocks`) with `featureLogs`, `mlModelWeights`, `guardianLogs`, `seasons`, `normalisationStats`, `spotifyReflections` tables
 - Add `ai_accepted` field to `DBCheckIn`
+- **Note:** The companion predictive engine spec (Rev 3) references "version 4" — the implementation must use version 5 instead. This is the only deviation from the approved spec.
 
 #### Subsystem 2: Feature Pipeline
 - `apps/web/src/lib/ml/normalization-store.ts` — Rolling stats persistence (Dexie-backed)
@@ -192,14 +198,14 @@ This phase implements the spec exactly as written. No modifications to the appro
 
 #### Subsystem 5: Guardian Agent
 - `apps/web/src/lib/agents/guardian-core.ts` — Anomaly detection (burnout, isolation, flow state)
-- `apps/web/src/lib/agents/action-synthesizer.ts` — Contextual intervention generator
+- `apps/web/src/lib/agents/action-synthesizer.ts` — Contextual intervention generator with `ActionSynthesizer.generate(trigger: { triggerType: GuardianLogEntry['triggerType']; dimensionsAffected: Dimension[]; topFeatures: FeatureWeight[] }): string`
 - `apps/web/src/components/notifications/guardian-alert.tsx` — Level 3 intervention modal
 - 3-level escalation: observe → nudge → intervene
 - Feedback loop: decreases proactivity if ignored
 
 #### Subsystem 6: Life Seasons
 - `apps/web/src/lib/context/season-manager.ts` — Season definitions + transition logic
-- `apps/web/src/lib/ml/modifiers.ts` — Season bias application
+- `apps/web/src/lib/ml/modifiers.ts` — Season bias application. **Note:** `SeasonRecord.weights` is `Record<Dimension, number>` but `computeWeightedScore()` in `@life-design/core/scoring.ts` takes parallel `number[]` arrays. The modifiers module must include a `seasonWeightsToArray(weights: Record<Dimension, number>): number[]` helper that converts using the `ALL_DIMENSIONS` ordering from `@life-design/core`.
 - `apps/web/src/components/settings/season-selector.tsx` — Season picker in Settings
 - 4 seasons: Sprint, Recharge, Exploration, Maintenance
 - Weighted balance index, Guardian threshold adjustment
@@ -243,7 +249,7 @@ Phase 2: Onboarding Rebuild
         │
         ▼
 Phase 3: Predictive Engine
-  ├── Subsystem 1: Types + DB v4 migration
+  ├── Subsystem 1: Types + DB v5 migration
   ├── Subsystem 2: Feature Pipeline
   ├── Subsystem 3: Training Engine + Web Worker
   ├── Subsystem 4: Predictive UI (parallel with 5)
@@ -262,6 +268,23 @@ Phase 3: Predictive Engine
 - Cross-device model sync
 - XGBoost-WASM upgrade
 - Mobile app store builds
+
+---
+
+## Implementation Notes
+
+### Predictive Engine — Ghost Slider confidence source
+The Ghost Slider visual state (solid vs dotted/muted) is driven by **`PredictionResult.confidence[dimension]`** as the primary signal. When `ModelWeightsRecord.subjectivityGaps[dimension]` exceeds a threshold (dampening factor > 0.3), the confidence value for that dimension is clamped to max 0.5, which triggers the "low confidence" dotted visual state. The trainer is responsible for baking the subjectivity gap into the confidence score before it reaches the UI.
+
+### Predictive Engine — Spotify audio features deprecation
+The Spotify `/v1/audio-features` and embedded `audio_features` on `/v1/tracks` were both deprecated in Nov 2024. The implementer should verify the current Spotify Web API at implementation time. If valence/energy are no longer available, the `audio_valence` and `audio_energy` fields in `NormalisedMLFeatures` should use imputation (default 0.5) and the `SpotifyReflection` component should rely on the user's subjective mood response instead of raw API audio features.
+
+### Predictive Engine — Season history pagination
+The season selector UI should display at most the **10 most recent** seasons. No infinite scroll or pagination needed — seasons change infrequently (monthly at most).
+
+### Testing strategy
+- Phase 2 (Onboarding): Create `apps/web/src/components/onboarding/__tests__/onboarding-wizard.test.tsx` with tests for step navigation, back button, form validation, and profile persistence.
+- Phase 3 (Predictive Engine): Each subsystem should have co-located tests following the existing pattern (`__tests__/` directories). The companion spec's implementation plan (to be written) will define specific test files per subsystem.
 
 ---
 
