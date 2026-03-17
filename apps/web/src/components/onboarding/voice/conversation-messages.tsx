@@ -17,7 +17,7 @@ export function ConversationMessages({
   return (
     <div className="h-[400px] overflow-y-auto space-y-4 mb-6 scrollbar-thin">
       {messages.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-cyan-200/40">
+        <div className="h-full flex items-center justify-center text-stone-400">
           <div className="text-center">
             <VoiceWave isActive={isSpeaking} />
             <p className="mt-2">Your conversation will begin here...</p>
@@ -33,8 +33,8 @@ export function ConversationMessages({
               className={cn(
                 'max-w-[85%] rounded-2xl px-5 py-4',
                 message.role === 'user'
-                  ? 'bg-gradient-to-br from-cyan-600 to-teal-600 text-white'
-                  : 'bg-white/5 text-cyan-50 border border-cyan-400/10'
+                  ? 'bg-gradient-to-br from-sage-500 to-sage-600 text-white'
+                  : 'bg-stone-50 text-stone-700 border border-stone-200'
               )}
             >
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>

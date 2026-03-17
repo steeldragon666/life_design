@@ -2,18 +2,19 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ChevronLeft,
+  ArrowLeft,
+  ChatCircle,
   Crown,
-  Flower2,
-  Loader2,
-  MessageSquare,
-  Mic,
-  Sparkles,
+  FlowerLotus,
+  GoogleLogo,
+  Microphone,
+  Spinner as PhosphorSpinner,
   Square,
-  Volume2,
+  SpeakerHigh,
+  Sparkle,
   Waves,
   X,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { useTheme } from '@/components/theme/theme-provider';
 import { useGuest } from '@/lib/guest-context';
 import { VOICE_OPTIONS } from '@/components/voice/voice-selector';
@@ -31,6 +32,7 @@ import { useSpeechSynthesis } from './hooks/use-speech-synthesis';
 import { ConversationMessages } from './voice/conversation-messages';
 import { ProfilePreviewPanel } from './voice/profile-preview-panel';
 import { VoiceOptionCard } from './voice/voice-option-card';
+import { Button, Input } from '@life-design/ui';
 import { cn } from '@/lib/utils';
 
 interface VoiceOnboardingAgentProps {
@@ -44,7 +46,7 @@ const themes = [
     id: 'botanical' as const,
     name: 'Ethereal Botanical',
     description: 'Soft pinks, gentle purples, and organic warmth',
-    icon: Flower2,
+    icon: FlowerLotus,
     colors: ['#e8b4d0', '#c5b8d4', '#b8c5a8'],
   },
   {
@@ -90,6 +92,7 @@ export default function VoiceOnboardingAgent({
     setVoice: setFlowVoice,
     nextStep,
     goBack,
+    goToStep,
   } = useFlowState();
 
   const [textInput, setTextInput] = useState('');
@@ -227,18 +230,17 @@ export default function VoiceOnboardingAgent({
     setTextInput('');
   };
 
+  // ── Theme step ─────────────────────────────────────────────────────────────
   if (currentStep === 'theme') {
     return (
       <div className="animate-step-enter">
-        <GlassContainer size="xl" variant="ocean">
+        <GlassContainer className="max-w-2xl">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-teal-400/20 mb-4">
-              <Sparkles className="w-8 h-8 text-cyan-300" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sage-50 mb-4">
+              <Sparkle className="w-7 h-7 text-sage-600" weight="fill" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-2 tracking-tight">
-              Choose Your Atmosphere
-            </h2>
-            <p className="text-cyan-200/70 text-sm md:text-base">
+            <h2 className="text-2xl font-serif text-stone-800 mb-2">Choose Your Atmosphere</h2>
+            <p className="text-stone-500 text-sm">
               Select the aesthetic that makes you feel most at peace
             </p>
           </div>
@@ -255,33 +257,30 @@ export default function VoiceOnboardingAgent({
                   key={theme.id}
                   isActive={isSelected}
                   onClick={() => handleThemeSelection(theme.id)}
-                  className={cn(
-                    'group transition-all duration-500',
-                    isSelected && 'ring-2 ring-cyan-400/50'
-                  )}
+                  className="group transition-all duration-300"
                 >
                   <div className="flex gap-2 mb-4">
                     {theme.colors.map((color, index) => (
                       <div
                         key={index}
-                        className="h-10 w-10 rounded-full shadow-lg transition-transform group-hover:scale-110"
+                        className="h-8 w-8 rounded-full shadow-sm transition-transform group-hover:scale-110"
                         style={{ backgroundColor: color }}
                       />
                     ))}
                   </div>
 
                   <div
-                    className="h-14 w-14 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                    className="h-12 w-12 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110"
                     style={{ backgroundColor: `${theme.colors[0]}25` }}
                   >
-                    <Icon className="h-7 w-7" style={{ color: theme.colors[0] }} />
+                    <Icon className="h-6 w-6" style={{ color: theme.colors[0] }} weight="fill" />
                   </div>
 
-                  <h3 className="text-lg font-semibold text-white mb-2">{theme.name}</h3>
-                  <p className="text-sm text-cyan-200/60 leading-relaxed">{theme.description}</p>
+                  <h3 className="text-base font-semibold text-stone-800 mb-1">{theme.name}</h3>
+                  <p className="text-sm text-stone-500 leading-relaxed">{theme.description}</p>
 
                   <div
-                    className="mt-4 h-1.5 rounded-full"
+                    className="mt-4 h-1 rounded-full"
                     style={{
                       background: `linear-gradient(90deg, ${theme.colors[0]}, ${theme.colors[1]}, ${theme.colors[2]})`,
                     }}
@@ -292,7 +291,7 @@ export default function VoiceOnboardingAgent({
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-cyan-200/50 text-sm">
+            <p className="text-stone-500 text-sm">
               Next, choose the mentor archetype that fits your journey
             </p>
           </div>
@@ -301,23 +300,22 @@ export default function VoiceOnboardingAgent({
     );
   }
 
+  // ── Voice step ─────────────────────────────────────────────────────────────
   if (currentStep === 'voice') {
     return (
       <div className="animate-step-enter">
-        <GlassContainer size="xl" variant="ocean">
+        <GlassContainer className="max-w-2xl">
           <button
             onClick={goBack}
-            className="flex items-center gap-2 text-cyan-300/70 hover:text-cyan-300 transition-colors mb-6 text-sm"
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-800 transition-colors mb-6 text-sm"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
             Back to themes
           </button>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-semibold text-white mb-2 tracking-tight">
-              Choose Your Voice Companion
-            </h2>
-            <p className="text-cyan-200/70 text-sm md:text-base">
+            <h2 className="text-2xl font-serif text-stone-800 mb-2">Choose Your Voice Companion</h2>
+            <p className="text-stone-500 text-sm">
               Select a voice that feels most comforting to you. Preview each to hear their tone.
             </p>
           </div>
@@ -334,7 +332,7 @@ export default function VoiceOnboardingAgent({
                 onPreview={() => previewVoiceOption(voice)}
                 onPreviewUnavailable={() =>
                   setError(
-                    'Voice preview is unavailable in this browser, but you can still continue.'
+                    'Voice preview is unavailable in this browser, but you can still continue.',
                   )
                 }
                 onSelect={() => handleVoiceSelection(voice.id)}
@@ -346,15 +344,16 @@ export default function VoiceOnboardingAgent({
     );
   }
 
+  // ── Archetype step ─────────────────────────────────────────────────────────
   if (currentStep === 'archetype') {
     return (
       <div className="animate-step-enter">
-        <GlassContainer size="xl" variant="ocean">
+        <GlassContainer className="max-w-2xl">
           <button
             onClick={goBack}
-            className="flex items-center gap-2 text-cyan-300/70 hover:text-cyan-300 transition-colors mb-6 text-sm"
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-800 transition-colors mb-6 text-sm"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
             Back to themes
           </button>
           <ArchetypeSelector
@@ -366,21 +365,22 @@ export default function VoiceOnboardingAgent({
     );
   }
 
+  // ── Conversation step ──────────────────────────────────────────────────────
   if (currentStep === 'conversation') {
     return (
-      <div className="animate-step-enter w-full max-w-6xl mx-auto">
+      <div className="animate-step-enter w-full max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={goBack}
-            className="flex items-center gap-2 text-cyan-300/70 hover:text-cyan-300 transition-colors text-sm"
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-800 transition-colors text-sm"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4" />
             Back
           </button>
 
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-white">Your Safe Space</h2>
-            <p className="text-xs text-cyan-200/50">For reflection & growth</p>
+            <h2 className="text-base font-semibold text-stone-800">Your Safe Space</h2>
+            <p className="text-xs text-stone-500">For reflection &amp; growth</p>
           </div>
 
           <div className="w-16" />
@@ -388,7 +388,7 @@ export default function VoiceOnboardingAgent({
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <div className="lg:col-span-3 space-y-4">
-            <GlassContainer size="full" variant="subtle">
+            <div className="bg-white rounded-[20px] shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-8">
               <ConversationMessages
                 messages={messages}
                 isSpeaking={isSpeaking}
@@ -399,14 +399,14 @@ export default function VoiceOnboardingAgent({
 
               <div className="space-y-4">
                 {sessionNotice ? (
-                  <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/8 px-4 py-3 text-sm text-cyan-100/90">
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
                     <div className="flex items-start justify-between gap-3">
                       <p>{sessionNotice}</p>
                       <button
                         type="button"
                         onClick={dismissSessionNotice}
                         aria-label="Dismiss context notice"
-                        className="rounded-md p-1 text-cyan-100/70 hover:text-cyan-50 hover:bg-cyan-500/20 transition-colors"
+                        className="rounded-md p-1 text-stone-500 hover:text-stone-600 hover:bg-stone-100 transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -415,8 +415,9 @@ export default function VoiceOnboardingAgent({
                 ) : null}
 
                 {!supportsSpeechRecognition ? (
-                  <div className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 px-4 py-3 text-sm text-cyan-200/80">
-                    Voice input is unavailable here. You can complete onboarding by typing your responses below.
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+                    Voice input is unavailable here. You can complete onboarding by typing your
+                    responses below.
                   </div>
                 ) : null}
 
@@ -427,18 +428,18 @@ export default function VoiceOnboardingAgent({
                     className={cn(
                       'relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300',
                       isRecording
-                        ? 'bg-red-500/80 shadow-lg shadow-red-500/40'
+                        ? 'bg-red-500 shadow-lg shadow-red-500/30'
                         : isProcessing
-                          ? 'bg-white/10'
-                          : 'bg-gradient-to-br from-cyan-500 to-teal-500 hover:scale-105 shadow-lg shadow-cyan-500/30'
+                          ? 'bg-stone-100'
+                          : 'bg-sage-600 hover:bg-sage-600/90 hover:scale-105 shadow-lg shadow-sage-600/30',
                     )}
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-8 w-8 text-cyan-300 animate-spin" />
+                      <PhosphorSpinner className="h-8 w-8 text-stone-500 animate-spin" />
                     ) : isRecording ? (
-                      <Square className="h-8 w-8 text-white fill-white" />
+                      <Square className="h-8 w-8 text-white" weight="fill" />
                     ) : (
-                      <Mic className="h-8 w-8 text-white" />
+                      <Microphone className="h-8 w-8 text-white" weight="fill" />
                     )}
 
                     {isRecording ? (
@@ -452,7 +453,7 @@ export default function VoiceOnboardingAgent({
                     ) : null}
                   </button>
 
-                  <p className="text-cyan-200/60 text-sm mt-3">
+                  <p className="text-stone-500 text-sm mt-3">
                     {isRecording
                       ? 'Listening... Tap to stop'
                       : isProcessing
@@ -464,38 +465,39 @@ export default function VoiceOnboardingAgent({
                             : 'Type your thoughts below'}
                   </p>
 
-                  {transcript ? <p className="text-xs text-cyan-200/40 mt-1">{transcript}</p> : null}
+                  {transcript ? (
+                    <p className="text-xs text-stone-500 mt-1">{transcript}</p>
+                  ) : null}
 
                   {isSpeaking ? (
                     <button
                       onClick={stopSpeaking}
-                      className="mt-2 text-xs text-cyan-300/50 hover:text-cyan-300 flex items-center gap-1"
+                      className="mt-2 text-xs text-stone-500 hover:text-stone-600 flex items-center gap-1 transition-colors"
                     >
-                      <Volume2 className="h-3 w-3" />
+                      <SpeakerHigh className="h-3 w-3" />
                       Stop speaking
                     </button>
                   ) : null}
                 </div>
 
                 <div className="flex gap-2">
-                  <input
-                    type="text"
+                  <Input
                     value={textInput}
                     onChange={(event) => setTextInput(event.target.value)}
                     onKeyDown={(event) => event.key === 'Enter' && sendTextMessage()}
                     placeholder="Or type your thoughts..."
-                    className="flex-1 bg-white/5 border border-cyan-400/20 rounded-xl px-4 py-3 text-white placeholder:text-cyan-200/30 focus:outline-none focus:border-cyan-400/50 transition-colors"
                   />
-                  <button
+                  <Button
                     onClick={sendTextMessage}
                     disabled={!textInput.trim() || isProcessing}
-                    className="px-4 py-3 bg-cyan-500/20 hover:bg-cyan-500/30 disabled:opacity-50 rounded-xl text-cyan-300 transition-colors"
+                    variant="secondary"
+                    className="flex-shrink-0"
                   >
-                    <MessageSquare className="h-5 w-5" />
-                  </button>
+                    <ChatCircle className="h-5 w-5" />
+                  </Button>
                 </div>
               </div>
-            </GlassContainer>
+            </div>
           </div>
 
           <ProfilePreviewPanel
@@ -506,10 +508,81 @@ export default function VoiceOnboardingAgent({
         </div>
 
         {error ? (
-          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
             {error}
           </div>
         ) : null}
+      </div>
+    );
+  }
+
+  // ── Calendar Connect step ──────────────────────────────────────────────────
+  if (currentStep === 'calendar_connect') {
+    return (
+      <div className="animate-step-enter">
+        <div className="max-w-lg mx-auto bg-white rounded-[20px] shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-8 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-sage-50 mb-5">
+            {/* Calendar icon via inline SVG — phosphor CalendarBlank */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 256 256"
+              className="w-7 h-7 text-sage-600"
+              fill="currentColor"
+            >
+              <path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM48,48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48Zm160,160H48V96H208V208Z" />
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-serif text-stone-800 mb-2">Connect Your Calendar</h2>
+          <p className="text-stone-500 text-sm mb-8 max-w-sm mx-auto">
+            Sync your schedule so Life Design can help you carve out time for the things that matter
+            most. You can always connect later from settings.
+          </p>
+
+          <div className="space-y-3 mb-6">
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full justify-center gap-2"
+              onClick={() => {
+                // UI only — OAuth integration not wired up
+                goToStep('complete');
+              }}
+            >
+              <GoogleLogo className="h-4 w-4" weight="bold" />
+              Connect Google Calendar
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="lg"
+              className="w-full justify-center gap-2"
+              onClick={() => {
+                // UI only — Apple Calendar deep link not wired up
+                goToStep('complete');
+              }}
+            >
+              {/* Apple logo — inline SVG */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 814 1000"
+                className="h-4 w-4"
+                fill="currentColor"
+              >
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-157.2-117.5c-44.5-71.3-89.8-182.4-89.8-288.9 0-166.5 108.4-255.5 215.1-255.5 81.3 0 150 53.5 202 53.5 50 0 127.5-56.7 216.9-56.7 11.6 0 81.5.6 141.1 61.9zm-181.2-117.3c28.1-35.1 48.4-83.6 48.4-132.1 0-6.4-.6-12.8-1.9-18.6-45.5 1.9-99.7 30.2-132 67.1-26.9 30.2-52.2 78.7-52.2 127.8 0 7.1 1.3 14.1 1.9 16.4 3.2.6 8.4 1.3 13.5 1.3 40.7 0 91.1-27.2 122.3-61.9z" />
+              </svg>
+              Connect Apple Calendar
+            </Button>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="default"
+            onClick={() => goToStep('complete')}
+          >
+            Skip for now
+          </Button>
+        </div>
       </div>
     );
   }

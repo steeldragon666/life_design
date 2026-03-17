@@ -129,6 +129,19 @@ export interface DBBadge {
   context?: string; // e.g. "health" for dimension badge
 }
 
+export interface DBScheduleBlock {
+  id?: number;
+  date: string;          // YYYY-MM-DD
+  startTime: string;     // HH:mm
+  endTime: string;       // HH:mm
+  title: string;
+  dimension: Dimension;
+  source: 'google' | 'apple' | 'manual' | 'ai-suggested';
+  calendarEventId?: string;
+  confirmed: boolean;
+  createdAt: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -143,6 +156,7 @@ export class LifeDesignDB extends Dexie {
   nudges!: EntityTable<DBNudge, 'id'>;
   activeChallenges!: EntityTable<DBActiveChallenge, 'id'>;
   badges!: EntityTable<DBBadge, 'id'>;
+  scheduleBlocks!: EntityTable<DBScheduleBlock, 'id'>;
 
   constructor() {
     super('LifeDesignDB');
@@ -171,5 +185,9 @@ export class LifeDesignDB extends Dexie {
 
     // Version 3: Add embedding field to checkIns (no index change needed — stored inline)
     this.version(3).stores({});
+
+    this.version(4).stores({
+      scheduleBlocks: '++id, date, dimension, source, calendarEventId',
+    });
   }
 }

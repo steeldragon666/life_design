@@ -32,7 +32,7 @@ export default function DimensionConfidenceBadge({
         {label}
         <span className="opacity-60">({level.label})</span>
       </span>
-      <span className="text-[10px] uppercase tracking-wider text-white/30">
+      <span className="text-[11px] uppercase tracking-wider text-white/30">
         {method === 'semantic' ? 'AI' : 'keyword'}
       </span>
     </div>

@@ -73,15 +73,15 @@ export default function ProjectionVisual({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[10px] uppercase tracking-wide text-slate-500">Current</p>
+          <p className="text-[11px] uppercase tracking-wide text-slate-500">Current</p>
           <p className="text-lg font-semibold text-white">{currentHarmony}%</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[10px] uppercase tracking-wide text-slate-500">Active Goals</p>
+          <p className="text-[11px] uppercase tracking-wide text-slate-500">Active Goals</p>
           <p className="text-lg font-semibold text-white">{activeGoalsCount}</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[10px] uppercase tracking-wide text-slate-500">Recent Rituals</p>
+          <p className="text-[11px] uppercase tracking-wide text-slate-500">Recent Rituals</p>
           <p className="text-lg font-semibold text-white">{recentCheckinsCount}</p>
         </div>
       </div>

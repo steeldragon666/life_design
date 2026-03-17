@@ -1,6 +1,7 @@
 'use client';
 
 import { Dimension, DIMENSION_LABELS } from '@life-design/core';
+import { Card, Textarea, dimensionPalettes } from '@life-design/ui';
 
 interface DimensionCardProps {
   dimension: Dimension;
@@ -19,9 +20,11 @@ export default function DimensionCard({
   note,
   onNoteChange,
 }: DimensionCardProps) {
+  const palette = dimensionPalettes[dimension];
+
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
-      <h3 className="font-medium text-sm text-white">{DIMENSION_LABELS[dimension]}</h3>
+    <Card className="space-y-3">
+      <h3 className="font-medium text-sm text-stone-800">{DIMENSION_LABELS[dimension]}</h3>
 
       <div className="flex gap-1 flex-wrap">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
@@ -30,11 +33,12 @@ export default function DimensionCard({
             type="button"
             aria-label={String(n)}
             onClick={() => onScoreChange(dimension, n)}
-            className={`w-8 h-8 rounded text-sm font-medium ${
+            className="w-8 h-8 rounded text-sm font-medium transition-all"
+            style={
               n === score
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-slate-900 hover:bg-gray-200'
-            }`}
+                ? { backgroundColor: palette.accent, color: '#FFFFFF' }
+                : { backgroundColor: '#F5F3EF', color: '#5C554C' }
+            }
           >
             {n}
           </button>
@@ -42,14 +46,13 @@ export default function DimensionCard({
       </div>
 
       {showNote && (
-        <textarea
+        <Textarea
           placeholder="Add a note..."
           value={note ?? ''}
           onChange={(e) => onNoteChange?.(dimension, e.target.value)}
-          className="w-full rounded border border-white/15 bg-white/95 text-slate-900 placeholder:text-slate-500 px-2 py-1 text-sm"
           rows={2}
         />
       )}
-    </div>
+    </Card>
   );
 }

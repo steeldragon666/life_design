@@ -5,6 +5,7 @@ import { useGuest } from '@/lib/guest-context';
 import GoalForm from '@/components/goals/goal-form';
 import type { GoalFormData } from '@/components/goals/goal-form';
 import VoiceGoalCreator from '@/components/goals/voice-goal-creator';
+import { Card } from '@life-design/ui';
 
 export default function NewGoalPage() {
   const router = useRouter();
@@ -54,14 +55,14 @@ export default function NewGoalPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create a New Goal</h1>
-        <p className="text-slate-400">Voice-first guidance with your mentor</p>
+        <h1 className="text-3xl font-bold text-stone-900 tracking-tight mb-2">Create a New Goal</h1>
+        <p className="text-stone-500">Voice-first guidance with your mentor</p>
       </div>
       <VoiceGoalCreator onCreateGoal={handleVoiceGoalCreate} />
-      <div className="glass-card p-6 space-y-3">
-        <p className="text-sm text-slate-400">Prefer manual entry?</p>
+      <Card className="p-6 space-y-3">
+        <p className="text-sm text-stone-500">Prefer manual entry?</p>
         <GoalForm onSubmit={handleSubmit} />
-      </div>
+      </Card>
     </div>
   );
 }

@@ -90,14 +90,14 @@ export default function SimilarEntries({
           className="rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
         >
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[10px] text-white/30">
+            <span className="text-[11px] text-white/30">
               {new Date(entry.checkin_date).toLocaleDateString('en-AU', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric',
               })}
             </span>
-            <span className="text-[10px] text-indigo-400/60">
+            <span className="text-[11px] text-indigo-400/60">
               {Math.round(entry.similarity * 100)}% similar
             </span>
           </div>
