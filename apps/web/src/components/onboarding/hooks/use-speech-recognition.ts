@@ -6,8 +6,8 @@ interface SpeechRecognitionLike {
   lang: string;
   start: () => void;
   stop: () => void;
-  onresult: ((event: any) => void) | null;
-  onerror: ((event: any) => void) | null;
+  onresult: ((event: { resultIndex: number; results: { [index: number]: { [index: number]: { transcript: string }; isFinal: boolean }; length: number } }) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
   onend: ((event?: Event) => void) | null;
 }
 
@@ -58,7 +58,7 @@ export function useSpeechRecognition({
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: { resultIndex: number; results: { [index: number]: { [index: number]: { transcript: string }; isFinal: boolean }; length: number } }) => {
       let finalTranscript = '';
       let interimTranscript = '';
 
@@ -79,7 +79,7 @@ export function useSpeechRecognition({
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: { error: string }) => {
       if (event.error === 'not-allowed') {
         onErrorChange?.('Microphone access denied. Please allow microphone permissions.');
       } else if (event.error === 'no-speech') {

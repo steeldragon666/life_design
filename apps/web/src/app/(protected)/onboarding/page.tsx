@@ -34,12 +34,12 @@ function OnboardingContent() {
     router.push('/login');
   }, [router]);
 
-  const handleSaveProfile = async (data: any) => {
+  const handleSaveProfile = async (data: Record<string, unknown>) => {
     setProfile({ ...data, onboarded: true });
     return { error: null };
   };
 
-  const handleCreateGoals = async (goals: any[]) => {
+  const handleCreateGoals = async (goals: Array<{ horizon?: string; [key: string]: unknown }>) => {
     goals.forEach((goal) => {
       const targetDate = new Date();
       if (goal.horizon === 'short') {

@@ -47,7 +47,7 @@ Return ONLY valid JSON with this structure:
 
 export async function generatePathway(
   input: PathwayInput,
-  worldContext?: any,
+  worldContext?: Record<string, unknown>,
 ): Promise<GeneratedPathway> {
   const client = getGeminiClient();
   const model = client.getGenerativeModel({ 

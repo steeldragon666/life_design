@@ -6,6 +6,27 @@ import { GoogleCalendarConnector } from '@life-design/core';
 import { revalidatePath } from 'next/cache';
 import type { Goal, GoalMilestone } from '@life-design/core';
 
+/**
+ * Persist the title embedding for a goal via the /api/embeddings route.
+ * Fire-and-forget — embedding failures never block goal creation.
+ * We call the API route rather than importing ai-local directly to avoid
+ * pulling onnxruntime-node native binaries into the server action bundle.
+ */
+async function persistGoalTitleEmbedding(goalId: string): Promise<void> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+    await fetch(`${baseUrl}/api/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goal_id: goalId }),
+    });
+  } catch (err) {
+    console.warn('[goals/actions] Goal embedding persistence failed:', err);
+  }
+}
+
 export interface CreateGoalInput {
   title: string;
   description?: string;
@@ -126,11 +147,17 @@ export async function createGoalAction(input: CreateGoalInput): Promise<CreateGo
     if (msError) console.error('Failed to insert milestones:', msError);
   }
 
+  // Fire-and-forget: compute and persist the title embedding for semantic search
+  persistGoalTitleEmbedding(goal.id).catch(() => {});
+
   revalidatePath('/goals');
   return { success: true, goal };
 }
 
-export async function updateGoalAction(goalId: string, updates: any) {
+export async function updateGoalAction(
+  goalId: string,
+  updates: Record<string, string | number | boolean | null>
+) {
   const supabase = await createClient();
   const { error } = await supabase
     .from('goals')

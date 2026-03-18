@@ -35,8 +35,8 @@ import { cn } from '@/lib/utils';
 
 interface VoiceOnboardingAgentProps {
   onComplete: (profile: ExtractedProfile) => void;
-  onSaveProfile: (data: any) => Promise<{ error: string | null }>;
-  onCreateGoals: (goals: any[]) => Promise<{ error: string | null }>;
+  onSaveProfile: (data: Record<string, unknown>) => Promise<{ error: string | null }>;
+  onCreateGoals: (goals: Array<{ horizon?: string; [key: string]: unknown }>) => Promise<{ error: string | null }>;
 }
 
 const themes = [

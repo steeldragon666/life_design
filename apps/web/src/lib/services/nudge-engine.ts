@@ -19,9 +19,9 @@ Return ONLY a JSON array of objects:
 [{ "title": "string", "body": "string", "type": "suggestion", "dimension": "dimension_name" }]`;
 
 export async function generateNudges(
-  scores: any,
-  goals: any,
-  worldContext: any
+  scores: Record<string, number>,
+  goals: Array<{ title: string; dimension?: string; [key: string]: unknown }>,
+  worldContext: Record<string, unknown>
 ): Promise<Nudge[]> {
   try {
     const pulse = synthesizeHolisticState(worldContext, { averageScores: scores }, { activeGoals: goals });

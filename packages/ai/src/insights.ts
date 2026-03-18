@@ -31,7 +31,7 @@ Return ONLY valid JSON array, no other text.`;
 
 export async function generateInsights(
   checkIns: CheckInData[],
-  worldContext?: any,
+  worldContext?: Record<string, unknown>,
 ): Promise<GeneratedInsight[]> {
   if (checkIns.length === 0) return [];
 

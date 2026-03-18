@@ -509,7 +509,7 @@ export class AssetLoader {
           asset,
           () => {
             // First frame loaded - could show preview
-            console.log(`First frame loaded for ${asset.id}`);
+            // First frame loaded — debug-only, suppressed in production
           },
           () => {
             // Fully buffered

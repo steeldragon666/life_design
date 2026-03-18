@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // Build the conversation
     const chat = model.startChat({
-      history: history.map((msg: any) => ({
+      history: history.map((msg: { role: string; content: string }) => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.content }],
       })),

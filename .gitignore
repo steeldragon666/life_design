@@ -41,3 +41,9 @@ pnpm-debug.log*
 life_design/
 .gstack/
 .github/workflows/
+.env.master
+supabase/.env
+supabase_keys.txt
+supabase_project_info.txt
+assessment_report.md
+.env.master

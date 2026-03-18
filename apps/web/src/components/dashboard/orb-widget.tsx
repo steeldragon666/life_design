@@ -1,10 +1,25 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowRight, Orbit } from 'lucide-react';
+import { ArrowRight, Orbit, Loader2 } from 'lucide-react';
 import { GlassCard } from '@life-design/ui';
-import LifeOrb, { type LifeOrbDimension } from './life-orb';
+import type { LifeOrbDimension } from './life-orb';
+
+/**
+ * Dynamically import LifeOrb (Three.js) — defers the ~500 KB three.js bundle
+ * until the component is actually rendered, keeping the initial dashboard
+ * bundle lean. SSR is disabled because Three.js requires a browser canvas.
+ */
+const LifeOrb = dynamic(() => import('./life-orb'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[200px] w-[200px]">
+      <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+    </div>
+  ),
+});
 
 interface OrbWidgetProps {
   /** Enhanced format with trend data */
