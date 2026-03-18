@@ -1,8 +1,23 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import LifeOrb from '@/components/dashboard/life-orb';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+
+/**
+ * Dynamically import LifeOrb (Three.js) — defers the ~500 KB three.js bundle
+ * until the component is actually rendered. SSR is disabled because Three.js
+ * requires a browser canvas.
+ */
+const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[320px]">
+      <Loader2 className="h-10 w-10 text-cyan-400 animate-spin" />
+    </div>
+  ),
+});
 
 interface ProjectionVisualProps {
   latestScores: Array<{ dimension: string; score: number }>;
@@ -16,7 +31,7 @@ const ErrorBoundary = ResilientErrorBoundary as unknown as (props: {
   children: ReactNode;
   fallback?: ReactNode;
   resetKeys?: unknown[];
-}) => any;
+}) => ReactNode;
 
 function SoftProjectionFallback({ targetHarmony }: { targetHarmony: number }) {
   return (

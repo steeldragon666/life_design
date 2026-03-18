@@ -1,6 +1,27 @@
 import { createClient } from '@/lib/supabase/server';
 import type { Dimension, DurationType } from '@life-design/core';
 
+/**
+ * Persist the journal embedding via the /api/embeddings route.
+ * Fire-and-forget — embedding failures never block the checkin save.
+ * We call the API route rather than importing ai-local directly to avoid
+ * pulling onnxruntime-node native binaries into the server action bundle.
+ */
+async function persistJournalEmbedding(checkinId: string): Promise<void> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+    await fetch(`${baseUrl}/api/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkin_id: checkinId }),
+    });
+  } catch (err) {
+    console.warn('[checkin-service] Embedding persistence failed:', err);
+  }
+}
+
 export interface CreateCheckInInput {
   date: string;
   mood: number;
@@ -51,6 +72,11 @@ export async function createCheckIn(
     if (scoresError) {
       return { data: null, error: scoresError.message };
     }
+  }
+
+  // Fire-and-forget: compute and persist the journal embedding
+  if (input.journalEntry && input.journalEntry.trim().length > 0) {
+    persistJournalEmbedding(checkin.id).catch(() => {});
   }
 
   return { data: checkin, error: null };

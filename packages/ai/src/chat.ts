@@ -26,7 +26,7 @@ function buildWorldContextSuffix(worldContext?: unknown): string {
 export async function sendMentorMessage(
   messages: ChatMessage[],
   systemPrompt: string,
-  worldContext?: any,
+  worldContext?: Record<string, unknown>,
 ): Promise<ChatResult> {
   try {
     const client = getGeminiClient();

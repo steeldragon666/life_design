@@ -1,11 +1,26 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
 import { DimensionBadge, ScoreRing, dimensionColor } from '@life-design/ui';
-import LifeOrb, { type LifeOrbDimension } from '@/components/dashboard/life-orb';
+import type { LifeOrbDimension } from '@/components/dashboard/life-orb';
+
+/**
+ * Dynamically import LifeOrb (Three.js) — defers the ~500 KB three.js bundle
+ * until the component is actually rendered. SSR is disabled because Three.js
+ * requires a browser canvas.
+ */
+const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[400px] w-[400px]">
+      <Loader2 className="h-12 w-12 text-indigo-400 animate-spin" />
+    </div>
+  ),
+});
 
 interface OrbClientProps {
   dimensions: LifeOrbDimension[];

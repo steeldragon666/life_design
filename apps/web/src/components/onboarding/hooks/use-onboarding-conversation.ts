@@ -38,8 +38,8 @@ interface UseOnboardingConversationOptions {
   appendConversationKeyFact: (fact: string, source: string) => void;
   speakMessage: (text: string) => void;
   onComplete: (profile: ExtractedProfile) => void;
-  onSaveProfile: (data: any) => Promise<{ error: string | null }>;
-  onCreateGoals: (goals: any[]) => Promise<{ error: string | null }>;
+  onSaveProfile: (data: Record<string, unknown>) => Promise<{ error: string | null }>;
+  onCreateGoals: (goals: Array<{ horizon?: string; [key: string]: unknown }>) => Promise<{ error: string | null }>;
 }
 
 export function useOnboardingConversation({

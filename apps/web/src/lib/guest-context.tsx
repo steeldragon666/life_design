@@ -73,7 +73,7 @@ interface GuestIntegration {
   refresh_token?: string;
   expires_at?: number;
   connected_at: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface GuestContextType {

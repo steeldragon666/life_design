@@ -4,10 +4,10 @@ import { normalizeProviderPayload, type NormalizedSignal } from './feature-extra
 export interface LifeConnector {
   provider: IntegrationProvider;
   dimension: Dimension;
-  fetchData(...args: any[]): Promise<any>;
-  writeData?(...args: any[]): Promise<any>;
+  fetchData(...args: unknown[]): Promise<unknown>;
+  writeData?(...args: unknown[]): Promise<unknown>;
   normalizeData?(rawData: unknown): NormalizedSignal[];
-  fetchNormalizedData?(...args: any[]): Promise<NormalizedSignal[]>;
+  fetchNormalizedData?(...args: unknown[]): Promise<NormalizedSignal[]>;
 }
 
 export abstract class BaseLifeConnector implements LifeConnector {
@@ -17,7 +17,7 @@ export abstract class BaseLifeConnector implements LifeConnector {
     protected accessToken: string
   ) {}
 
-  protected async safeFetch(url: string, init?: RequestInit): Promise<any> {
+  protected async safeFetch(url: string, init?: RequestInit): Promise<unknown> {
     const response = await fetch(url, init);
     if (!response.ok) {
       throw new Error(`${this.provider} API error: ${response.status} ${response.statusText}`);
@@ -25,8 +25,8 @@ export abstract class BaseLifeConnector implements LifeConnector {
     return response.json();
   }
 
-  abstract fetchData(...args: any[]): Promise<any>;
-  async writeData(..._args: any[]): Promise<any> {
+  abstract fetchData(...args: unknown[]): Promise<unknown>;
+  async writeData(..._args: unknown[]): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
@@ -34,7 +34,7 @@ export abstract class BaseLifeConnector implements LifeConnector {
     return normalizeProviderPayload(this.provider, rawData, this.dimension);
   }
 
-  async fetchNormalizedData(...args: any[]): Promise<NormalizedSignal[]> {
+  async fetchNormalizedData(...args: unknown[]): Promise<NormalizedSignal[]> {
     const rawData = await this.fetchData(...args);
     return this.normalizeData(rawData);
   }
@@ -79,8 +79,13 @@ export class GoogleCalendarConnector extends BaseLifeConnector {
     });
   }
 
-  async writeData(event: any) {
-    return this.createEvent(event);
+  async writeData(event: unknown) {
+    return this.createEvent(event as {
+      summary: string;
+      description: string;
+      start: { dateTime: string; timeZone: string };
+      end: { dateTime: string; timeZone: string };
+    });
   }
 }
 
@@ -128,128 +133,10 @@ export async function getGranularContext(postcode: string, profession: string | 
   const [weather, nearbyHubs, searchData] = await Promise.all([
     weatherConnector.fetchData(postcode).catch(() => null),
     mapsConnector.fetchData(postcode, 'cafe').catch(() => null),
-    profession ? searchConnector.fetchData(`${profession} trends 2026`).catch(() => null) : Promise.resolve(null),
+    profession
+      ? searchConnector.fetchData(`${profession} industry trends ${interests.join(' ')}`).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
-  return {
-    weather,
-    nearbyHubs,
-    searchData,
-    professionContext: profession,
-    interests,
-    timestamp: new Date().toISOString(),
-  };
-}
-
-export class SpotifyConnector extends BaseLifeConnector {
-  constructor(accessToken: string) {
-    super(IntegrationProvider.Spotify, Dimension.Growth, accessToken);
-  }
-
-  async fetchData() {
-    return this.safeFetch('https://api.spotify.com/v1/me/player/recently-played?limit=50', {
-      headers: { Authorization: `Bearer ${this.accessToken}` },
-    });
-  }
-
-  async getTopTracks(timeRange: 'short_term' | 'medium_term' | 'long_term' = 'medium_term') {
-    return this.safeFetch(
-      `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=50`,
-      { headers: { Authorization: `Bearer ${this.accessToken}` } },
-    );
-  }
-}
-
-export class SlackConnector extends BaseLifeConnector {
-  constructor(accessToken: string) {
-    super(IntegrationProvider.Slack, Dimension.Career, accessToken);
-  }
-
-  async fetchData() {
-    return this.safeFetch('https://slack.com/api/conversations.list', {
-      headers: { Authorization: `Bearer ${this.accessToken}` },
-    });
-  }
-
-  async getUserPresence() {
-    return this.safeFetch('https://slack.com/api/users.getPresence', {
-      headers: { Authorization: `Bearer ${this.accessToken}` },
-    });
-  }
-}
-
-export class InstagramConnector extends BaseLifeConnector {
-  constructor(accessToken: string) {
-    super(IntegrationProvider.Instagram, Dimension.Social, accessToken);
-  }
-
-  async fetchData() {
-    return this.safeFetch(
-      'https://graph.instagram.com/me?fields=id,username,media_count',
-      { headers: { Authorization: `Bearer ${this.accessToken}` } },
-    );
-  }
-
-  async getRecentMedia(limit: number = 25) {
-    return this.safeFetch(
-      `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}`,
-      { headers: { Authorization: `Bearer ${this.accessToken}` } },
-    );
-  }
-}
-
-export class NotionConnector extends BaseLifeConnector {
-  constructor(accessToken: string) {
-    super(IntegrationProvider.Notion, Dimension.Career, accessToken);
-  }
-
-  async fetchData() {
-    return this.safeFetch('https://api.notion.com/v1/search', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ filter: { value: 'database', property: 'object' } }),
-    });
-  }
-
-  async queryDatabase(databaseId: string) {
-    return this.safeFetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-}
-
-export function getConnector(provider: IntegrationProvider, accessToken: string): LifeConnector | null {
-  switch (provider) {
-    case IntegrationProvider.Strava:
-      return new StravaConnector(accessToken);
-    case IntegrationProvider.GoogleCalendar:
-      return new GoogleCalendarConnector(accessToken);
-    case IntegrationProvider.Spotify:
-      return new SpotifyConnector(accessToken);
-    case IntegrationProvider.Slack:
-      return new SlackConnector(accessToken);
-    case IntegrationProvider.Instagram:
-      return new InstagramConnector(accessToken);
-    case IntegrationProvider.Notion:
-      return new NotionConnector(accessToken);
-    default:
-      return null;
-  }
-}
-
-export function normalizeConnectorData(
-  provider: IntegrationProvider,
-  rawData: unknown,
-  fallbackDimension?: Dimension,
-): NormalizedSignal[] {
-  return normalizeProviderPayload(provider, rawData, fallbackDimension);
+  return { weather, nearbyHubs, searchData };
 }
