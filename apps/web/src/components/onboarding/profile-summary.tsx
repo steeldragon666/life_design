@@ -1,0 +1,54 @@
+'use client';
+
+import type { ProfileSummaryTemplate } from '@life-design/core';
+
+interface ProfileSummaryProps {
+  userName: string;
+  summary: ProfileSummaryTemplate;
+  onComplete: () => void;
+}
+
+const SUMMARY_LABELS: { key: keyof ProfileSummaryTemplate; label: string; icon: string }[] = [
+  { key: 'strength', label: 'Your Strength', icon: '💪' },
+  { key: 'friction', label: 'Your Friction', icon: '🔥' },
+  { key: 'strategy', label: 'Recommended Strategy', icon: '🎯' },
+  { key: 'this_week', label: 'This Week', icon: '📅' },
+];
+
+export default function ProfileSummary({ userName, summary, onComplete }: ProfileSummaryProps) {
+  return (
+    <div className="min-h-screen px-4 py-8 md:px-8">
+      <div className="max-w-lg mx-auto">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h1 className="font-['Instrument_Serif'] text-3xl text-[#1A1816]">
+            {userName ? `Welcome, ${userName}` : 'Your Profile is Ready'}
+          </h1>
+          <p className="text-[#A8A198] text-sm mt-2">Here's what we learned about you</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#E8E4DD] p-6 space-y-5 mb-6">
+          {SUMMARY_LABELS.map(({ key, label, icon }) => (
+            <div key={key}>
+              <h3 className="text-xs font-medium text-[#A8A198] uppercase tracking-wider mb-1">
+                {icon} {label}
+              </h3>
+              <p className="text-sm text-[#1A1816]">{summary[key]}</p>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onComplete}
+          className="w-full py-3 bg-[#1A1816] text-white rounded-xl text-sm font-medium hover:bg-[#1A1816]/90 transition-colors"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
