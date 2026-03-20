@@ -11,3 +11,4 @@ export * from './connectors/apple-health';
 export * from './connectors/strava';
 export * from './connectors/google-calendar';
 export * from './connectors/oauth-manager';
+export * from './profiling';
