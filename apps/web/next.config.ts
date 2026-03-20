@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import type { Configuration } from 'webpack';
+import path from 'path';
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -41,6 +42,17 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'maps.googleapis.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Safety net: alias onnxruntime-node to empty shim in case any transitive
+      // dependency still tries to import it.
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'onnxruntime-node': path.resolve(__dirname, 'src/lib/onnxruntime-node-shim.js'),
+      };
+    }
+    return config;
   },
   poweredByHeader: false,
   reactStrictMode: true,

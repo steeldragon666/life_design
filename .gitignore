@@ -46,4 +46,6 @@ supabase/.env
 supabase_keys.txt
 supabase_project_info.txt
 assessment_report.md
-.env.master
+
+# Worktrees
+.worktrees/

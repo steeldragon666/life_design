@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* Font families */
+  /* ── Fonts ── */
   --font-sans: 'DM Sans', system-ui, sans-serif;
   --font-serif: 'Instrument Serif', Georgia, serif;
   --font-mono: 'DM Mono', monospace;
 
-  /* Stone palette (warm neutrals) */
+  /* ── Stone (Neutrals) ── */
   --color-stone-50: #FAFAF8;
   --color-stone-100: #F5F3EF;
   --color-stone-200: #E8E4DD;
   --color-stone-300: #D4CFC5;
   --color-stone-400: #A8A198;
-  --color-stone-500: #7D756A;
+  --color-stone-500: #6B6459;
   --color-stone-600: #5C554C;
   --color-stone-700: #3D3833;
   --color-stone-800: #2A2623;
   --color-stone-900: #1A1816;
 
-  /* Sage palette (organic greens) */
+  /* ── Sage (Primary) ── */
   --color-sage-50: #F4F7F4;
   --color-sage-100: #E4ECE4;
   --color-sage-200: #C4D5C4;
@@ -27,82 +27,130 @@
   --color-sage-500: #5A7F5A;
   --color-sage-600: #476447;
 
-  /* Warm palette (earth tones) */
+  /* ── Warm (Secondary) ── */
   --color-warm-50: #FEF7F0;
   --color-warm-100: #FCE8D5;
   --color-warm-200: #F5C9A3;
   --color-warm-300: #E8A46D;
   --color-warm-400: #D4864A;
-  --color-warm-500: #B86E3A;
+  --color-warm-500: #9A5B2D;
+  --color-warm-600: #A05E30;
 
-  /* Primary mapped to sage */
-  --color-primary-50: #F4F7F4;
-  --color-primary-100: #E4ECE4;
-  --color-primary-200: #C4D5C4;
-  --color-primary-300: #9BB89B;
-  --color-primary-400: #739A73;
-  --color-primary-500: #5A7F5A;
-  --color-primary-600: #476447;
-
-  /* Secondary mapped to warm */
-  --color-secondary-400: #D4864A;
-  --color-secondary-500: #B86E3A;
-  --color-secondary-600: #A05E30;
-
-  /* Accent / soft blue for contrast */
+  /* ── Accent (Soft Blue) ── */
   --color-accent-400: #85B8D8;
   --color-accent-500: #5E9BC4;
-  --color-accent-600: #4A86B0;
+  --color-accent-600: #3A7199;
 
-  /* Dimension accent colours (updated for new palette) */
-  --color-dim-health: #9BB89B;
+  /* ── Semantic: Surfaces ── */
+  --color-surface-default: #FFFFFF;
+  --color-surface-page: #FAFAF8;
+  --color-surface-sunken: #F5F3EF;
+  --color-surface-raised: #FFFFFF;
+
+  /* ── Semantic: Text ── */
+  --color-text-primary: #2A2623;
+  --color-text-secondary: #5C554C;
+  --color-text-muted: #6B6459;
+  --color-text-inverse: #FFFFFF;
+
+  /* ── Semantic: Borders ── */
+  --color-border-default: #E8E4DD;
+  --color-border-subtle: rgba(232, 228, 221, 0.6);
+
+  /* ── Semantic: Interactive ── */
+  --color-interactive-primary: #5A7F5A;
+  --color-interactive-hover: #476447;
+  --color-destructive: #CC3333;
+
+  /* ── Dimension Accent Colors ── */
   --color-dim-career: #5E9BC4;
-  --color-dim-relationships: #E8A46D;
-  --color-dim-growth: #8B7BA8;
-  --color-dim-finance: #D4864A;
-  --color-dim-creativity: #5A7F5A;
-  --color-dim-spirituality: #85B8D8;
-  --color-dim-environment: #A89B7B;
+  --color-dim-finance: #C4783A;
+  --color-dim-health: #5A7F5A;
+  --color-dim-fitness: #4A8A4A;
+  --color-dim-family: #D4864A;
+  --color-dim-social: #8B7BA8;
+  --color-dim-romance: #C4607A;
+  --color-dim-growth: #4A86B0;
+
+  /* ── Dimension Text Colors (AA-safe) ── */
+  --color-dim-career-text: #3A6A8A;
+  --color-dim-finance-text: #8A5A30;
+  --color-dim-health-text: #476447;
+  --color-dim-fitness-text: #3A6A3A;
+  --color-dim-family-text: #8A5A30;
+  --color-dim-social-text: #6B5B88;
+  --color-dim-romance-text: #8A3A50;
+  --color-dim-growth-text: #3A6A8A;
+
+  /* ── Dimension Backgrounds ── */
+  --color-dim-career-bg: #EFF4F8;
+  --color-dim-finance-bg: #FDF5EE;
+  --color-dim-health-bg: #F4F7F4;
+  --color-dim-fitness-bg: #F0F5F0;
+  --color-dim-family-bg: #FEF7F0;
+  --color-dim-social-bg: #F3F0F6;
+  --color-dim-romance-bg: #FDF0F3;
+  --color-dim-growth-bg: #EDF3F8;
+
+  /* ── Spacing (4px base) ── */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── Elevation (Shadows) ── */
+  --shadow-elevation-0: none;
+  --shadow-elevation-1: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-elevation-2: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-elevation-3: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+
+  /* ── Z-Index ── */
+  --z-base: 0;
+  --z-nav: 40;
+  --z-nudge: 45;
+  --z-toast: 50;
+  --z-modal-overlay: 55;
+  --z-modal: 60;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-default: 300ms ease;
+  --transition-slow: 500ms ease-out;
 }
 
 @layer base {
   :root {
-    --background: 40 10% 97%;
-    --foreground: 30 12% 12%;
-    --card: 40 15% 99%;
-    --card-foreground: 30 12% 12%;
-    --popover: 40 15% 99%;
-    --popover-foreground: 30 12% 12%;
-    --primary: 140 22% 38%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 35 20% 94%;
-    --secondary-foreground: 30 12% 20%;
-    --muted: 35 15% 93%;
-    --muted-foreground: 30 8% 46%;
-    --accent: 35 20% 94%;
-    --accent-foreground: 30 12% 20%;
-    --destructive: 0 60% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 35 12% 89%;
-    --input: 35 12% 89%;
-    --ring: 140 22% 38%;
-    --radius: 0.875rem;
+    --background: var(--color-surface-page);
+    --foreground: var(--color-text-primary);
+    --radius: var(--radius-sm);
   }
 
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--color-border-default);
   }
 
   body {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #FAFAF8;
-    color: #2A2623;
+    font-family: var(--font-sans);
+    background-color: var(--color-surface-page);
+    color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: var(--font-serif);
   }
 }
 
@@ -154,15 +202,52 @@
   50% { transform: scale(1.08); opacity: 0.8; }
 }
 
+@keyframes confettiFall {
+  0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes badgeReveal {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulseSkeleton {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.animate-pulse-skeleton { animation: pulseSkeleton 1.5s ease-in-out infinite; }
+
 .animate-fade-up { animation: fadeUp 0.6s ease-out forwards; }
 .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-breathe { animation: breathe 4s ease-in-out infinite; }
+.animate-confetti-fall { animation: confettiFall 3s ease-in forwards; }
+.animate-badge-reveal { animation: badgeReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 .stagger-1 { animation-delay: 0.1s; opacity: 0; }
 .stagger-2 { animation-delay: 0.2s; opacity: 0; }
 .stagger-3 { animation-delay: 0.3s; opacity: 0; }
 .stagger-4 { animation-delay: 0.4s; opacity: 0; }
 .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+
+/* Mentor avatar state animations */
+@keyframes mentorSpeaking {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent, rgba(139,92,246,0.6)); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+@keyframes mentorBreathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.animate-mentor-speaking { animation: mentorSpeaking 1.2s ease-in-out infinite; }
+.animate-mentor-breathing { animation: mentorBreathing 3s ease-in-out infinite; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }

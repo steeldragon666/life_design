@@ -1,4 +1,4 @@
-import { pipeline, type FeatureExtractionPipeline } from '@huggingface/transformers';
+import { pipeline, type FeatureExtractionPipeline } from './transformers-entry';
 import { MODEL_REGISTRY, EMBEDDING_DIM, lazySingleton } from './models';
 
 const getExtractor = lazySingleton<FeatureExtractionPipeline>(async (onProgress) => {

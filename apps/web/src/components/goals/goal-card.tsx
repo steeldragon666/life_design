@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DIMENSION_LABELS, type Dimension } from '@life-design/core';
+import { Badge } from '@life-design/ui';
 
 interface GoalCardProps {
   goal: {
@@ -17,17 +18,17 @@ interface GoalCardProps {
   };
 }
 
-const HORIZON_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  short: { bg: 'bg-green-100', text: 'text-green-800', label: 'Short-term' },
-  medium: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'Medium-term' },
-  long: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Long-term' },
+const HORIZON_VARIANTS: Record<string, { variant: 'sage' | 'warm' | 'stone'; label: string }> = {
+  short: { variant: 'sage', label: 'Short-term' },
+  medium: { variant: 'warm', label: 'Medium-term' },
+  long: { variant: 'stone', label: 'Long-term' },
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-emerald-100 text-emerald-700',
-  completed: 'bg-gray-100 text-gray-600',
-  paused: 'bg-yellow-100 text-yellow-700',
-  abandoned: 'bg-red-100 text-red-600',
+const STATUS_VARIANTS: Record<string, 'sage' | 'stone' | 'warm' | 'destructive'> = {
+  active: 'sage',
+  completed: 'stone',
+  paused: 'warm',
+  abandoned: 'destructive',
 };
 
 function daysRemaining(targetDate: string): number {
@@ -54,49 +55,49 @@ function getProgress(goal: GoalCardProps['goal']): { percent: number; label: str
 }
 
 export default function GoalCard({ goal }: GoalCardProps) {
-  const horizon = HORIZON_STYLES[goal.horizon] ?? HORIZON_STYLES.short;
-  const statusStyle = STATUS_STYLES[goal.status] ?? STATUS_STYLES.active;
+  const horizon = HORIZON_VARIANTS[goal.horizon] ?? HORIZON_VARIANTS.short;
+  const statusVariant = STATUS_VARIANTS[goal.status] ?? STATUS_VARIANTS.active;
   const days = daysRemaining(goal.target_date);
   const progress = getProgress(goal);
 
   return (
     <Link
       href={`/goals/${goal.id}`}
-      className="block rounded-lg border p-4 hover:border-indigo-300 hover:shadow-sm transition-all"
+      className="block rounded-2xl border border-stone-200 p-4 bg-white hover:border-sage-200 hover:shadow-sm transition-all"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-sm leading-tight">{goal.title}</h3>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${horizon.bg} ${horizon.text}`}>
+        <h3 className="font-semibold text-sm leading-tight text-stone-800">{goal.title}</h3>
+        <Badge variant={horizon.variant} className="shrink-0">
           {horizon.label}
-        </span>
+        </Badge>
       </div>
 
       <div className="mt-2 flex flex-wrap gap-1">
         {goal.goal_dimensions.map((d) => (
-          <span key={d.dimension} className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 capitalize">
+          <Badge key={d.dimension} variant="stone" className="capitalize">
             {DIMENSION_LABELS[d.dimension as Dimension] ?? d.dimension}
-          </span>
+          </Badge>
         ))}
       </div>
 
       <div className="mt-3">
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <div className="flex items-center justify-between text-xs text-stone-500 mb-1">
           <span>{progress.label}</span>
           <span>{progress.percent}%</span>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-gray-200">
+        <div className="h-1.5 w-full rounded-full bg-stone-100">
           <div
-            className="h-1.5 rounded-full bg-indigo-500 transition-all"
+            className="h-1.5 rounded-full bg-sage-500 transition-all"
             style={{ width: `${progress.percent}%` }}
           />
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyle}`}>
+        <Badge variant={statusVariant} className="capitalize">
           {goal.status}
-        </span>
-        <span className={`text-xs ${days < 7 ? 'text-red-500 font-medium' : days < 30 ? 'text-amber-500' : 'text-gray-400'}`}>
+        </Badge>
+        <span className={`text-xs ${days < 7 ? 'text-red-500 font-medium' : days < 30 ? 'text-amber-500' : 'text-stone-500'}`}>
           {days > 0 ? `${days}d remaining` : days === 0 ? 'Due today' : `${Math.abs(days)}d overdue`}
         </span>
       </div>

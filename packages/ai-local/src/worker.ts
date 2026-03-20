@@ -16,12 +16,19 @@
  */
 
 import { embed, embedBatch } from './embed';
-import { classifyDimension } from './classify';
-import { summarize } from './summarize';
+import { classifyDimension, classifyGoal, classifyJournalEntry, detectMoodFromText } from './classify';
+import { summarize, generateJournalPreview, summarizeWeeklyJournals } from './summarize';
+import { processVoiceCheckIn } from './voice-processor';
+
+export type WorkerMessageType =
+  | 'embed' | 'embedBatch'
+  | 'classify' | 'classifyGoal' | 'classifyJournal' | 'detectMood'
+  | 'summarize' | 'journalPreview' | 'summarizeWeekly'
+  | 'voiceProcess';
 
 export interface WorkerRequest {
   id: string;
-  type: 'embed' | 'embedBatch' | 'classify' | 'summarize';
+  type: WorkerMessageType;
   payload: {
     text?: string;
     texts?: string[];
@@ -81,12 +88,36 @@ ctx.addEventListener('message', async (event: MessageEvent<WorkerRequest>) => {
         data = await classifyDimension(payload.text ?? '', (p) => sendProgress('classification', p));
         break;
       }
+      case 'classifyGoal': {
+        data = await classifyGoal(payload.text ?? '', (p) => sendProgress('classification', p));
+        break;
+      }
+      case 'classifyJournal': {
+        data = await classifyJournalEntry(payload.text ?? '', (p) => sendProgress('classification', p));
+        break;
+      }
+      case 'detectMood': {
+        data = await detectMoodFromText(payload.text ?? '', (p) => sendProgress('classification', p));
+        break;
+      }
       case 'summarize': {
         data = await summarize(
           payload.text ?? '',
           payload.maxLength,
           (p) => sendProgress('summarization', p),
         );
+        break;
+      }
+      case 'journalPreview': {
+        data = await generateJournalPreview(payload.text ?? '', (p) => sendProgress('summarization', p));
+        break;
+      }
+      case 'summarizeWeekly': {
+        data = await summarizeWeeklyJournals(payload.texts ?? [], (p) => sendProgress('summarization', p));
+        break;
+      }
+      case 'voiceProcess': {
+        data = await processVoiceCheckIn(payload.text ?? '', (p) => sendProgress('voice', p));
         break;
       }
       default:

@@ -1,12 +1,7 @@
 'use client';
 
 import React from 'react';
-
-export interface PersonaBlend {
-  therapist: number;
-  coach: number;
-  sage: number;
-}
+import type { PersonaBlend } from '@/lib/mentor-types';
 
 interface PersonaDisplayProps {
   blend: PersonaBlend;
@@ -105,7 +100,7 @@ export default function PersonaDisplay({
           {PERSONAS.map((p) => (
             <span
               key={p.key}
-              className="text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums"
+              className="text-[11px] px-1.5 py-0.5 rounded-full font-bold tabular-nums"
               style={{
                 backgroundColor: p.bgColor,
                 color: p.color,
@@ -133,7 +128,7 @@ export default function PersonaDisplay({
       <div className="flex items-center justify-between mb-3">
         <div>
           <p
-            className="text-[10px] uppercase tracking-widest text-white/40 mb-0.5"
+            className="text-[11px] uppercase tracking-widest text-white/40 mb-0.5"
             style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
           >
             Persona Blend

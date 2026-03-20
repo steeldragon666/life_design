@@ -8,8 +8,15 @@
 import type { WorkerRequest, WorkerResponse } from './worker';
 import type { DimensionLabel } from './models';
 
-export type { DimensionLabel } from './models';
+// Lightweight re-exports — no Transformers.js dependency.
+// Heavy modules (classify, summarize, embed, similarity, voice-processor)
+// run inside the Web Worker and must NOT be re-exported here to avoid
+// pulling onnxruntime-node into client bundles.
+export type { DimensionLabel, ModelTask } from './models';
 export { EMBEDDING_DIM, DIMENSION_LABELS, MODEL_REGISTRY } from './models';
+export type { GoalClassification, JournalClassification, MoodEstimate } from './classify';
+export type { ScoredCheckIn, Cluster } from './similarity';
+export type { VoiceSession, VoiceCheckInResult } from './voice-processor';
 
 export interface AILocalProgress {
   task: string;
@@ -131,6 +138,48 @@ export class AILocalClient {
    */
   async summarize(text: string, maxLength?: number): Promise<string> {
     return this.request<string>('summarize', { text, maxLength });
+  }
+
+  /**
+   * Classify a goal and return relevant dimensions with confidence weights.
+   */
+  async classifyGoal(text: string): Promise<import('./classify').GoalClassification> {
+    return this.request('classifyGoal', { text });
+  }
+
+  /**
+   * Full classification of a journal entry: dimensions, sentiment, and topics.
+   */
+  async classifyJournal(text: string): Promise<import('./classify').JournalClassification> {
+    return this.request('classifyJournal', { text });
+  }
+
+  /**
+   * Estimate mood (1-10) from text using sentiment analysis.
+   */
+  async detectMood(text: string): Promise<import('./classify').MoodEstimate> {
+    return this.request('detectMood', { text });
+  }
+
+  /**
+   * Generate a short journal preview (~30 words).
+   */
+  async journalPreview(text: string): Promise<string> {
+    return this.request<string>('journalPreview', { text });
+  }
+
+  /**
+   * Summarize a week's journal entries into overall themes.
+   */
+  async summarizeWeekly(journals: string[]): Promise<string> {
+    return this.request<string>('summarizeWeekly', { texts: journals });
+  }
+
+  /**
+   * Process a voice transcript into a structured check-in.
+   */
+  async processVoice(transcript: string): Promise<import('./voice-processor').VoiceCheckInResult> {
+    return this.request('voiceProcess', { text: transcript });
   }
 
   /**

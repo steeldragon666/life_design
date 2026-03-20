@@ -34,7 +34,7 @@ describe('DimensionCard', () => {
     render(<DimensionCard {...defaultProps} score={5} />);
 
     const selectedBtn = screen.getByRole('button', { name: '5' });
-    expect(selectedBtn.className).toMatch(/bg-indigo/);
+    expect(selectedBtn.style.backgroundColor).toBeTruthy();
   });
 
   it('renders optional note textarea when showNote is true', () => {

@@ -9,7 +9,14 @@ import {
   ALL_DIMENSIONS,
   computeOverallScore,
 } from '@life-design/core';
+import { Card, Badge, Skeleton } from '@life-design/ui';
 import useDashboardData from '@/hooks/useDashboardData';
+import WeeklyDigestView from '@/components/digest/WeeklyDigestView';
+import type { StoredDigest } from '@/lib/digest/digest-generator';
+import { useNudges } from '@/providers/LifeDesignProvider';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
+import { ScheduleWidget } from '@/components/schedule/ScheduleWidget';
 
 // ---------------------------------------------------------------------------
 // Dynamic recharts imports (SSR-safe)
@@ -18,7 +25,7 @@ const LineChart = dynamic(() => import('recharts').then((m) => m.LineChart), { s
 const Line = dynamic(() => import('recharts').then((m) => m.Line), { ssr: false });
 const XAxis = dynamic(() => import('recharts').then((m) => m.XAxis), { ssr: false });
 const YAxis = dynamic(() => import('recharts').then((m) => m.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then((m) => m.Tooltip), { ssr: false });
+const RechartsTooltip = dynamic(() => import('recharts').then((m) => m.Tooltip), { ssr: false });
 const ResponsiveContainer = dynamic(() => import('recharts').then((m) => m.ResponsiveContainer), { ssr: false });
 const CartesianGrid = dynamic(() => import('recharts').then((m) => m.CartesianGrid), { ssr: false });
 
@@ -128,6 +135,17 @@ function ActivityIcon({ className }: { className?: string }) {
   );
 }
 
+function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 010-5H6" /><path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
+      <path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" />
+      <path d="M18 2H6v7a6 6 0 0012 0V2z" />
+    </svg>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Dimension styling
 // ---------------------------------------------------------------------------
@@ -216,10 +234,6 @@ function relativeTime(timestamp: string): string {
   return 'Just now';
 }
 
-function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-[#F5F3EF] ${className}`} aria-hidden="true" />;
-}
-
 function goalProgress(goal: ActiveGoal): number {
   const milestones = goal.goal_milestones ?? [];
   if (milestones.length === 0) return 0;
@@ -231,6 +245,106 @@ function formatDueDate(date: string | null): string {
   if (!date) return '';
   const d = new Date(date);
   return d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' });
+}
+
+// ---------------------------------------------------------------------------
+// Inline insights feed (replaces missing DashboardInsightsFeed component)
+// ---------------------------------------------------------------------------
+
+interface NudgeData {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+}
+
+interface FeedInsight {
+  id: string;
+  type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
+  title: string;
+  body: string;
+  dimension: string | null;
+}
+
+function InsightsFeed({
+  insights,
+  activeNudge,
+  latestDigest,
+  onDismissNudge,
+  onViewDigest,
+}: {
+  insights: FeedInsight[];
+  activeNudge: NudgeData | null;
+  latestDigest: StoredDigest | null;
+  onDismissInsight: (id: string) => void;
+  onDismissNudge: (id: string) => void;
+  onTalkToMentor: () => void;
+  onViewDigest: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {/* Nudge banner */}
+      {activeNudge && (
+        <Card className="p-4 border-l-4 border-l-sage-300 bg-sage-50">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-stone-800">{activeNudge.title}</p>
+              <p className="text-xs text-stone-600 mt-0.5">{activeNudge.message}</p>
+            </div>
+            <button
+              onClick={() => onDismissNudge(activeNudge.id)}
+              className="text-stone-500 hover:text-stone-600 text-xs flex-shrink-0"
+            >
+              ×
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {/* Weekly digest prompt */}
+      {latestDigest && (
+        <Card className="p-4 bg-stone-50">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-stone-700">Weekly digest ready</p>
+            <button
+              onClick={onViewDigest}
+              className="text-xs text-sage-500 font-medium hover:underline"
+            >
+              View
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {/* Insights */}
+      {insights.length === 0 ? (
+        <Card className="p-6 text-center">
+          <p className="text-sm text-stone-500 italic font-serif">
+            Complete more check-ins to unlock AI insights.
+          </p>
+        </Card>
+      ) : (
+        insights.map((insight) => (
+          <Card key={insight.id} className="p-4">
+            <div className="flex items-start gap-3">
+              <SparklesIcon className="w-4 h-4 text-accent-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="text-sm font-semibold text-stone-800">{insight.title}</p>
+                  {insight.dimension && (
+                    <Badge variant="sage">
+                      {DIMENSION_LABELS[insight.dimension as Dimension] ?? insight.dimension}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-stone-600 leading-relaxed">{insight.body}</p>
+              </div>
+            </div>
+          </Card>
+        ))
+      )}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +376,30 @@ export default function DashboardClient({
     recentActivity,
     refetch,
   } = useDashboardData();
+
+  const nudgeScheduler = useNudges();
+  const [showDigest, setShowDigest] = useState(false);
+
+  // Live query for latest digest
+  const latestDigest = useLiveQuery(async () => {
+    // digests table may not exist yet
+    try {
+      return await (db as any).digests?.orderBy('generatedAt').reverse().first();
+    } catch { return undefined; }
+  }) as StoredDigest | undefined;
+
+  // Live query for unseen badge count
+  const unseenBadgeCount = useLiveQuery(async () => {
+    const all = await db.badges.toArray();
+    return all.filter(b => !b.context?.includes('seen')).length;
+  }) ?? 0;
+
+  // Active nudge from scheduler
+  const activeNudge = useLiveQuery(async () => {
+    const nudge = await nudgeScheduler.getActiveNudge();
+    if (!nudge) return null;
+    return { id: nudge.id!, title: nudge.title, message: nudge.message, type: nudge.type };
+  });
 
   // Merge: prefer client data when available, fall back to server props
   const streak = loading ? serverStreak : clientStreak;
@@ -317,7 +455,7 @@ export default function DashboardClient({
     <div className="px-5 lg:px-10 py-6 lg:py-8 max-w-5xl">
       {/* Error banner */}
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-50 border border-red-200/60 mb-6">
+        <div className="flex items-center gap-3 p-4 rounded-[16px] bg-red-50 border border-red-200/60 mb-6">
           <AlertIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
           <p className="text-sm text-red-700 flex-1">{error}</p>
           <button
@@ -335,15 +473,23 @@ export default function DashboardClient({
       {/* ------------------------------------------------------------------ */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-['Instrument_Serif'] text-3xl lg:text-4xl text-[#1A1816]">
-            {getGreeting()}
-            {firstName ? <>, <span className="text-[#5A7F5A]">{firstName}</span></> : null}
-          </h1>
-          <p className="text-sm text-[#A8A198] mt-1">{formatToday()} — Here&apos;s your life at a glance</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-serif text-3xl lg:text-4xl text-stone-900">
+              {getGreeting()}
+              {firstName ? <>, <span className="text-sage-500">{firstName}</span></> : null}
+            </h1>
+            {unseenBadgeCount > 0 && (
+              <Link href="/achievements" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warm-50 text-warm-500 text-xs font-medium">
+                <TrophyIcon className="w-3.5 h-3.5" />
+                {unseenBadgeCount} new
+              </Link>
+            )}
+          </div>
+          <p className="text-sm text-stone-500 mt-1">{formatToday()} — Here&apos;s your life at a glance</p>
         </div>
         <Link
           href="/checkin"
-          className="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#5A7F5A] to-[#476447] text-white text-sm font-medium shadow-sm hover:shadow-md transition-all"
+          className="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-[16px] bg-gradient-to-r from-sage-500 to-sage-600 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all"
         >
           <MicIcon className="w-4 h-4" />
           Voice Check-in
@@ -353,33 +499,33 @@ export default function DashboardClient({
       {/* ------------------------------------------------------------------ */}
       {/* Life Balance Card */}
       {/* ------------------------------------------------------------------ */}
-      <div className="mb-8 p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
+      <Card className="mb-8 p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="font-['Instrument_Serif'] text-xl text-[#2A2623]">Life Balance</h2>
-            <p className="text-xs text-[#A8A198] mt-0.5">Across 8 dimensions</p>
+            <h2 className="font-serif text-xl text-stone-800">Life Balance</h2>
+            <p className="text-xs text-stone-500 mt-0.5">Across 8 dimensions</p>
           </div>
           <div className="flex items-center gap-4">
             {/* Streak */}
             {streak > 0 && (
               <div className="flex items-center gap-1.5">
-                <FlameIcon className="w-4 h-4 text-[#D4864A]" />
-                <span className="text-sm font-['DM_Mono'] font-medium text-[#D4864A]">{streak}d</span>
+                <FlameIcon className="w-4 h-4 text-warm-500" />
+                <span className="text-sm font-mono font-medium text-warm-500">{streak}d</span>
               </div>
             )}
             {/* Overall */}
             <div className="text-right">
-              <p className="text-3xl font-['Instrument_Serif'] text-[#5A7F5A]">
+              <p className="text-3xl font-serif text-sage-500">
                 {loading ? '—' : Math.round(overallScore)}
               </p>
-              <p className="text-[10px] text-[#A8A198] uppercase tracking-wider">Overall</p>
+              <p className="text-[11px] text-stone-500 uppercase tracking-wider">Overall</p>
             </div>
           </div>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {ALL_DIMENSIONS.map((d) => <Skeleton key={d} className="h-16" />)}
+            {ALL_DIMENSIONS.map((d) => <Skeleton key={d} className="h-16 rounded-xl" />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -394,8 +540,8 @@ export default function DashboardClient({
                   style={{ backgroundColor: style.bg }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-[#5C554C]">{label}</span>
-                    <span className="text-xs font-['DM_Mono'] font-medium" style={{ color: style.color }}>
+                    <span className="text-xs font-medium text-stone-600">{label}</span>
+                    <span className="text-xs font-mono font-medium" style={{ color: style.color }}>
                       {score}
                     </span>
                   </div>
@@ -410,93 +556,57 @@ export default function DashboardClient({
             })}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Two-column: AI Insights | Active Goals + Quick Actions */}
+      {/* Two-column: AI Insights | Active Goals + Quick Actions + Schedule */}
       {/* ------------------------------------------------------------------ */}
       <div className="grid lg:grid-cols-5 gap-6 mb-8">
         {/* AI Insights */}
         <div className="lg:col-span-3 space-y-4">
           <div className="flex items-center gap-2 mb-1">
-            <SparklesIcon className="w-4 h-4 text-[#8B7BA8]" />
-            <h2 className="font-['Instrument_Serif'] text-xl text-[#2A2623]">AI Insights</h2>
+            <SparklesIcon className="w-4 h-4 text-accent-600" />
+            <h2 className="font-serif text-xl text-stone-800">AI Insights</h2>
           </div>
 
           {loading ? (
             <div className="space-y-3">
-              <Skeleton className="h-28" />
-              <Skeleton className="h-28" />
-              <Skeleton className="h-28" />
-            </div>
-          ) : dataMaturity === 'cold' ? (
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-              <div className="flex items-center gap-3 mb-3">
-                <SparklesIcon className="w-5 h-5 text-[#5A7F5A] flex-shrink-0" />
-                <p className="text-sm font-medium text-[#2A2623]">
-                  {checkinCount}/7 check-ins to unlock insights
-                </p>
-              </div>
-              <div className="h-1.5 bg-[#F5F3EF] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#9BB89B] to-[#5A7F5A] rounded-full transition-all duration-700"
-                  style={{ width: `${Math.min(100, (checkinCount / 7) * 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-[#A8A198] mt-3 leading-relaxed font-['Instrument_Serif'] italic">
-                Your AI mentor analyses patterns across all 8 life dimensions once you have
-                enough data. Keep checking in daily to reveal correlations unique to you.
-              </p>
-            </div>
-          ) : insights.length > 0 ? (
-            <div className="space-y-3">
-              {insights.map((insight) => {
-                const dimTag = insight.dimension
-                  ? DIMENSION_LABELS[insight.dimension as Dimension] ?? insight.dimension
-                  : 'General';
-                return (
-                  <div key={insight.id} className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#F4F7F4] to-[#E4ECE4] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <SparklesIcon className="w-4 h-4 text-[#5A7F5A]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#2A2623] mb-0.5">{insight.headline}</p>
-                        <p className="text-sm text-[#3D3833] leading-relaxed">{insight.body}</p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F4F7F4] text-[#5A7F5A] font-medium">
-                            {dimTag}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              <Skeleton className="h-28 rounded-[16px]" />
+              <Skeleton className="h-28 rounded-[16px]" />
+              <Skeleton className="h-28 rounded-[16px]" />
             </div>
           ) : (
-            <div className="p-8 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-              <SparklesIcon className="w-8 h-8 text-[#A8A198] mx-auto mb-3" />
-              <p className="text-sm text-[#A8A198] italic font-['Instrument_Serif']">
-                Continuously monitoring your life patterns…
-              </p>
-            </div>
+            <InsightsFeed
+              insights={insights.map(i => ({
+                id: String(i.id ?? i.headline),
+                type: 'suggestion' as const,
+                title: i.headline,
+                body: i.body,
+                dimension: i.dimension ?? null,
+              }))}
+              activeNudge={activeNudge ? { id: activeNudge.id, title: activeNudge.title, message: activeNudge.message, type: activeNudge.type } : null}
+              latestDigest={latestDigest ?? null}
+              onDismissInsight={() => {}}
+              onDismissNudge={(id) => nudgeScheduler.markAsRead(id)}
+              onTalkToMentor={() => {}}
+              onViewDigest={() => setShowDigest(true)}
+            />
           )}
         </div>
 
-        {/* Active Goals + Quick Actions */}
+        {/* Active Goals + Quick Actions + Schedule */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="font-['Instrument_Serif'] text-xl text-[#2A2623]">Active Goals</h2>
-            <Link href="/goals" className="text-xs text-[#5A7F5A] font-medium hover:underline">
+            <h2 className="font-serif text-xl text-stone-800">Active Goals</h2>
+            <Link href="/goals" className="text-xs text-sage-500 font-medium hover:underline">
               View all
             </Link>
           </div>
 
           {loading ? (
             <div className="space-y-3">
-              <Skeleton className="h-24" />
-              <Skeleton className="h-24" />
+              <Skeleton className="h-24 rounded-[16px]" />
+              <Skeleton className="h-24 rounded-[16px]" />
             </div>
           ) : serverGoals.length > 0 ? (
             <div className="space-y-3">
@@ -505,71 +615,71 @@ export default function DashboardClient({
                 const dim = goal.goal_dimensions?.[0]?.dimension;
                 const dimLabel = dim ? (DIMENSION_LABELS[dim as Dimension] ?? dim) : '';
                 return (
-                  <div key={goal.id} className="p-4 rounded-2xl bg-white border border-[#E8E4DD]/60 hover:border-[#C4D5C4]/50 transition-colors">
+                  <Card key={goal.id} className="p-4 hover:border-sage-200 transition-colors">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="text-sm font-medium text-[#2A2623]">{goal.title}</p>
-                        <p className="text-[10px] text-[#A8A198] mt-0.5">
+                        <p className="text-sm font-medium text-stone-800">{goal.title}</p>
+                        <p className="text-[11px] text-stone-500 mt-0.5">
                           {dimLabel}{dimLabel && goal.target_date ? ' · ' : ''}
                           {goal.target_date ? `Due ${formatDueDate(goal.target_date)}` : ''}
                         </p>
                       </div>
-                      <span className="text-xs font-['DM_Mono'] font-medium text-[#5A7F5A]">{progress}%</span>
+                      <span className="text-xs font-mono font-medium text-sage-500">{progress}%</span>
                     </div>
-                    <div className="h-1.5 bg-[#F5F3EF] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#9BB89B] to-[#5A7F5A] rounded-full transition-all duration-700"
+                        className="h-full bg-gradient-to-r from-sage-300 to-sage-500 rounded-full transition-all duration-700"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
           ) : (
-            <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60 text-center">
-              <p className="text-sm text-[#A8A198] italic font-['Instrument_Serif']">
+            <Card className="p-6 text-center">
+              <p className="text-sm text-stone-500 italic font-serif">
                 No active goals yet
               </p>
               <Link
                 href="/goals"
-                className="inline-block mt-2 text-xs text-[#5A7F5A] font-medium hover:underline"
+                className="inline-block mt-2 text-xs text-sage-500 font-medium hover:underline"
               >
                 Create your first goal
               </Link>
-            </div>
+            </Card>
           )}
 
           {/* Quick Actions */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#F4F7F4] to-[#E4ECE4] border border-[#C4D5C4]/20">
-            <p className="text-xs font-medium text-[#5A7F5A] mb-3">Quick Actions</p>
+          <div className="p-4 rounded-[16px] bg-gradient-to-br from-sage-50 to-sage-100 border border-sage-200/20">
+            <p className="text-xs font-medium text-sage-500 mb-3">Quick Actions</p>
             <div className="space-y-2">
               <Link
                 href="/checkin"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-[#3D3833] transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
-                <div className="w-7 h-7 rounded-lg bg-[#FEF7F0] flex items-center justify-center">
-                  <SunIcon className="w-3.5 h-3.5 text-[#D4864A]" />
+                <div className="w-7 h-7 rounded-lg bg-warm-50 flex items-center justify-center">
+                  <SunIcon className="w-3.5 h-3.5 text-warm-500" />
                 </div>
                 Daily Check-in
                 {todaysCheckin && (
-                  <span className="ml-auto text-[10px] text-[#9BB89B] font-medium flex items-center gap-1">
+                  <span className="ml-auto text-[11px] text-sage-500 font-medium flex items-center gap-1">
                     <CheckCircleIcon className="w-3 h-3" /> Done
                   </span>
                 )}
               </Link>
               <Link
                 href="/checkin"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-[#3D3833] transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#F0F6FA] flex items-center justify-center">
-                  <PenIcon className="w-3.5 h-3.5 text-[#5E9BC4]" />
+                  <PenIcon className="w-3.5 h-3.5 text-accent-500" />
                 </div>
                 Journal Entry
               </Link>
               <Link
                 href="/checkin"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-[#3D3833] transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#F5F0FA] flex items-center justify-center">
                   <MicIcon className="w-3.5 h-3.5 text-[#8B7BA8]" />
@@ -578,6 +688,11 @@ export default function DashboardClient({
               </Link>
             </div>
           </div>
+
+          {/* Schedule Widget */}
+          <Card className="p-0 overflow-hidden">
+            <ScheduleWidget />
+          </Card>
         </div>
       </div>
 
@@ -586,16 +701,16 @@ export default function DashboardClient({
       {/* ------------------------------------------------------------------ */}
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         {/* Mood & Energy */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-          <h3 className="font-['Instrument_Serif'] text-lg text-[#2A2623] mb-1">Mood & Energy</h3>
-          <p className="text-[10px] text-[#A8A198] uppercase tracking-wider mb-4">Last 14 days</p>
+        <Card className="p-6">
+          <h3 className="font-serif text-lg text-stone-800 mb-1">Mood & Energy</h3>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mb-4">Last 14 days</p>
 
           {loading ? (
-            <Skeleton className="h-44" />
+            <Skeleton className="h-44 rounded-xl" />
           ) : dataMaturity === 'cold' || moodChartData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <ActivityIcon className="w-10 h-10 text-[#D4CFC5]" />
-              <p className="text-sm text-[#A8A198] font-['Instrument_Serif'] italic">
+              <ActivityIcon className="w-10 h-10 text-stone-300" />
+              <p className="text-sm text-stone-500 font-serif italic">
                 Complete daily check-ins to see your mood and energy trends.
               </p>
             </div>
@@ -603,12 +718,12 @@ export default function DashboardClient({
             <>
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="h-2 w-4 rounded-full bg-[#5A7F5A]" />
-                  <span className="text-[10px] font-medium text-[#A8A198] uppercase tracking-wider">Mood</span>
+                  <div className="h-2 w-4 rounded-full bg-sage-500" />
+                  <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider">Mood</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-2 w-4 rounded-full bg-[#85B8D8]" />
-                  <span className="text-[10px] font-medium text-[#A8A198] uppercase tracking-wider">Energy</span>
+                  <div className="h-2 w-4 rounded-full bg-accent-400" />
+                  <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider">Energy</span>
                 </div>
               </div>
               <div className="h-44">
@@ -629,7 +744,7 @@ export default function DashboardClient({
                       tickLine={false}
                       tickCount={5}
                     />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{
                         backgroundColor: 'rgba(255,255,255,0.95)',
                         border: '1px solid #E8E4DD',
@@ -648,19 +763,19 @@ export default function DashboardClient({
               </div>
             </>
           )}
-        </div>
+        </Card>
 
         {/* Correlation Spotlight */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-          <h3 className="font-['Instrument_Serif'] text-lg text-[#2A2623] mb-1">Correlation Spotlight</h3>
-          <p className="text-[10px] text-[#A8A198] uppercase tracking-wider mb-4">Cross-dimension pattern</p>
+        <Card className="p-6">
+          <h3 className="font-serif text-lg text-stone-800 mb-1">Correlation Spotlight</h3>
+          <p className="text-[11px] text-stone-500 uppercase tracking-wider mb-4">Cross-dimension pattern</p>
 
           {loading ? (
-            <Skeleton className="h-44" />
+            <Skeleton className="h-44 rounded-xl" />
           ) : (dataMaturity === 'cold' || dataMaturity === 'warming') || !topCorrelation ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <TrendUpIcon className="w-10 h-10 text-[#D4CFC5]" />
-              <p className="text-sm text-[#A8A198] font-['Instrument_Serif'] italic max-w-[220px]">
+              <TrendUpIcon className="w-10 h-10 text-stone-300" />
+              <p className="text-sm text-stone-500 font-serif italic max-w-[220px]">
                 {dataMaturity === 'cold' || dataMaturity === 'warming'
                   ? 'Need at least 8 check-ins to detect cross-dimension correlations.'
                   : 'No significant correlations detected yet. Keep tracking.'}
@@ -670,55 +785,55 @@ export default function DashboardClient({
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
-                  className="h-14 w-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  className="h-14 w-14 rounded-[16px] flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${topCorrelation.coefficient > 0 ? '#9BB89B' : '#E8A46D'}20` }}
                 >
                   <span
-                    className="text-lg font-bold font-['DM_Mono']"
+                    className="text-lg font-bold font-mono"
                     style={{ color: topCorrelation.coefficient > 0 ? '#5A7F5A' : '#D4864A' }}
                   >
                     {topCorrelation.coefficient > 0 ? '+' : ''}{topCorrelation.coefficient.toFixed(2)}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#2A2623]">
+                  <p className="text-sm font-medium text-stone-800">
                     {Math.abs(topCorrelation.coefficient) >= 0.7 ? 'Strong' : Math.abs(topCorrelation.coefficient) >= 0.4 ? 'Moderate' : 'Weak'} correlation
                   </p>
-                  <p className="text-[10px] text-[#A8A198] uppercase tracking-wider font-medium mt-0.5">
+                  <p className="text-[11px] text-stone-500 uppercase tracking-wider font-medium mt-0.5">
                     {Math.round(topCorrelation.confidence * 100)}% confidence — {topCorrelation.sampleSize} data points
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F4F7F4] text-[#5A7F5A] font-medium">
+                <Badge variant="sage">
                   {DIMENSION_LABELS[topCorrelation.dimension1 as Dimension] ?? topCorrelation.dimension1}
-                </span>
-                <span className="text-[10px] text-[#A8A198] font-medium">linked to</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F4F7F4] text-[#5A7F5A] font-medium">
+                </Badge>
+                <span className="text-[11px] text-stone-500 font-medium">linked to</span>
+                <Badge variant="sage">
                   {DIMENSION_LABELS[topCorrelation.dimension2 as Dimension] ?? topCorrelation.dimension2}
-                </span>
+                </Badge>
               </div>
 
-              <p className="text-sm text-[#7D756A] leading-relaxed font-['Instrument_Serif'] italic">
+              <p className="text-sm text-stone-600 leading-relaxed font-serif italic">
                 {topCorrelation.narrative}
               </p>
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Weekly Rhythm */}
       {/* ------------------------------------------------------------------ */}
-      <div className="mb-8 p-6 rounded-2xl bg-white border border-[#E8E4DD]/60">
-        <h2 className="font-['Instrument_Serif'] text-xl text-[#2A2623] mb-4">This Week&apos;s Rhythm</h2>
+      <Card className="mb-8 p-6">
+        <h2 className="font-serif text-xl text-stone-800 mb-4">This Week&apos;s Rhythm</h2>
 
         {loading ? (
-          <Skeleton className="h-32" />
+          <Skeleton className="h-32 rounded-xl" />
         ) : moodTrend.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-center">
-            <p className="text-sm text-[#A8A198] font-['Instrument_Serif'] italic">
+            <p className="text-sm text-stone-500 font-serif italic">
               Start checking in to see your weekly rhythm
             </p>
           </div>
@@ -733,11 +848,11 @@ export default function DashboardClient({
                 <div key={day} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex-1 flex items-end">
                     <div
-                      className={`w-full rounded-lg transition-all ${isToday ? 'bg-gradient-to-t from-[#5A7F5A] to-[#9BB89B]' : 'bg-[#E4ECE4]'}`}
+                      className={`w-full rounded-lg transition-all ${isToday ? 'bg-gradient-to-t from-sage-500 to-sage-300' : 'bg-sage-100'}`}
                       style={{ height: `${Math.max(height, 4)}%` }}
                     />
                   </div>
-                  <span className={`text-[10px] font-medium ${isToday ? 'text-[#5A7F5A]' : 'text-[#A8A198]'}`}>
+                  <span className={`text-[11px] font-medium ${isToday ? 'text-sage-500' : 'text-stone-500'}`}>
                     {day}
                   </span>
                 </div>
@@ -745,7 +860,7 @@ export default function DashboardClient({
             })}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* ------------------------------------------------------------------ */}
       {/* Recent Activity */}
@@ -757,21 +872,21 @@ export default function DashboardClient({
           aria-expanded={!activityCollapsed}
         >
           <div>
-            <h2 className="font-['Instrument_Serif'] text-xl text-[#2A2623]">Recent Activity</h2>
+            <h2 className="font-serif text-xl text-stone-800">Recent Activity</h2>
             {!activityCollapsed && (
-              <p className="text-xs text-[#A8A198] mt-0.5">Your last 5 actions</p>
+              <p className="text-xs text-stone-500 mt-0.5">Your last 5 actions</p>
             )}
           </div>
-          <div className="flex-shrink-0 p-2 rounded-xl border border-[#E8E4DD]/60 group-hover:border-[#C4D5C4]/50 transition-colors ml-4">
+          <div className="flex-shrink-0 p-2 rounded-xl border border-stone-200/60 group-hover:border-sage-200/50 transition-colors ml-4">
             {activityCollapsed
-              ? <ChevronDownIcon className="w-4 h-4 text-[#A8A198]" />
-              : <ChevronUpIcon className="w-4 h-4 text-[#A8A198]" />
+              ? <ChevronDownIcon className="w-4 h-4 text-stone-500" />
+              : <ChevronUpIcon className="w-4 h-4 text-stone-500" />
             }
           </div>
         </button>
 
         {!activityCollapsed && (
-          <div className="rounded-2xl bg-white border border-[#E8E4DD]/60 divide-y divide-[#E8E4DD]/40 overflow-hidden">
+          <Card className="p-0 divide-y divide-stone-200/40 overflow-hidden">
             {loading ? (
               <div className="p-6 space-y-4">
                 {[0, 1, 2].map((i) => (
@@ -786,37 +901,51 @@ export default function DashboardClient({
               </div>
             ) : recentActivity.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-[#A8A198] italic font-['Instrument_Serif']">
+                <p className="text-sm text-stone-500 italic font-serif">
                   No recent activity. Start with your first check-in.
                 </p>
               </div>
             ) : (
               recentActivity.map((activity) => {
                 const iconConfig = {
-                  checkin: { icon: CheckCircleIcon, bg: 'bg-[#F4F7F4]', color: 'text-[#5A7F5A]' },
-                  achievement: { icon: FlameIcon, bg: 'bg-[#FEF7F0]', color: 'text-[#D4864A]' },
+                  checkin: { icon: CheckCircleIcon, bg: 'bg-sage-50', color: 'text-sage-500' },
+                  achievement: { icon: FlameIcon, bg: 'bg-warm-50', color: 'text-warm-500' },
                   insight: { icon: SparklesIcon, bg: 'bg-[#F5F0FA]', color: 'text-[#8B7BA8]' },
-                }[activity.type] ?? { icon: CheckCircleIcon, bg: 'bg-[#F4F7F4]', color: 'text-[#5A7F5A]' };
+                }[activity.type] ?? { icon: CheckCircleIcon, bg: 'bg-sage-50', color: 'text-sage-500' };
                 const Icon = iconConfig.icon;
 
                 return (
-                  <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-[#FAFAF8] transition-colors">
+                  <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-colors">
                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconConfig.bg}`}>
                       <Icon className={`w-4 h-4 ${iconConfig.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[#2A2623] font-medium truncate">{activity.description}</p>
+                      <p className="text-sm text-stone-800 font-medium truncate">{activity.description}</p>
                     </div>
-                    <span className="text-[10px] text-[#A8A198] font-['DM_Mono'] font-medium flex-shrink-0">
+                    <span className="text-[11px] text-stone-500 font-mono font-medium flex-shrink-0">
                       {relativeTime(activity.timestamp)}
                     </span>
                   </div>
                 );
               })
             )}
-          </div>
+          </Card>
         )}
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Weekly Digest modal */}
+      {/* ------------------------------------------------------------------ */}
+      {showDigest && latestDigest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="max-w-lg w-full max-h-[90vh] overflow-y-auto m-4 rounded-[16px] bg-white shadow-xl">
+            <WeeklyDigestView
+              digest={latestDigest}
+              onClose={() => setShowDigest(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

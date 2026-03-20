@@ -51,7 +51,7 @@ export default function OrbWidget({
           </div>
           <div>
             <h3 className="text-sm font-bold text-white tracking-tight">Life Orb</h3>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
               Dynamic Balance
             </p>
           </div>
@@ -60,7 +60,7 @@ export default function OrbWidget({
         <Link
           href="/orb"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass
-                     text-[10px] font-bold text-slate-400 uppercase tracking-wider
+                     text-[11px] font-bold text-slate-400 uppercase tracking-wider
                      hover:text-indigo-300 hover:border-indigo-500/30 transition-all
                      border border-white/10"
         >
@@ -88,7 +88,7 @@ export default function OrbWidget({
         className="flex items-center justify-between px-5 py-3
                    border-t border-white/5 bg-white/[0.02]"
       >
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
           Harmony Index
         </p>
         <p

@@ -1,14 +1,22 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { GuestProvider } from '@/lib/guest-context';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
+import { LifeDesignProvider } from '@/providers/LifeDesignProvider';
+import { ToastProvider } from '@/components/toast/ToastProvider';
 
 const AppProviderErrorBoundary = ResilientErrorBoundary as any;
 
 export default function AppProviders({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
+
   return (
     <AppProviderErrorBoundary
       fallback={
@@ -23,7 +31,11 @@ export default function AppProviders({ children }: { children: ReactNode }) {
     >
       <ThemeProvider>
         <GuestProvider>
-          <SoundscapeProvider>{children}</SoundscapeProvider>
+          <LifeDesignProvider>
+            <SoundscapeProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </SoundscapeProvider>
+          </LifeDesignProvider>
         </GuestProvider>
       </ThemeProvider>
     </AppProviderErrorBoundary>

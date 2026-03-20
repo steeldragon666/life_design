@@ -50,7 +50,7 @@ export default function CheckInPage() {
                       <div className="h-full rounded-full bg-[#9BB89B]" style={{ width: `${ds.score * 10}%` }} />
                     </div>
                     <span className="text-[11px] text-[#7D756A] capitalize">{ds.dimension}</span>
-                    <span className="text-[10px] font-['DM_Mono'] text-[#5A7F5A] ml-auto">{ds.score}</span>
+                    <span className="text-[11px] font-['DM_Mono'] text-[#5A7F5A] ml-auto">{ds.score}</span>
                   </div>
                 ))}
               </div>

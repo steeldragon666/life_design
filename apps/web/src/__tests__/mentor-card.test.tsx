@@ -1,6 +1,23 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import MentorCard from '@/components/mentors/mentor-card';
+
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: (props: any) => <img {...props} />,
+}));
+
+// Mock useElevenLabsTTS hook
+const mockSpeak = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/hooks/useElevenLabsTTS', () => ({
+  useElevenLabsTTS: () => ({
+    speak: mockSpeak,
+    stop: vi.fn(),
+    isSpeaking: false,
+    isLoading: false,
+    error: null,
+  }),
+}));
 
 describe('MentorCard', () => {
   const mentor = {
@@ -45,5 +62,28 @@ describe('MentorCard', () => {
     const chatLink = screen.getByRole('link', { name: /chat/i });
     expect(chatLink).toBeDefined();
     expect(chatLink.getAttribute('href')).toBe('/mentors/um-1/chat');
+  });
+
+  it('renders portrait image with MentorAvatar', () => {
+    render(<MentorCard mentor={mentor} onActivate={vi.fn()} />);
+    // MentorAvatar renders an img element (either from Image or fallback)
+    const images = screen.getAllByRole('img');
+    // Should have at least one image for the avatar
+    expect(images.length).toBeGreaterThan(0);
+  });
+
+  it('shows Hear Voice button with aria-label', () => {
+    render(<MentorCard mentor={mentor} onActivate={vi.fn()} />);
+    const voiceButton = screen.getByRole('button', { name: /hear eleanor/i });
+    expect(voiceButton).toBeDefined();
+    expect(voiceButton.getAttribute('aria-label')).toBe("Hear Eleanor's voice");
+  });
+
+  it('calls speak when voice preview button is clicked', () => {
+    mockSpeak.mockClear();
+    render(<MentorCard mentor={mentor} onActivate={vi.fn()} />);
+    const voiceButton = screen.getByRole('button', { name: /hear eleanor/i });
+    fireEvent.click(voiceButton);
+    expect(mockSpeak).toHaveBeenCalledTimes(1);
   });
 });
