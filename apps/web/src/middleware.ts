@@ -54,6 +54,19 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // For authenticated users accessing protected routes, check onboarding status
+  if (isGuestProtected && pathname !== '/onboarding') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_status')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile && profile.onboarding_status !== 'completed') {
+      return NextResponse.redirect(new URL('/onboarding', request.url));
+    }
+  }
+
   if (!requiresBilling) {
     return response;
   }
