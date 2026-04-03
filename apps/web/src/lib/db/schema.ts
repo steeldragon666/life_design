@@ -215,3 +215,6 @@ export class LifeDesignDB extends Dexie {
     });
   }
 }
+
+// Singleton instance — also re-exported from ./index for convenience
+export const db = new LifeDesignDB();
