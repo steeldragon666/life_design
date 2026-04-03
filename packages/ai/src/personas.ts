@@ -54,6 +54,16 @@ export interface UserContext {
     narrative?: string;
   }>;
   recentConversationSummaries?: string[];
+  // Personality profile from onboarding
+  personalityProfile?: {
+    motivationType: string;
+    chronotype: string;
+    actionOrientation: number;
+    frictionIndex: number;
+    structureNeed: number;
+    dropoutRisk: number;
+    selfEfficacy: number;
+  };
 }
 
 export function buildSystemPrompt(
@@ -148,6 +158,62 @@ export function buildSystemPrompt(
       prompt += '\n\nRecent conversation memory (for continuity):';
       for (const summary of context.recentConversationSummaries.slice(0, 5)) {
         prompt += `\n- ${summary}`;
+      }
+    }
+
+    // Add personality profile context for personalized mentoring
+    if (context.personalityProfile) {
+      const pp = context.personalityProfile;
+      prompt += '\n\nPERSONALITY PROFILE (from onboarding):';
+      
+      // Motivation type - adapt communication style
+      if (pp.motivationType) {
+        const motivationGuidance: Record<string, string> = {
+          progress: 'Use progress-focused language, show measurable improvements',
+          rewards: 'Incorporate celebration and milestone rewards in suggestions',
+          accountability: 'Emphasize commitment to others and check-in accountability',
+          avoiding_failure: 'Frame suggestions around avoiding negative outcomes',
+          curiosity: 'Encourage exploration and learning-based approaches',
+        };
+        prompt += `\n- Motivation type: ${pp.motivationType} — ${motivationGuidance[pp.motivationType] || 'Adapt to their style'}`;
+      }
+      
+      // Chronotype - optimize timing suggestions
+      if (pp.chronotype) {
+        const chronotypeGuidance: Record<string, string> = {
+          early_morning: 'Suggest morning routines and early productivity blocks',
+          late_morning: 'Suggest late morning as peak productivity time',
+          afternoon: 'Suggest afternoon for deep work sessions',
+          evening: 'Suggest evening planning and reflection',
+          late_night: 'Suggest late night for creative work, acknowledge irregular schedule',
+        };
+        prompt += `\n- Chronotype: ${pp.chronotype} — ${chronotypeGuidance[pp.chronotype] || ''}`;
+      }
+      
+      // Action orientation - adapt decision-making approach
+      if (pp.actionOrientation > 0.7) {
+        prompt += '\n- Action orientation: High — Use direct "just do it" style, minimal overthinking';
+      } else if (pp.actionOrientation < 0.4) {
+        prompt += '\n- Action orientation: Low — Allow time for reflection, provide pros/cons';
+      }
+      
+      // Dropout risk - adjust support intensity
+      if (pp.dropoutRisk > 0.6) {
+        prompt += '\n- Dropout risk: HIGH — Use gentle encouragement, tiny steps, reduce friction';
+      } else if (pp.dropoutRisk > 0.4) {
+        prompt += '\n- Dropout risk: Moderate — Balance challenge with support';
+      }
+      
+      // Structure need - adapt planning approach
+      if (pp.structureNeed > 0.6) {
+        prompt += '\n- Structure need: High — Provide clear structure, specific times, visible checkpoints';
+      }
+      
+      // Self-efficacy - calibrate confidence messaging
+      if (pp.selfEfficacy < 0.4) {
+        prompt += '\n- Self-efficacy: Low — Be supportive, start small, build confidence gradually';
+      } else if (pp.selfEfficacy > 0.7) {
+        prompt += '\n- Self-efficacy: High — Challenge with bigger goals, trust their capability';
       }
     }
   }

@@ -202,6 +202,15 @@ interface DashboardClientProps {
   activeGoals?: ActiveGoal[];
   nudges?: unknown[];
   firstName?: string;
+  userProfile?: {
+    frictionIndex: number;
+    structureNeed: number;
+    dropoutRisk: number;
+    motivationType: string;
+    chronotype: string;
+    actionOrientation: number;
+    summaryTemplate: { strength: string; friction: string; strategy: string; this_week: string } | null;
+  } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -361,6 +370,7 @@ export default function DashboardClient({
   activeGoals: serverGoals = [],
   nudges = [],
   firstName,
+  userProfile,
 }: DashboardClientProps) {
   const {
     insights: clientInsights,
@@ -564,6 +574,26 @@ export default function DashboardClient({
       <div className="grid lg:grid-cols-5 gap-6 mb-8">
         {/* AI Insights */}
         <div className="lg:col-span-3 space-y-4">
+          {/* Personalized Profile Insight */}
+          {userProfile?.summaryTemplate && !loading && (
+            <Card className="p-4 bg-gradient-to-r from-sage-50 to-sage-100/50 border-l-4 border-l-sage-400">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-sage-200 flex items-center justify-center flex-shrink-0">
+                  <SparklesIcon className="w-4 h-4 text-sage-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-stone-800">Your Profile Insight</p>
+                  <p className="text-sm text-stone-600 mt-1">{userProfile.summaryTemplate.strategy}</p>
+                  {userProfile.dropoutRisk > 0.6 && (
+                    <p className="text-xs text-warm-600 mt-2 font-medium">
+                      High dropout risk detected. Let's start with one tiny daily action.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
           <div className="flex items-center gap-2 mb-1">
             <SparklesIcon className="w-4 h-4 text-accent-600" />
             <h2 className="font-serif text-xl text-stone-800">AI Insights</h2>

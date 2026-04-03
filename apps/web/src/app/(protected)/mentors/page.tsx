@@ -11,7 +11,7 @@ export default async function MentorsPage() {
   } = await supabase.auth.getUser();
 
   const { data: mentors } = await listMentors();
-  const { data: userMentors } = await getUserMentors(user!.id);
+  const { data: userMentors } = user ? await getUserMentors(user.id) : { data: null };
 
   const activeMentorMap = new Map(
     (userMentors ?? []).map((um: { mentor_id: string; id: string }) => [

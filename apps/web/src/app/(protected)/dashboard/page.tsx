@@ -6,11 +6,22 @@ import {
 } from '@/lib/services/dashboard-service';
 import { getInsights } from '@/lib/services/insights-service';
 import { getGoals } from '@/lib/services/goal-service';
+import { getUserProfile, getProfileForNudge } from '@/lib/services/user-profile-service';
 import { computeStreak, computeOverallScore, DIMENSION_LABELS, Dimension, GoalStatus } from '@life-design/core';
 import DashboardClient from './dashboard-client';
 
 import { getGranularContext } from '@life-design/core';
 import { generateNudges } from '@/lib/services/nudge-engine';
+
+interface UserProfileData {
+  frictionIndex: number;
+  structureNeed: number;
+  dropoutRisk: number;
+  motivationType: string;
+  chronotype: string;
+  actionOrientation: number;
+  summaryTemplate: { strength: string; friction: string; strategy: string; this_week: string } | null;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -40,7 +51,20 @@ export default async function DashboardPage() {
     .from('profiles')
     .select('postcode, profession, interests, first_name')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
+
+  // Fetch user profiling data for personalization
+  const userProfileResult = await getUserProfile(user.id);
+  const profileForNudge = getProfileForNudge(userProfileResult.data);
+  const userProfileData: UserProfileData | null = userProfileResult.data ? {
+    frictionIndex: userProfileResult.data.friction_index,
+    structureNeed: userProfileResult.data.structure_need,
+    dropoutRisk: userProfileResult.data.dropout_risk_initial,
+    motivationType: userProfileResult.data.motivation_type,
+    chronotype: userProfileResult.data.chronotype,
+    actionOrientation: userProfileResult.data.action_orientation,
+    summaryTemplate: userProfileResult.data.summary_template,
+  } : null;
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -103,11 +127,13 @@ export default async function DashboardPage() {
       long: activeGoals.filter((g) => g.horizon === 'long').length,
     },
     nearestDeadline: activeGoals.length > 0
-      ? activeGoals.reduce((nearest, g) => {
-          const gDate = new Date(g.target_date as string).getTime();
-          const nDate = nearest ? new Date(nearest.target_date as string).getTime() : Infinity;
-          return gDate < nDate ? g : nearest;
-        }, null as Record<string, unknown> | null)
+      ? activeGoals
+          .filter((g) => g.target_date)
+          .reduce((nearest, g) => {
+            const gDate = new Date(g.target_date as string).getTime();
+            const nDate = nearest ? new Date(nearest.target_date as string).getTime() : Infinity;
+            return gDate < nDate ? g : nearest;
+          }, null as Record<string, unknown> | null)
       : null,
   };
 
@@ -115,7 +141,7 @@ export default async function DashboardPage() {
     (latestScores as { dimension: string; score: number }[]).map(s => [s.dimension, s.score])
   );
   const nudges = worldContext
-    ? await generateNudges(scoresRecord, activeGoals, worldContext)
+    ? await generateNudges(scoresRecord, activeGoals, worldContext, profileForNudge)
     : [];
 
   // Derive firstName: prefer profile field, fall back to email prefix
@@ -135,6 +161,7 @@ export default async function DashboardPage() {
       activeGoals={activeGoals}
       nudges={nudges}
       firstName={firstName}
+      userProfile={userProfileData}
     />
   );
 }

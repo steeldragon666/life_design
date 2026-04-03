@@ -7,6 +7,7 @@ import {
   activateMentor,
 } from '@/lib/services/mentor-service';
 import { getProfile } from '@/lib/services/profile-service';
+import { getUserProfile } from '@/lib/services/user-profile-service';
 import { getGoals } from '@/lib/services/goal-service';
 import { sendMentorMessage, buildSystemPrompt } from '@life-design/ai';
 import type { UserContext } from '@life-design/ai';
@@ -42,13 +43,28 @@ export async function sendMessage(
   }));
 
   // Load user context: profile, goals, recent scores
-  const [profileResult, goalsResult] = await Promise.all([
+  const [profileResult, goalsResult, userProfileResult] = await Promise.all([
     getProfile(user.id),
     getGoals(user.id, { status: 'active' as import('@life-design/core').GoalStatus }),
+    getUserProfile(user.id),
   ]);
 
   const profile = profileResult.data;
   const goals = goalsResult.data ?? [];
+  const userProfile = userProfileResult.data;
+
+  // Add personality profile to context for personalized mentor behavior
+  if (userProfile) {
+    userContext.personalityProfile = {
+      motivationType: userProfile.motivation_type,
+      chronotype: userProfile.chronotype,
+      actionOrientation: userProfile.action_orientation,
+      frictionIndex: userProfile.friction_index,
+      structureNeed: userProfile.structure_need,
+      dropoutRisk: userProfile.dropout_risk_initial,
+      selfEfficacy: userProfile.self_efficacy,
+    };
+  }
 
   // Build enriched user context
   const userContext: UserContext = {};
