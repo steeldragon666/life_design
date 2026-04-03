@@ -21,6 +21,8 @@ interface GuestProfile {
   maritalStatus?: string;
   onboarded?: boolean;
   voicePreference?: string;
+  // Profiling scores stored after onboarding completion
+  [key: string]: unknown;
 }
 
 export interface MentorProfile {

@@ -179,7 +179,7 @@ export default function ProfilingWizard() {
           ...normalised,
           ...derived,
           onboarded: true,
-        } as any);
+        });
 
         localStorage.setItem('life-design-onboarding-session', JSON.stringify({
           status: 'completed',
@@ -190,7 +190,7 @@ export default function ProfilingWizard() {
         setPhase('summary');
       } catch (err) {
         console.error('Guest onboarding completion failed, using fallback summary', err);
-        setProfile({ id: 'guest-user', onboarded: true } as any);
+        setProfile({ id: 'guest-user', onboarded: true });
         localStorage.setItem('life-design-onboarding-session', JSON.stringify({
           status: 'completed',
           raw_answers: answers,

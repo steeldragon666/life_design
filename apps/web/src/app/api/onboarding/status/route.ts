@@ -11,7 +11,7 @@ export async function GET() {
 
   const { data: session } = await supabase
     .from('onboarding_sessions')
-    .select('*')
+    .select('id, status, current_section, current_step, raw_answers')
     .eq('user_id', user.id)
     .maybeSingle();
 
