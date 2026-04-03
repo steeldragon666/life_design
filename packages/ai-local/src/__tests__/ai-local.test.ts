@@ -237,7 +237,7 @@ describe('cosineSimilarity', () => {
     const { cosineSimilarity } = await import('../similarity');
     const a = new Float32Array([1, 0]);
     const b = new Float32Array([1, 0, 0]);
-    expect(() => cosineSimilarity(a, b)).toThrow('length mismatch');
+    expect(() => cosineSimilarity(a, b)).toThrow('vectors must have the same length');
   });
 });
 

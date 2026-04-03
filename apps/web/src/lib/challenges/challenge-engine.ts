@@ -34,13 +34,14 @@ export class ChallengeEngine {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    return this.db.activeChallenges.add({
+    const id = await this.db.activeChallenges.add({
       challengeId,
       startDate: today,
       status: 'active',
       taskCompletion: {},
       createdAt: new Date(),
     });
+    return id as number;
   }
 
   /**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@/lib/supabase/server';
 import {
   applyChatRateLimit,
   type ValidationError as ChatValidationError,
@@ -314,6 +315,13 @@ export async function POST(request: NextRequest) {
           },
         }
       );
+    }
+
+    // Authenticate: require a valid session
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     let payload: unknown;

@@ -26,6 +26,15 @@ export async function POST() {
     return NextResponse.json({ error: 'Already completed' }, { status: 409 });
   }
 
+  // Require at least half the questions answered to generate a meaningful profile
+  const answerCount = Object.keys(session.raw_answers ?? {}).length;
+  if (answerCount < 9) {
+    return NextResponse.json(
+      { error: `Insufficient answers (${answerCount}/18). Please complete more questions.` },
+      { status: 400 },
+    );
+  }
+
   // Normalise and score
   const normalised = normaliseRawAnswers(session.raw_answers);
   const derived = computeAllDerivedScores(normalised);
@@ -48,7 +57,7 @@ export async function POST() {
   }
 
   // Mark session as completed
-  await supabase
+  const { error: sessionUpdateError } = await supabase
     .from('onboarding_sessions')
     .update({
       status: 'completed',
@@ -58,14 +67,23 @@ export async function POST() {
     })
     .eq('id', session.id);
 
-  // Update profiles.onboarding_status
-  await supabase
+  if (sessionUpdateError) {
+    console.error('Failed to update onboarding session:', sessionUpdateError);
+  }
+
+  // Update profiles.onboarding_status — critical for middleware redirect logic
+  const { error: profilesUpdateError } = await supabase
     .from('profiles')
     .update({ onboarding_status: 'completed' })
     .eq('id', user.id);
 
-  // Create initial snapshot
-  await supabase
+  if (profilesUpdateError) {
+    console.error('Failed to update profiles.onboarding_status:', profilesUpdateError);
+    return NextResponse.json({ error: 'Failed to mark onboarding as completed' }, { status: 500 });
+  }
+
+  // Create initial snapshot (non-critical)
+  const { error: snapshotError } = await supabase
     .from('profile_snapshots')
     .insert({
       user_id: user.id,
@@ -74,14 +92,22 @@ export async function POST() {
       risk_scores: { dropout_risk: derived.dropout_risk_initial, goal_success: derived.goal_success_prior },
     });
 
-  // Record onboarding_completed event
-  await supabase
+  if (snapshotError) {
+    console.error('Failed to create profile snapshot:', snapshotError);
+  }
+
+  // Record onboarding_completed event (non-critical)
+  const { error: eventError } = await supabase
     .from('behavior_events')
     .insert({
       user_id: user.id,
       event_type: 'onboarding_completed',
       metadata: { question_count: Object.keys(session.raw_answers).length },
     });
+
+  if (eventError) {
+    console.error('Failed to record onboarding_completed event:', eventError);
+  }
 
   return NextResponse.json({
     profile: { ...normalised, ...derived },

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Image from 'next/image';
 import { listMentors, getUserMentors } from '@/lib/services/mentor-service';
 import MentorListClient from './mentor-list-client';
-import { Sparkles, MessageCircle } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default async function MentorsPage() {
   const supabase = await createClient();
@@ -11,7 +11,7 @@ export default async function MentorsPage() {
   } = await supabase.auth.getUser();
 
   const { data: mentors } = await listMentors();
-  const { data: userMentors } = await getUserMentors(user!.id);
+  const { data: userMentors } = user ? await getUserMentors(user.id) : { data: null };
 
   const activeMentorMap = new Map(
     (userMentors ?? []).map((um: { mentor_id: string; id: string }) => [

@@ -1,0 +1,118 @@
+<h2>Onboarding Flow Structure</h2>
+<p class="subtitle">How should the 18 profiling questions + mentor intro + summary be organized?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Flat Sequence (1 question per screen)</h3>
+      <p>20 screens total: 18 questions + mentor intro + profile summary. Simple progress bar. Each screen is one focused question. Clean and predictable.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px; text-align: center;">
+          <div style="display: flex; gap: 3px; justify-content: center; margin-bottom: 16px;">
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+            <div style="width: 14px; height: 4px; border-radius: 2px; background: #ddd;"></div>
+          </div>
+          <div style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">How important is this goal?</div>
+          <div style="font-size: 13px; color: #888;">Question 3 of 18</div>
+          <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 13px;">1</div>
+            <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 13px;">2</div>
+            <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #5A7F5A; background: #5A7F5A; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px;">7</div>
+            <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 13px;">9</div>
+            <div style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 13px;">10</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Grouped Sections (3-4 questions per section)</h3>
+      <p>Group questions into themed sections: "Your Goal" (Q1-3), "Your Habits" (Q4-8), "Your Energy" (Q9-12), "Your Style" (Q13-18). Progress shows sections, not individual questions. Feels shorter.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px; text-align: center;">
+          <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 16px;">
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+              <div style="font-size: 10px; color: #5A7F5A; margin-top: 4px;">Your Goal</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: linear-gradient(to right, #5A7F5A 60%, #ddd 60%);"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Habits</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #ddd;"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Energy</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #ddd;"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Style</div>
+            </div>
+          </div>
+          <div style="font-size: 14px; color: #5A7F5A; font-weight: 500; margin-bottom: 4px;">Your Habits</div>
+          <div style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">How consistent is your daily routine?</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; max-width: 280px; margin: 0 auto;">
+            <div style="padding: 10px 16px; border-radius: 10px; border: 2px solid #ddd; font-size: 14px; text-align: left;">Very consistent</div>
+            <div style="padding: 10px 16px; border-radius: 10px; border: 2px solid #5A7F5A; background: #5A7F5A10; font-size: 14px; text-align: left;">Mostly consistent</div>
+            <div style="padding: 10px 16px; border-radius: 10px; border: 2px solid #ddd; font-size: 14px; text-align: left;">Irregular</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid: Sections with single questions</h3>
+      <p>Still one question per screen, but group them into named sections with a section intro screen. "Let's talk about your habits" → 5 questions → "Now your energy" → 4 questions. Gives context without cramming.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 16px; text-align: center;">
+          <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 16px;">
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+              <div style="font-size: 10px; color: #5A7F5A; margin-top: 4px;">Your Goal</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #5A7F5A;"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Habits</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #ddd;"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Energy</div>
+            </div>
+            <div style="flex: 1; max-width: 80px;">
+              <div style="height: 4px; border-radius: 2px; background: #ddd;"></div>
+              <div style="font-size: 10px; color: #888; margin-top: 4px;">Your Style</div>
+            </div>
+          </div>
+          <div style="font-size: 28px; margin-bottom: 8px;">&#127793;</div>
+          <div style="font-size: 22px; font-weight: 600; margin-bottom: 6px;">Let's talk about your energy</div>
+          <div style="font-size: 14px; color: #888; margin-bottom: 16px;">3 quick questions about how you feel day-to-day</div>
+          <div style="padding: 10px 24px; border-radius: 10px; background: #5A7F5A; color: white; display: inline-block; font-size: 14px; font-weight: 500;">Continue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

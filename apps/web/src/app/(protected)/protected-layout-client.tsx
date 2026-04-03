@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
 import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVertical, Leaf, CalendarBlank } from '@phosphor-icons/react';
+import type { IconWeight } from '@phosphor-icons/react';
 
 // ---------------------------------------------------------------------------
 // Nav config
@@ -13,7 +14,7 @@ import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVer
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; size?: number; weight?: string }>;
+  icon: React.ComponentType<{ className?: string; size?: string | number; weight?: IconWeight }>;
 };
 
 const navItems: NavItem[] = [

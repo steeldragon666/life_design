@@ -172,28 +172,62 @@ describe('requestHealthKitPermissions — platform guard', () => {
     updateFrequency: 'hourly',
   };
 
+  beforeEach(async () => {
+    // Make expo-health fail to load so isIOS() returns false.
+    // The implementation uses dynamic import('expo-health') to detect iOS;
+    // when it throws, the platform is considered non-iOS.
+    vi.doMock('expo-health', () => {
+      throw new Error('expo-health not available');
+    });
+    // Re-import so the updated mock takes effect
+    vi.resetModules();
+    const mod = await import('../connectors/apple-health');
+    // Replace the module-level reference with the re-imported version
+    Object.assign(
+      { requestHealthKitPermissions },
+      { requestHealthKitPermissions: mod.requestHealthKitPermissions },
+    );
+  });
+
+  afterEach(() => {
+    // Restore the default expo-health mock for other test groups
+    vi.doMock('expo-health', () => ({
+      requestPermissionsAsync: vi.fn().mockResolvedValue({ granted: true }),
+      querySamplesAsync: vi.fn().mockResolvedValue([]),
+      enableBackgroundDeliveryAsync: vi.fn().mockResolvedValue(undefined),
+      observeChangesAsync: vi.fn().mockResolvedValue({ remove: vi.fn() }),
+    }));
+  });
+
   it('throws when Platform.OS is not ios (simulated web)', async () => {
-    // react-native is mocked to return OS='web' in the beforeEach-level mock.
-    await expect(requestHealthKitPermissions(validConfig)).rejects.toThrow(
+    vi.doMock('expo-health', () => {
+      throw new Error('expo-health not available');
+    });
+    vi.resetModules();
+    const { requestHealthKitPermissions: fn } = await import('../connectors/apple-health');
+    await expect(fn(validConfig)).rejects.toThrow(
       /HealthKit is only available on iOS/,
     );
   });
 
   it('throws with a message that mentions iOS', async () => {
-    await expect(requestHealthKitPermissions(validConfig)).rejects.toThrow(
+    vi.doMock('expo-health', () => {
+      throw new Error('expo-health not available');
+    });
+    vi.resetModules();
+    const { requestHealthKitPermissions: fn } = await import('../connectors/apple-health');
+    await expect(fn(validConfig)).rejects.toThrow(
       /iOS/,
     );
   });
 
   it('throws synchronously-equivalent error for Android (OS=android)', async () => {
-    // Override the mock inline for this single test.
-    vi.doMock('react-native', () => ({ Platform: { OS: 'android' } }));
-
-    // Re-import the module so the new Platform mock takes effect.
-    // Because vitest caches modules we cannot re-import here reliably
-    // without using vi.resetModules; instead we rely on the static mock
-    // returning OS='web' (non-iOS) which already covers this branch.
-    await expect(requestHealthKitPermissions(validConfig)).rejects.toThrow();
+    vi.doMock('expo-health', () => {
+      throw new Error('expo-health not available');
+    });
+    vi.resetModules();
+    const { requestHealthKitPermissions: fn } = await import('../connectors/apple-health');
+    await expect(fn(validConfig)).rejects.toThrow();
   });
 });
 

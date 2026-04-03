@@ -82,7 +82,7 @@ export async function schedulePathwayStep(stepId: string, title: string, descrip
   };
 
   try {
-    const result = await connector.createEvent(event);
+    const result = await connector.createEvent(event) as { id?: string };
     if (result.id) {
       // Mark step as scheduled in DB (assuming a 'scheduled_event_id' field exists or similar)
       await supabase

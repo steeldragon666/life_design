@@ -1,0 +1,81 @@
+<h2>Profile Summary Screen</h2>
+<p class="subtitle">What the user sees after completing all 18 questions + meeting mentors</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Card-based Summary</h3>
+      <p>Four distinct cards for strength, friction, strategy, and this week's plan. LLM enrichment appears as a separate "personalised insight" card below.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 20px; background: #F5F3EF;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 22px; font-weight: 600; color: #1A1816;">Your Profile</div>
+            <div style="font-size: 13px; color: #7D756A; margin-top: 4px;">Here's what we've learned about you</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 360px; margin: 0 auto;">
+            <div style="background: white; border-radius: 12px; padding: 14px; border: 1px solid #E8E4DD;">
+              <div style="font-size: 11px; text-transform: uppercase; color: #5A7F5A; font-weight: 600; letter-spacing: 0.5px;">Strength</div>
+              <div style="font-size: 14px; color: #1A1816; margin-top: 6px; line-height: 1.4;">Strong follow-through when you commit</div>
+            </div>
+            <div style="background: white; border-radius: 12px; padding: 14px; border: 1px solid #E8E4DD;">
+              <div style="font-size: 11px; text-transform: uppercase; color: #c57c3c; font-weight: 600; letter-spacing: 0.5px;">Friction</div>
+              <div style="font-size: 14px; color: #1A1816; margin-top: 6px; line-height: 1.4;">Stress and high load erode your consistency</div>
+            </div>
+            <div style="background: white; border-radius: 12px; padding: 14px; border: 1px solid #E8E4DD;">
+              <div style="font-size: 11px; text-transform: uppercase; color: #6B7DB3; font-weight: 600; letter-spacing: 0.5px;">Strategy</div>
+              <div style="font-size: 14px; color: #1A1816; margin-top: 6px; line-height: 1.4;">Smaller tasks with accountability check-ins</div>
+            </div>
+            <div style="background: white; border-radius: 12px; padding: 14px; border: 1px solid #E8E4DD;">
+              <div style="font-size: 11px; text-transform: uppercase; color: #8B5CF6; font-weight: 600; letter-spacing: 0.5px;">This Week</div>
+              <div style="font-size: 14px; color: #1A1816; margin-top: 6px; line-height: 1.4;">1 core action per day, evening reviews</div>
+            </div>
+          </div>
+          <div style="max-width: 360px; margin: 16px auto 0; background: white; border-radius: 12px; padding: 14px; border: 1px solid #E8E4DD;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #7D756A; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 6px;">Personalised Insight</div>
+            <div style="font-size: 13px; color: #7D756A; line-height: 1.5; font-style: italic;">Loading your personalised summary...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Single-column Narrative</h3>
+      <p>A flowing narrative summary with labelled sections. Template text appears instantly, LLM paragraph streams in below. Feels more like a letter than a dashboard.</p>
+      <div class="mockup" style="margin-top: 12px;">
+        <div class="mockup-body" style="padding: 20px; background: #F5F3EF; max-width: 340px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #C4D5C4, #5A7F5A); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+              <span style="color: white; font-size: 20px;">&#10003;</span>
+            </div>
+            <div style="font-size: 22px; font-weight: 600; color: #1A1816;">Welcome, Aaron</div>
+          </div>
+          <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #E8E4DD;">
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #5A7F5A; font-weight: 600; letter-spacing: 0.5px;">Your likely strength</div>
+              <div style="font-size: 15px; color: #1A1816; margin-top: 4px;">You care deeply about meaningful goals</div>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #c57c3c; font-weight: 600; letter-spacing: 0.5px;">Your main friction</div>
+              <div style="font-size: 15px; color: #1A1816; margin-top: 4px;">Inconsistency under stress</div>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #6B7DB3; font-weight: 600; letter-spacing: 0.5px;">Your best strategy</div>
+              <div style="font-size: 15px; color: #1A1816; margin-top: 4px;">Smaller tasks, strong accountability, evening check-ins</div>
+            </div>
+            <div style="border-top: 1px solid #E8E4DD; padding-top: 14px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #8B5CF6; font-weight: 600; letter-spacing: 0.5px;">This week's plan</div>
+              <div style="font-size: 15px; color: #1A1816; margin-top: 4px;">1 core action per day, short review at your most consistent time</div>
+            </div>
+          </div>
+          <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #E8E4DD; margin-top: 12px;">
+            <div style="font-size: 13px; color: #7D756A; line-height: 1.6; font-style: italic;">You're someone who thrives when goals feel personal and urgent. The challenge isn't motivation — it's protecting your energy when life gets heavy. We'll start with small, consistent wins and build from there.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

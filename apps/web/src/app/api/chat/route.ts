@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createAuthClient } from '@/lib/supabase/server';
 import {
   applyChatRateLimit,
   composeBoundedChatMessage,
@@ -109,9 +110,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Authenticate: require a valid session
+    const supabaseAuth = await createAuthClient();
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const payload = await request.json();
     const { message, history = [] } = validateAndNormalizeChatPayload(payload);
     const metadata = validateAndNormalizeChatMetadata(payload);
+
+    // Enforce userId matches the authenticated user to prevent impersonation
+    if (metadata.userId && metadata.userId !== user.id) {
+      return NextResponse.json({ error: 'userId mismatch' }, { status: 403 });
+    }
+    metadata.userId = user.id;
+
     const wantsStream = metadata.stream === true;
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;

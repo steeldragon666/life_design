@@ -6,7 +6,7 @@ import { dismissInsightAction } from './actions';
 
 interface InsightData {
   id: string;
-  type: 'trend' | 'correlation' | 'suggestion';
+  type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
   title: string;
   body: string;
   dimension: string | null;
