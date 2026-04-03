@@ -203,6 +203,13 @@ export default function ProfilingWizard() {
 
     try {
       const res = await fetch('/api/onboarding/complete', { method: 'POST' });
+      if (res.status === 400) {
+        // Insufficient answers — send user back to continue answering
+        const errData = await res.json().catch(() => ({ error: 'Please answer more questions.' }));
+        alert(errData.error || 'Please answer more questions before completing.');
+        setPhase('question');
+        return;
+      }
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const data = await res.json();
       if (!data.summary) throw new Error('No summary in response');
