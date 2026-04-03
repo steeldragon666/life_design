@@ -36,9 +36,9 @@ export function DayView({ blocks, date }: DayViewProps) {
       {/* Current time indicator */}
       {isToday && nowY >= 0 && nowY <= 100 && (
         <div className="absolute w-full flex items-center z-10" style={{ top: `${nowY}%` }}>
-          <span className="text-[11px] font-bold text-[#CC3333] w-12 text-right pr-2">NOW</span>
-          <div className="flex-1 border-t-2 border-[#CC3333]" />
-          <div className="w-2 h-2 rounded-full bg-[#CC3333] -ml-1" />
+          <span className="text-[11px] font-bold text-destructive w-12 text-right pr-2">NOW</span>
+          <div className="flex-1 border-t-2 border-destructive" />
+          <div className="w-2 h-2 rounded-full bg-destructive -ml-1" />
         </div>
       )}
 

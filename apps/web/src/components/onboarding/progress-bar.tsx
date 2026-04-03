@@ -26,10 +26,10 @@ export default function ProgressBar({ currentSection, currentQuestionInSection, 
         return (
           <div
             key={segment}
-            className="flex-1 h-1.5 rounded-full bg-[#E8E4DD] overflow-hidden"
+            className="flex-1 h-1.5 rounded-full bg-stone-200 overflow-hidden"
           >
             <div
-              className="h-full rounded-full bg-[#1A1816] transition-all duration-300"
+              className="h-full rounded-full bg-stone-900 transition-all duration-300"
               style={{ width: isComplete ? '100%' : isCurrent ? `${fillPercent}%` : '0%' }}
             />
           </div>

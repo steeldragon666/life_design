@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Play, Pause, Sparkles } from 'lucide-react';
+import { Play, Pause, Sparkle } from '@phosphor-icons/react';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt } from '@/lib/mentor-orchestrator';
 import { requestChatText } from '@/lib/chat-client';
@@ -88,11 +88,11 @@ export default function MeditationsPage() {
       <div className="glass-card p-8">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-cyan-300" />
+            <Sparkle size={20} className="text-cyan-300" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Guided Meditations</h1>
-            <p className="text-slate-400 text-sm">
+            <p className="text-stone-400 text-sm">
               Led by {mentorProfile.characterName}, your {mentorProfile.archetype} companion.
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function MeditationsPage() {
       </div>
 
       <div className="glass-card p-6 space-y-4">
-        <p className="text-sm text-slate-300">Choose a meditation focus:</p>
+        <p className="text-sm text-stone-300">Choose a meditation focus:</p>
         <div className="grid md:grid-cols-4 gap-3">
           {MEDITATION_THEMES.map((theme) => (
             <button
@@ -111,7 +111,7 @@ export default function MeditationsPage() {
               }`}
             >
               <p className="text-white font-medium">{theme.label}</p>
-              <p className="text-xs text-slate-400">{theme.minutes} min</p>
+              <p className="text-xs text-stone-400">{theme.minutes} min</p>
             </button>
           ))}
         </div>
@@ -133,20 +133,20 @@ export default function MeditationsPage() {
         <div className="flex gap-2">
           {!isSpeaking ? (
             <button onClick={playScript} className="btn-secondary inline-flex items-center gap-2" disabled={!script}>
-              <Play className="h-4 w-4" />
+              <Play size={16} />
               Play
             </button>
           ) : (
             <button onClick={stopScript} className="btn-secondary inline-flex items-center gap-2">
-              <Pause className="h-4 w-4" />
+              <Pause size={16} />
               Pause
             </button>
           )}
         </div>
         <div className="rounded-xl bg-white/5 p-4 min-h-40">
-          {script ? <p className="text-slate-200 whitespace-pre-wrap">{script}</p> : <p className="text-slate-500">Your generated meditation script appears here.</p>}
+          {script ? <p className="text-stone-200 whitespace-pre-wrap">{script}</p> : <p className="text-stone-500">Your generated meditation script appears here.</p>}
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-stone-500">
           This feature supports relaxation and reflection, and is not a medical treatment.
         </p>
       </div>

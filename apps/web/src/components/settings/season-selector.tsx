@@ -30,10 +30,10 @@ const SEASON_COLOURS: Record<SeasonName, { bg: string; border: string; text: str
     ring: 'ring-amber-400',
   },
   Recharge: {
-    bg: 'bg-[#5A7F5A]/5',
-    border: 'border-[#5A7F5A]/20',
-    text: 'text-[#5A7F5A]',
-    ring: 'ring-[#5A7F5A]',
+    bg: 'bg-sage-500/5',
+    border: 'border-sage-500/20',
+    text: 'text-sage-500',
+    ring: 'ring-sage-500',
   },
   Exploration: {
     bg: 'bg-sky-50',
@@ -115,10 +115,10 @@ export default function SeasonSelector() {
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
-        <div className="h-6 w-40 rounded bg-[#E8E4DD]" />
+        <div className="h-6 w-40 rounded bg-stone-200" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-[#E8E4DD]" />
+            <div key={i} className="h-32 rounded-xl bg-stone-200" />
           ))}
         </div>
       </div>
@@ -129,8 +129,8 @@ export default function SeasonSelector() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-base font-semibold text-[#1A1816]">Life Season</h3>
-        <p className="mt-1 text-sm text-[#7D756A]">
+        <h3 className="text-base font-semibold text-stone-900">Life Season</h3>
+        <p className="mt-1 text-sm text-stone-500">
           Your current season adjusts how dimensions are weighted in predictions and guardian alerts.
         </p>
       </div>
@@ -156,7 +156,7 @@ export default function SeasonSelector() {
       {/* History */}
       {history.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-[#1A1816] mb-3">Past seasons</h4>
+          <h4 className="text-sm font-medium text-stone-900 mb-3">Past seasons</h4>
           <div className="space-y-2">
             {history.map((record) => (
               <HistoryRow key={record.id} record={record} />
@@ -191,7 +191,7 @@ function ActiveSeasonBanner({ season }: { season: SeasonRecord }) {
         <p className={`text-sm font-semibold ${colours.text}`}>
           {season.name}
         </p>
-        <p className="text-xs text-[#7D756A]">
+        <p className="text-xs text-stone-500">
           Active since {formatDate(season.startDate)} ({days} day{days !== 1 ? 's' : ''})
         </p>
       </div>
@@ -230,7 +230,7 @@ function SeasonCard({
         transition-all duration-200
         ${isActive
           ? `${colours.bg} ${colours.border} ring-2 ${colours.ring}`
-          : `bg-white border-[#E8E4DD] hover:border-[#7D756A]/30 hover:shadow-sm`
+          : `bg-white border-stone-200 hover:border-stone-500/30 hover:shadow-sm`
         }
         disabled:cursor-default
       `}
@@ -241,15 +241,15 @@ function SeasonCard({
       )}
 
       <Icon
-        className={`h-6 w-6 mb-2 ${isActive ? colours.text : 'text-[#7D756A]'}`}
+        className={`h-6 w-6 mb-2 ${isActive ? colours.text : 'text-stone-500'}`}
         weight={isActive ? 'fill' : 'regular'}
       />
 
-      <p className={`text-sm font-semibold mb-1 ${isActive ? colours.text : 'text-[#1A1816]'}`}>
+      <p className={`text-sm font-semibold mb-1 ${isActive ? colours.text : 'text-stone-900'}`}>
         {name}
       </p>
 
-      <p className="text-xs text-[#7D756A] leading-relaxed mb-2">
+      <p className="text-xs text-stone-500 leading-relaxed mb-2">
         {description}
       </p>
 
@@ -258,7 +258,7 @@ function SeasonCard({
         {topDims.map((dim) => (
           <span
             key={dim}
-            className="inline-flex items-center rounded-full bg-[#F5F3EF] px-2 py-0.5 text-[10px] font-medium text-[#7D756A]"
+            className="inline-flex items-center rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500"
           >
             {dim}
           </span>
@@ -273,16 +273,16 @@ function HistoryRow({ record }: { record: SeasonRecord }) {
   const Icon = SEASON_ICONS[record.name];
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[#E8E4DD] bg-white p-3">
+    <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white p-3">
       <Icon className={`h-4 w-4 ${colours.text}`} weight="regular" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[#1A1816]">{record.name}</p>
-        <p className="text-xs text-[#7D756A] truncate">
+        <p className="text-sm font-medium text-stone-900">{record.name}</p>
+        <p className="text-xs text-stone-500 truncate">
           {formatDate(record.startDate)}
           {record.endDate ? ` -- ${formatDate(record.endDate)}` : ''}
         </p>
       </div>
-      <span className="text-[10px] uppercase tracking-wider text-[#7D756A]">
+      <span className="text-[10px] uppercase tracking-wider text-stone-500">
         {record.triggerSource === 'manual' ? 'manual' : record.triggerSource}
       </span>
     </div>

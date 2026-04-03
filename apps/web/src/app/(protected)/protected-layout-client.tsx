@@ -70,7 +70,7 @@ export default function ProtectedLayout({
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
               <Leaf size={20} weight="regular" className="text-white" />
             </div>
-            <span className="font-['Instrument_Serif'] text-xl text-stone-800">Life Design</span>
+            <span className="font-serif text-xl text-stone-800">Life Design</span>
           </Link>
         </div>
 
@@ -93,7 +93,7 @@ export default function ProtectedLayout({
 
         <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-sage-50 to-sage-100 border border-sage-200/30">
           <p className="text-xs text-sage-500 font-medium">Daily Intention</p>
-          <p className="text-[13px] text-stone-700 mt-1 font-['Instrument_Serif'] italic text-lg leading-snug">&ldquo;Be present in every moment&rdquo;</p>
+          <p className="text-[13px] text-stone-700 mt-1 font-serif italic text-lg leading-snug">&ldquo;Be present in every moment&rdquo;</p>
         </div>
       </aside>
 

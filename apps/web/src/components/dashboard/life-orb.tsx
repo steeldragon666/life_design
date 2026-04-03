@@ -551,7 +551,7 @@ function OrbFallback({ overallScore }: { overallScore: number }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
       <div
-        className="rounded-full border-4 border-indigo-500/40 flex items-center justify-center"
+        className="rounded-full border-4 border-sage-500/40 flex items-center justify-center"
         style={{
           width: 120,
           height: 120,
@@ -563,7 +563,7 @@ function OrbFallback({ overallScore }: { overallScore: number }) {
           {Math.round(overallScore)}
         </span>
       </div>
-      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+      <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest">
         WebGL unavailable
       </p>
     </div>
@@ -619,7 +619,7 @@ export default function LifeOrb({
         className="relative flex items-center justify-center bg-transparent"
         style={containerStyle}
       >
-        <div className="h-8 w-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-2 border-sage-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -650,9 +650,9 @@ export default function LifeOrb({
           style={{ fontFamily: '"JetBrains Mono", monospace' }}
         >
           {Math.round(overallScore)}
-          <span className="text-sm text-indigo-400 ml-0.5">%</span>
+          <span className="text-sm text-sage-400 ml-0.5">%</span>
         </p>
-        <p className="text-[11px] font-bold text-indigo-400/70 uppercase tracking-[0.2em] mt-0.5">
+        <p className="text-[11px] font-bold text-sage-400/70 uppercase tracking-[0.2em] mt-0.5">
           Harmony Index
         </p>
       </div>

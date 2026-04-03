@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowRight, Orbit, Loader2 } from 'lucide-react';
+import { ArrowRight, Planet, CircleNotch } from '@phosphor-icons/react';
 import { GlassCard } from '@life-design/ui';
 import type { LifeOrbDimension } from './life-orb';
 
@@ -16,7 +16,7 @@ const LifeOrb = dynamic(() => import('./life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[200px] w-[200px]">
-      <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+      <CircleNotch size={32} className="text-sage-500 animate-spin" />
     </div>
   ),
 });
@@ -46,12 +46,12 @@ export default function OrbWidget({
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-            <Orbit className="h-4 w-4 text-indigo-400" />
+          <div className="h-8 w-8 rounded-xl bg-sage-500/10 flex items-center justify-center flex-shrink-0">
+            <Planet size={16} className="text-sage-500" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-white tracking-tight">Life Orb</h3>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest">
               Dynamic Balance
             </p>
           </div>
@@ -60,12 +60,12 @@ export default function OrbWidget({
         <Link
           href="/orb"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass
-                     text-[11px] font-bold text-slate-400 uppercase tracking-wider
-                     hover:text-indigo-300 hover:border-indigo-500/30 transition-all
+                     text-[11px] font-bold text-stone-400 uppercase tracking-wider
+                     hover:text-sage-500 hover:border-sage-500/30 transition-all
                      border border-white/10"
         >
           Expand
-          <ArrowRight className="h-3 w-3 group-hover/orb:translate-x-0.5 transition-transform" />
+          <ArrowRight size={12} className="group-hover/orb:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
@@ -88,7 +88,7 @@ export default function OrbWidget({
         className="flex items-center justify-between px-5 py-3
                    border-t border-white/5 bg-white/[0.02]"
       >
-        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+        <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest">
           Harmony Index
         </p>
         <p
@@ -96,7 +96,7 @@ export default function OrbWidget({
           style={{ fontFamily: '"JetBrains Mono", monospace' }}
         >
           {Math.round(overallScore)}
-          <span className="text-xs text-indigo-400 ml-0.5">%</span>
+          <span className="text-xs text-sage-500 ml-0.5">%</span>
         </p>
       </div>
     </GlassCard>

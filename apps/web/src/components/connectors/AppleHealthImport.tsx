@@ -216,8 +216,8 @@ interface AppleHealthImportProps {
  *
  * A drag-and-drop file import panel for Apple Health export.xml files.
  * Designed for the web dashboard as a fallback when HealthKit native APIs
- * are unavailable. Styled with Tailwind using the app's dark theme palette
- * (bg-slate-900 base, indigo accents).
+ * are unavailable. Styled with Tailwind using the app's design system palette
+ * (stone base, sage accents).
  *
  * @param props.userId            - Authenticated user UUID for feature storage.
  * @param props.onImportComplete  - Optional callback called with summary on success.
@@ -387,9 +387,9 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
       {/* Header */}
       <div>
         <h2 className="text-xl font-semibold text-white">Import Apple Health Data</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-stone-400">
           Export your data from the Health app on iPhone, then upload the{' '}
-          <code className="text-indigo-400">export.xml</code> file below.
+          <code className="text-sage-500">export.xml</code> file below.
         </p>
       </div>
 
@@ -409,13 +409,13 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
             'rounded-xl border-2 border-dashed p-10 text-center cursor-pointer',
             'transition-colors duration-150',
             isDragging
-              ? 'border-indigo-500 bg-indigo-950/40'
-              : 'border-slate-700 bg-slate-800/50 hover:border-slate-500 hover:bg-slate-800',
+              ? 'border-sage-500 bg-sage-500/10'
+              : 'border-stone-700 bg-stone-800/50 hover:border-stone-500 hover:bg-stone-800',
           ].join(' ')}
         >
           {/* Upload icon */}
           <svg
-            className="h-10 w-10 text-slate-500"
+            className="h-10 w-10 text-stone-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -430,10 +430,10 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
           </svg>
 
           <div>
-            <p className="text-sm font-medium text-slate-200">
+            <p className="text-sm font-medium text-stone-200">
               {isDragging ? 'Drop your file here' : 'Drag and drop export.xml'}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-stone-500">
               or click to browse — XML files only
             </p>
           </div>
@@ -458,11 +458,11 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
 
       {/* Step: parsing — progress bar */}
       {step === 'parsing' && (
-        <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 space-y-3">
-          <p className="text-sm font-medium text-slate-200">Parsing export file...</p>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-700">
+        <div className="rounded-xl bg-stone-800 border border-stone-700 p-6 space-y-3">
+          <p className="text-sm font-medium text-stone-200">Parsing export file...</p>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-stone-700">
             <div
-              className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+              className="h-full rounded-full bg-sage-500 transition-all duration-300"
               style={{ width: `${parseProgress}%` }}
               role="progressbar"
               aria-valuenow={parseProgress}
@@ -470,7 +470,7 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
               aria-valuemax={100}
             />
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-stone-500">
             This may take a moment for large export files.
           </p>
         </div>
@@ -478,15 +478,15 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
 
       {/* Step: preview */}
       {step === 'preview' && preview && (
-        <div className="rounded-xl bg-slate-800 border border-slate-700 divide-y divide-slate-700">
+        <div className="rounded-xl bg-stone-800 border border-stone-700 divide-y divide-stone-700">
           {/* Summary header */}
           <div className="px-5 py-4 space-y-1">
             <h3 className="text-sm font-semibold text-white">Export Preview</h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-stone-400">
               Exported {formatDate(preview.exportDate)} &middot;{' '}
               {preview.totalRecords.toLocaleString()} records found
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-stone-400">
               Date range: {formatDate(preview.earliestDate)} &ndash;{' '}
               {formatDate(preview.latestDate)}
             </p>
@@ -497,15 +497,15 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
             <ul className="px-5 py-3 space-y-2">
               {preview.recordTypes.map(({ type, label, count }) => (
                 <li key={type} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300">{label}</span>
-                  <span className="tabular-nums text-slate-400">
+                  <span className="text-stone-300">{label}</span>
+                  <span className="tabular-nums text-stone-400">
                     {count.toLocaleString()} records
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="px-5 py-3 text-sm text-slate-500">
+            <p className="px-5 py-3 text-sm text-stone-500">
               No supported health metrics found in this export.
             </p>
           )}
@@ -516,8 +516,8 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
               type="button"
               onClick={() => void handleImport()}
               disabled={preview.recordTypes.length === 0}
-              className="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white
-                         hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50
+              className="flex-1 rounded-lg bg-sage-600 px-4 py-2 text-sm font-medium text-white
+                         hover:bg-sage-500 disabled:cursor-not-allowed disabled:opacity-50
                          transition-colors duration-150"
             >
               Import {preview.totalRecords.toLocaleString()} records
@@ -525,8 +525,8 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium
-                         text-slate-300 hover:border-slate-500 hover:text-white
+              className="rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium
+                         text-stone-300 hover:border-stone-500 hover:text-white
                          transition-colors duration-150"
             >
               Cancel
@@ -537,10 +537,10 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
 
       {/* Step: importing */}
       {step === 'importing' && (
-        <div className="rounded-xl bg-slate-800 border border-slate-700 p-6 text-center space-y-3">
+        <div className="rounded-xl bg-stone-800 border border-stone-700 p-6 text-center space-y-3">
           {/* Spinner */}
           <svg
-            className="mx-auto h-8 w-8 animate-spin text-indigo-500"
+            className="mx-auto h-8 w-8 animate-spin text-sage-500"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -560,14 +560,14 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          <p className="text-sm font-medium text-slate-200">Extracting and storing features...</p>
-          <p className="text-xs text-slate-500">Please keep this tab open.</p>
+          <p className="text-sm font-medium text-stone-200">Extracting and storing features...</p>
+          <p className="text-xs text-stone-500">Please keep this tab open.</p>
         </div>
       )}
 
       {/* Step: done — success summary */}
       {step === 'done' && summary && (
-        <div className="rounded-xl bg-slate-800 border border-emerald-800/60 divide-y divide-slate-700">
+        <div className="rounded-xl bg-stone-800 border border-emerald-800/60 divide-y divide-stone-700">
           <div className="px-5 py-4 flex items-center gap-3">
             {/* Checkmark icon */}
             <div className="flex-shrink-0 rounded-full bg-emerald-900/60 p-2">
@@ -584,7 +584,7 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">Import complete</h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-stone-400">
                 Your health data has been processed and stored.
               </p>
             </div>
@@ -592,15 +592,15 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
 
           <ul className="px-5 py-3 space-y-1 text-sm">
             <li className="flex justify-between">
-              <span className="text-slate-400">Days imported</span>
+              <span className="text-stone-400">Days imported</span>
               <span className="font-medium text-white">{summary.daysImported.toLocaleString()}</span>
             </li>
             <li className="flex justify-between">
-              <span className="text-slate-400">Features stored</span>
+              <span className="text-stone-400">Features stored</span>
               <span className="font-medium text-white">{summary.featuresStored.toLocaleString()}</span>
             </li>
             <li className="flex justify-between">
-              <span className="text-slate-400">Processing time</span>
+              <span className="text-stone-400">Processing time</span>
               <span className="font-medium text-white">
                 {(summary.durationMs / 1000).toFixed(1)}s
               </span>
@@ -611,8 +611,8 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
             <button
               type="button"
               onClick={handleReset}
-              className="w-full rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium
-                         text-slate-300 hover:border-slate-500 hover:text-white
+              className="w-full rounded-lg border border-stone-600 px-4 py-2 text-sm font-medium
+                         text-stone-300 hover:border-stone-500 hover:text-white
                          transition-colors duration-150"
             >
               Import another file
@@ -623,20 +623,20 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
 
       {/* How-to instructions */}
       {step === 'idle' && (
-        <details className="rounded-lg bg-slate-800/40 border border-slate-700/50 text-sm">
-          <summary className="cursor-pointer select-none px-4 py-3 text-slate-400 hover:text-slate-200 transition-colors">
+        <details className="rounded-lg bg-stone-800/40 border border-stone-700/50 text-sm">
+          <summary className="cursor-pointer select-none px-4 py-3 text-stone-400 hover:text-stone-200 transition-colors">
             How to export from the Health app
           </summary>
-          <ol className="px-4 pb-4 pt-1 space-y-1 text-slate-500 list-decimal list-inside marker:text-slate-600">
+          <ol className="px-4 pb-4 pt-1 space-y-1 text-stone-500 list-decimal list-inside marker:text-stone-600">
             <li>Open the Health app on your iPhone.</li>
             <li>Tap your profile picture in the top-right corner.</li>
-            <li>Scroll down and tap <strong className="text-slate-400">Export All Health Data</strong>.</li>
+            <li>Scroll down and tap <strong className="text-stone-400">Export All Health Data</strong>.</li>
             <li>
-              Share the resulting <code className="text-indigo-400">export.zip</code> to your
+              Share the resulting <code className="text-sage-500">export.zip</code> to your
               computer, then extract it.
             </li>
             <li>
-              Upload the <code className="text-indigo-400">export.xml</code> file found inside
+              Upload the <code className="text-sage-500">export.xml</code> file found inside
               the extracted folder.
             </li>
           </ol>

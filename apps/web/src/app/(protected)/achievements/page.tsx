@@ -2,6 +2,7 @@
 
 import { useEarnedBadges } from '@/lib/db/hooks';
 import { BADGE_DEFINITIONS, type BadgeDefinition } from '@/lib/achievements/badge-definitions';
+import { Check } from '@phosphor-icons/react';
 
 function BadgeCard({ badge, earned }: { badge: BadgeDefinition; earned: boolean }) {
   return (
@@ -15,9 +16,10 @@ function BadgeCard({ badge, earned }: { badge: BadgeDefinition; earned: boolean 
       <div className="flex items-start gap-4">
         <div
           className={`h-14 w-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${
-            earned ? 'shadow-sm' : 'grayscale'
+            earned
+              ? 'bg-sage-500/[0.13] border border-sage-500/[0.27] shadow-sm'
+              : 'grayscale'
           }`}
-          style={earned ? { backgroundColor: '#5A7F5A22', border: '1.5px solid #5A7F5A44' } : {}}
         >
           {badge.emoji}
         </div>
@@ -28,9 +30,7 @@ function BadgeCard({ badge, earned }: { badge: BadgeDefinition; earned: boolean 
           <p className="text-sm text-stone-500 mt-0.5">{badge.description}</p>
           {earned ? (
             <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-sage-600 bg-sage-500/10 rounded-full px-2.5 py-0.5">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                <path d="M1.5 5.5L4 8L8.5 2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Check size={10} weight="bold" aria-hidden="true" />
               Earned
             </span>
           ) : (

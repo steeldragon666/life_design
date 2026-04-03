@@ -232,8 +232,8 @@ export default function ProfilingWizard() {
 
   if (phase === 'loading' || phase === 'completing') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8]">
-        <div className="animate-pulse text-[#A8A198]">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="animate-pulse text-stone-400">Loading...</div>
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function ProfilingWizard() {
 
   if (phase === 'section_intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFAF8] to-[#F5F3EF]">
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
         <SectionHeader
           label={currentSection.label}
           questionCount={currentSection.questionCount}
@@ -259,11 +259,11 @@ export default function ProfilingWizard() {
       : (answers[currentQuestion.id] ?? null);
 
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#FAFAF8] to-[#F5F3EF]">
-        <header className="sticky top-0 z-50 px-4 py-4 bg-[#FAFAF8]/80 backdrop-blur-sm">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-stone-50 to-stone-100">
+        <header className="sticky top-0 z-50 px-4 py-4 bg-stone-50/80 backdrop-blur-sm">
           <div className="max-w-lg mx-auto flex items-center gap-3">
             {canGoBack && (
-              <button onClick={handleBack} className="p-2 rounded-lg hover:bg-[#E8E4DD]/50" aria-label="Go back">
+              <button onClick={handleBack} className="p-2 rounded-lg hover:bg-stone-200/50" aria-label="Go back">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
@@ -280,7 +280,7 @@ export default function ProfilingWizard() {
         </header>
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
           <div className="max-w-lg mx-auto space-y-6">
-            <h2 className="font-['Instrument_Serif'] text-2xl text-[#1A1816]">
+            <h2 className="font-serif text-2xl text-stone-900">
               {currentQuestion.question}
             </h2>
             <QuestionRenderer
@@ -301,7 +301,7 @@ export default function ProfilingWizard() {
                   }
                 }}
                 disabled={!(pendingMultiSelect && pendingMultiSelect.length > 0)}
-                className="w-full py-3 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-[#1A1816] text-white hover:bg-[#1A1816]/90"
+                className="w-full py-3 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-stone-900 text-white hover:bg-stone-900/90"
               >
                 Continue
               </button>
@@ -314,7 +314,7 @@ export default function ProfilingWizard() {
 
   if (phase === 'mentors') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFAF8] to-[#F5F3EF]">
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
         <MentorIntro onContinue={handleComplete} />
       </div>
     );
@@ -322,7 +322,7 @@ export default function ProfilingWizard() {
 
   if (phase === 'summary' && summary) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAFAF8] to-[#F5F3EF]">
+      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
         <ProfileSummary
           userName={userName}
           summary={summary}

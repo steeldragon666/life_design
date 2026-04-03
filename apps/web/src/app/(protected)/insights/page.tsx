@@ -12,7 +12,7 @@ export default async function InsightsPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8">
         <h1 className="mb-6 text-2xl font-bold">AI Insights</h1>
-        <p className="mb-8 text-gray-600">
+        <p className="mb-8 text-stone-600">
           Patterns and suggestions based on your check-in history.
         </p>
         <InsightsClient insights={[]} />
@@ -25,7 +25,7 @@ export default async function InsightsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">AI Insights</h1>
-      <p className="mb-8 text-gray-600">
+      <p className="mb-8 text-stone-600">
         Patterns and suggestions based on your check-in history.
       </p>
       <InsightsClient insights={insights ?? []} />

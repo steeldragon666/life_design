@@ -19,7 +19,7 @@ import type { PredictionResult } from '@/lib/ml/types';
 import { TrainingClient } from '@/lib/ml/training-client';
 import { FeaturePipeline, getFeatureConfidence } from '@/lib/ml/feature-pipeline';
 import { CheckCircle, ArrowLeft, Microphone } from '@phosphor-icons/react/dist/ssr';
-import { Button, Card, Textarea } from '@life-design/ui';
+import { Button, Card, Textarea, colors } from '@life-design/ui';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -37,11 +37,11 @@ const DIMENSION_META: Record<string, { emoji: string; question: string }> = {
 };
 
 const moodOptions = [
-  { value: 1, label: 'Struggling', color: '#D4864A' },
-  { value: 2, label: 'Low', color: '#E8A46D' },
-  { value: 3, label: 'Neutral', color: '#A8A198' },
-  { value: 4, label: 'Good', color: '#9BB89B' },
-  { value: 5, label: 'Thriving', color: '#5A7F5A' },
+  { value: 1, label: 'Struggling', color: colors.warm[400] },
+  { value: 2, label: 'Low', color: colors.warm[300] },
+  { value: 3, label: 'Neutral', color: colors.stone[400] },
+  { value: 4, label: 'Good', color: colors.sage[300] },
+  { value: 5, label: 'Thriving', color: colors.sage[500] },
 ];
 
 /** Map 5-point mood scale to 1-10 for storage */
@@ -493,17 +493,10 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                           {/* Ghost indicator for AI prediction */}
                           {isPredicted && mood !== option.value && (
                             <div
-                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
-                              style={{
-                                backgroundColor: '#5A7F5A30',
-                                border: '1.5px solid #5A7F5A60',
-                              }}
+                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center bg-sage-500/[0.19] border border-sage-500/[0.38]"
                               title="AI prediction"
                             >
-                              <div
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{ backgroundColor: '#5A7F5A' }}
-                              />
+                              <div className="w-1.5 h-1.5 rounded-full bg-sage-500" />
                             </div>
                           )}
                           <div

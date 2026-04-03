@@ -30,7 +30,7 @@ export default async function PaywallPage() {
     return (
       <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
         <h1 className="text-2xl font-semibold text-white">Sign in required</h1>
-        <p className="mt-3 text-slate-400">
+        <p className="mt-3 text-stone-400">
           You need to sign in before we can validate your subscription status.
         </p>
         <Link
@@ -71,12 +71,12 @@ export default async function PaywallPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-white/10 bg-white/5 p-8">
       <h1 className="text-3xl font-semibold text-white">Subscription required</h1>
-      <p className="text-slate-300">
+      <p className="text-stone-300">
         Your free trial or subscription appears inactive for protected features. Update your plan
         to continue full access.
       </p>
 
-      <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+      <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-stone-300">
         <p>
           Current status:{' '}
           <span className="font-medium text-white">{subscription?.status ?? 'none'}</span>
@@ -117,7 +117,7 @@ export default async function PaywallPage() {
         <form action="/api/billing/portal" method="POST">
           <button
             type="submit"
-            className="inline-flex rounded-lg border border-blue-500/40 bg-blue-500/20 px-4 py-2 text-sm text-blue-100 hover:bg-blue-500/30"
+            className="inline-flex rounded-lg border border-accent-500/40 bg-accent-400/20 px-4 py-2 text-sm text-accent-100 hover:bg-accent-500/30"
           >
             Manage billing
           </button>

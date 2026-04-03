@@ -49,7 +49,7 @@ export default function PathwayBuilder({ goalId, onGenerate }: PathwayBuilderPro
   return (
     <div className="rounded-lg border p-4 space-y-4">
       <h3 className="font-semibold text-sm">Create a Pathway</h3>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-stone-500">
         Describe your rough plan for achieving this goal. AI will structure it into
         actionable steps and analyze how it impacts each life dimension.
       </p>
@@ -73,8 +73,8 @@ export default function PathwayBuilder({ goalId, onGenerate }: PathwayBuilderPro
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {result && (
-        <div className="space-y-3 rounded-lg bg-gray-50 p-3">
-          <p className="text-xs font-medium text-green-700">
+        <div className="space-y-3 rounded-lg bg-stone-50 p-3">
+          <p className="text-xs font-medium text-sage-600">
             Pathway created and saved. See it below.
           </p>
 
@@ -83,7 +83,7 @@ export default function PathwayBuilder({ goalId, onGenerate }: PathwayBuilderPro
               <h4 className="text-xs font-semibold text-red-600">Risks</h4>
               <ul className="mt-1 space-y-0.5">
                 {result.risks.map((r, i) => (
-                  <li key={i} className="text-xs text-gray-600">- {r}</li>
+                  <li key={i} className="text-xs text-stone-600">- {r}</li>
                 ))}
               </ul>
             </div>
@@ -91,10 +91,10 @@ export default function PathwayBuilder({ goalId, onGenerate }: PathwayBuilderPro
 
           {result.suggestions.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-blue-600">Suggestions</h4>
+              <h4 className="text-xs font-semibold text-accent-600">Suggestions</h4>
               <ul className="mt-1 space-y-0.5">
                 {result.suggestions.map((s, i) => (
-                  <li key={i} className="text-xs text-gray-600">- {s}</li>
+                  <li key={i} className="text-xs text-stone-600">- {s}</li>
                 ))}
               </ul>
             </div>

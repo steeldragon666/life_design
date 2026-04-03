@@ -18,7 +18,7 @@ export default function MultiSelect({ options, value, onChange, maxSelections }:
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[#A8A198]">Select up to {maxSelections}</p>
+      <p className="text-xs text-stone-400">Select up to {maxSelections}</p>
       {options.map((option) => {
         const isSelected = value.includes(option.value);
         const isDisabled = !isSelected && value.length >= maxSelections;
@@ -29,10 +29,10 @@ export default function MultiSelect({ options, value, onChange, maxSelections }:
             disabled={isDisabled}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${
               isSelected
-                ? 'bg-[#1A1816] text-white shadow-md'
+                ? 'bg-stone-900 text-white shadow-md'
                 : isDisabled
-                  ? 'bg-[#F5F3EF] text-[#A8A198] border border-[#E8E4DD] cursor-not-allowed'
-                  : 'bg-white text-[#1A1816] border border-[#E8E4DD] hover:border-[#1A1816]/30 hover:shadow-sm'
+                  ? 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed'
+                  : 'bg-white text-stone-900 border border-stone-200 hover:border-stone-900/30 hover:shadow-sm'
             }`}
             aria-pressed={isSelected}
           >

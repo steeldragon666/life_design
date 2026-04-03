@@ -27,7 +27,7 @@ export default function PricingPage() {
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-16">
       <div className="mb-10 space-y-3 text-center">
         <h1 className="text-4xl font-semibold tracking-tight text-white">Pricing</h1>
-        <p className="text-slate-400">
+        <p className="text-stone-400">
           Choose a plan that supports your life design journey with guided rituals and AI mentorship.
         </p>
       </div>
@@ -49,10 +49,10 @@ export default function PricingPage() {
               className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur"
             >
               <h2 className="text-xl font-medium text-white">{plan.title}</h2>
-              <p className="mt-2 text-sm text-slate-400">{plan.description}</p>
+              <p className="mt-2 text-sm text-stone-400">{plan.description}</p>
               <p className="mt-4 text-2xl font-semibold text-white">{plan.price}</p>
               {!isAvailable && (
-                <p className="mt-4 text-xs text-slate-500">Plan is temporarily unavailable.</p>
+                <p className="mt-4 text-xs text-stone-500">Plan is temporarily unavailable.</p>
               )}
               <form action="/api/billing/checkout" method="POST" className="mt-4">
                 <input type="hidden" name="plan" value={product.key} />

@@ -3,11 +3,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useGuest } from '@/lib/guest-context';
 import { Dimension } from '@life-design/core';
+import { dimensionPalettes, colors, semantic } from '@life-design/ui';
 import { Flask, ArrowRight, ArrowCounterClockwise, Lightning, TrendUp, TrendDown, Equals } from '@phosphor-icons/react';
 import Link from 'next/link';
 
 // ---------------------------------------------------------------------------
-// Dimension metadata
+// Dimension metadata (label only — colors sourced from dimensionPalettes)
 // ---------------------------------------------------------------------------
 
 const ALL_DIMENSIONS: Dimension[] = [
@@ -15,15 +16,15 @@ const ALL_DIMENSIONS: Dimension[] = [
   'family', 'social', 'romance', 'growth',
 ] as Dimension[];
 
-const DIMENSION_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  career:  { label: 'Career',  color: 'text-[#3A6A8A]', bg: 'bg-[#EFF4F8]', border: 'border-[#5E9BC4]/20' },
-  finance: { label: 'Finance', color: 'text-[#8A5A30]', bg: 'bg-[#FDF5EE]', border: 'border-[#C4783A]/20' },
-  health:  { label: 'Health',  color: 'text-[#476447]', bg: 'bg-[#F4F7F4]', border: 'border-[#5A7F5A]/20' },
-  fitness: { label: 'Fitness', color: 'text-[#3A6A3A]', bg: 'bg-[#F0F5F0]', border: 'border-[#4A8A4A]/20' },
-  family:  { label: 'Family',  color: 'text-[#8A5A30]', bg: 'bg-[#FEF7F0]', border: 'border-[#D4864A]/20' },
-  social:  { label: 'Social',  color: 'text-[#6B5B88]', bg: 'bg-[#F3F0F6]', border: 'border-[#8B7BA8]/20' },
-  romance: { label: 'Romance', color: 'text-[#8A3A50]', bg: 'bg-[#FDF0F3]', border: 'border-[#C4607A]/20' },
-  growth:  { label: 'Growth',  color: 'text-[#3A6A8A]', bg: 'bg-[#EDF3F8]', border: 'border-[#4A86B0]/20' },
+const DIMENSION_LABELS: Record<string, string> = {
+  career:  'Career',
+  finance: 'Finance',
+  health:  'Health',
+  fitness: 'Fitness',
+  family:  'Family',
+  social:  'Social',
+  romance: 'Romance',
+  growth:  'Growth',
 };
 
 // ---------------------------------------------------------------------------
@@ -245,7 +246,8 @@ export default function SimulatorPage() {
             </div>
 
             {ALL_DIMENSIONS.map(dim => {
-              const meta = DIMENSION_META[dim];
+              const palette = dimensionPalettes[dim];
+              const label = DIMENSION_LABELS[dim];
               const base = baseScores[dim];
               const adj = adjustments[dim] ?? 0;
               const proj = projected[dim];
@@ -253,10 +255,14 @@ export default function SimulatorPage() {
               const totalDelta = proj - base;
 
               return (
-                <div key={dim} className={`p-4 rounded-xl border ${meta.border} ${meta.bg}/50 bg-white`}>
+                <div
+                  key={dim}
+                  className="p-4 rounded-xl border bg-white"
+                  style={{ borderColor: palette.border, backgroundColor: palette.bg + '80' }}
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-semibold ${meta.color}`}>{meta.label}</span>
+                      <span className="text-sm font-semibold" style={{ color: palette.text }}>{label}</span>
                       {Math.abs(cascadeDelta) > 0.05 && (
                         <span className="text-[10px] text-stone-400 flex items-center gap-0.5">
                           <Lightning size={10} />
@@ -303,10 +309,10 @@ export default function SimulatorPage() {
                       style={{
                         width: `${(proj / 10) * 100}%`,
                         background: totalDelta > 0
-                          ? 'linear-gradient(90deg, #5A7F5A, #9BB89B)'
+                          ? `linear-gradient(90deg, ${colors.sage[500]}, ${colors.sage[300]})`
                           : totalDelta < 0
-                          ? 'linear-gradient(90deg, #CC3333, #E88888)'
-                          : 'linear-gradient(90deg, #A8A198, #D4CFC5)',
+                          ? `linear-gradient(90deg, ${semantic.destructive}, #E88888)`
+                          : `linear-gradient(90deg, ${colors.stone[400]}, ${colors.stone[300]})`,
                       }}
                     />
                   </div>
@@ -348,10 +354,10 @@ export default function SimulatorPage() {
                     .filter(({ delta }) => Math.abs(delta) >= 0.1)
                     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
                     .map(({ dim, delta }) => {
-                      const meta = DIMENSION_META[dim];
+                      const palette = dimensionPalettes[dim];
                       return (
                         <div key={dim} className="flex items-center justify-between text-sm">
-                          <span className={`font-medium ${meta.color}`}>{meta.label}</span>
+                          <span className="font-medium" style={{ color: palette.text }}>{DIMENSION_LABELS[dim]}</span>
                           <span className={`flex items-center gap-1 font-mono text-xs font-semibold ${delta > 0 ? 'text-sage-600' : 'text-red-500'}`}>
                             {delta > 0 ? <TrendUp size={14} /> : delta < 0 ? <TrendDown size={14} /> : <Equals size={14} />}
                             {delta > 0 ? '+' : ''}{delta.toFixed(1)}

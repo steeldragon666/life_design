@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { MoonStar, Pause, Play } from 'lucide-react';
+import { MoonStars, Pause, Play } from '@phosphor-icons/react';
 import { getSelectedVoice } from '@/components/voice/voice-selector';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt } from '@/lib/mentor-orchestrator';
@@ -129,12 +129,12 @@ Additional ritual requirements:
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="glass-card p-8">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/20">
-            <MoonStar className="h-5 w-5 text-indigo-300" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sage-500/20">
+            <MoonStars size={20} weight="light" className="text-sage-300" />
           </div>
           <div>
             <h1 className="tracking-tight text-3xl font-bold text-white">Evening Ritual</h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-stone-400">
               Wind down with grounding and one thoughtful reflection guided by {mentorProfile.characterName}.
             </p>
           </div>
@@ -142,7 +142,7 @@ Additional ritual requirements:
       </div>
 
       <div className="glass-card space-y-4 p-6">
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-stone-300">
           This ritual is designed for 2-3 minutes: settle the body, review the day, and close with one reflection action.
         </p>
         <button onClick={generateRitualScript} disabled={isLoading} className="btn-primary" type="button">
@@ -160,12 +160,12 @@ Additional ritual requirements:
         <div className="flex gap-2">
           {!isSpeaking ? (
             <button onClick={playScript} className="btn-secondary inline-flex items-center gap-2" type="button">
-              <Play className="h-4 w-4" />
+              <Play size={16} weight="light" />
               Play Ritual
             </button>
           ) : (
             <button onClick={stopScript} className="btn-secondary inline-flex items-center gap-2" type="button">
-              <Pause className="h-4 w-4" />
+              <Pause size={16} weight="light" />
               Pause
             </button>
           )}
@@ -178,7 +178,7 @@ Additional ritual requirements:
         ) : null}
 
         <div className="min-h-40 rounded-xl bg-white/5 p-4">
-          <p className="whitespace-pre-wrap text-slate-200">{resolvedScript}</p>
+          <p className="whitespace-pre-wrap text-stone-200">{resolvedScript}</p>
         </div>
       </div>
     </div>

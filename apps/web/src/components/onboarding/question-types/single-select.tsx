@@ -17,8 +17,8 @@ export default function SingleSelect({ options, value, onChange }: SingleSelectP
             onClick={() => onChange(option.value)}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 ${
               isSelected
-                ? 'bg-[#1A1816] text-white shadow-md'
-                : 'bg-white text-[#1A1816] border border-[#E8E4DD] hover:border-[#1A1816]/30 hover:shadow-sm'
+                ? 'bg-stone-900 text-white shadow-md'
+                : 'bg-white text-stone-900 border border-stone-200 hover:border-stone-900/30 hover:shadow-sm'
             }`}
             aria-pressed={isSelected}
           >

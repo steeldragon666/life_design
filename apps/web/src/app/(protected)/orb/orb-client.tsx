@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, CircleNotch } from '@phosphor-icons/react';
 import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
 import { DimensionBadge, ScoreRing, dimensionColor } from '@life-design/ui';
 import type { LifeOrbDimension } from '@/components/dashboard/life-orb';
@@ -17,7 +17,7 @@ const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[400px] w-[400px]">
-      <Loader2 className="h-12 w-12 text-indigo-400 animate-spin" />
+      <CircleNotch size={48} className="text-sage-500 animate-spin" />
     </div>
   ),
 });
@@ -30,7 +30,7 @@ interface OrbClientProps {
 
 /**
  * Full-screen immersive Life Orb view.
- * Dark indigo-950 background, hero-sized orb, dimension legend below.
+ * Dark background, hero-sized orb, dimension legend below.
  */
 export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbClientProps) {
   const [activeDimension, setActiveDimension] = React.useState<string | null>(null);
@@ -40,44 +40,44 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#060614] flex flex-col overflow-hidden">
+    <div className="relative min-h-screen bg-stone-900 flex flex-col overflow-hidden">
       {/* Atmospheric gradients */}
       <div className="fixed inset-0 pointer-events-none -z-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px]
-                        bg-indigo-500/8 rounded-full blur-[120px]" />
+                        bg-sage-500/8 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-1/4 h-[300px] w-[300px]
-                        bg-violet-500/6 rounded-full blur-[100px]" />
+                        bg-sage-600/6 rounded-full blur-[100px]" />
       </div>
 
       {/* Top navigation bar */}
       <header className="relative z-10 flex items-center justify-between px-8 py-6">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 text-sm font-bold text-slate-400
+          className="flex items-center gap-2 text-sm font-bold text-stone-400
                      hover:text-white transition-colors group"
         >
-          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+          <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
           Dashboard
         </Link>
 
         <div className="flex flex-col items-center">
           <h1 className="text-sm font-black text-white tracking-tight uppercase">Life Orb</h1>
-          <p className="text-[11px] font-bold text-indigo-400/70 uppercase tracking-[0.25em]">
+          <p className="text-[11px] font-bold text-sage-500/70 uppercase tracking-[0.25em]">
             Dynamic Balance Visualisation
           </p>
         </div>
 
         {/* Overall score badge */}
         <div
-          className="px-4 py-1.5 rounded-full border border-indigo-500/30
-                     bg-indigo-500/10 backdrop-blur-sm"
+          className="px-4 py-1.5 rounded-full border border-sage-500/30
+                     bg-sage-500/10 backdrop-blur-sm"
         >
           <span
             className="text-base font-black text-white"
             style={{ fontFamily: '"JetBrains Mono", monospace' }}
           >
             {Math.round(overallScore)}
-            <span className="text-xs text-indigo-400 ml-0.5">%</span>
+            <span className="text-xs text-sage-500 ml-0.5">%</span>
           </span>
         </div>
       </header>
@@ -97,7 +97,7 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
       {/* Bottom dimension legend */}
       <footer
         className="relative z-10 px-8 pb-8 pt-4
-                   border-t border-white/5 bg-[#060614]/80 backdrop-blur-xl"
+                   border-t border-white/5 bg-stone-900/80 backdrop-blur-xl"
       >
         {/* Floating score display */}
         <div className="flex flex-col items-center mb-6">
@@ -108,9 +108,9 @@ export default function OrbClient({ dimensions, overallScore, mood = 5 }: OrbCli
             >
               {Math.round(overallScore)}
             </span>
-            <span className="text-xl font-bold text-indigo-400">%</span>
+            <span className="text-xl font-bold text-sage-500">%</span>
           </div>
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">
+          <p className="text-[11px] font-bold text-stone-500 uppercase tracking-[0.3em] mt-1">
             Overall Harmony Index
           </p>
         </div>

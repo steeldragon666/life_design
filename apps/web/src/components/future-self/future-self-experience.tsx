@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2, Pause, Play, Sparkles, VolumeX } from 'lucide-react';
+import { CircleNotch, Pause, Play, Sparkle, SpeakerSlash } from '@phosphor-icons/react';
 import { Dimension, computeOverallScore } from '@life-design/core';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt, buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
@@ -204,11 +204,11 @@ Requirements:
       <div className="glass-card p-8">
         <div className="flex items-start gap-3">
           <div className="h-11 w-11 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-cyan-300" />
+            <Sparkle size={20} weight="light" className="text-cyan-300" />
           </div>
           <div className="space-y-1">
             <h1 className="text-3xl font-bold text-white tracking-tight">Future Self Visualization</h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-stone-400">
               Guided by {mentorProfile.characterName}, project your calm next chapter and choose one aligned step.
             </p>
           </div>
@@ -222,7 +222,7 @@ Requirements:
             <button onClick={generateNarrative} disabled={isGenerating} className="btn-primary">
               {isGenerating ? (
                 <span className="inline-flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <CircleNotch size={16} weight="light" className="animate-spin" />
                   Generating...
                 </span>
               ) : (
@@ -238,8 +238,8 @@ Requirements:
           ) : null}
 
           {!speechSupported ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300 inline-flex items-center gap-2">
-              <VolumeX className="h-4 w-4 text-slate-400" />
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-stone-300 inline-flex items-center gap-2">
+              <SpeakerSlash size={16} weight="light" className="text-stone-400" />
               Audio guidance is unavailable. Read mode is active.
             </div>
           ) : (
@@ -250,12 +250,12 @@ Requirements:
                   className="btn-secondary inline-flex items-center gap-2"
                   disabled={!script}
                 >
-                  <Play className="h-4 w-4" />
+                  <Play size={16} weight="light" />
                   {isPaused ? 'Resume' : 'Play'}
                 </button>
               ) : (
                 <button onClick={pauseScript} className="btn-secondary inline-flex items-center gap-2">
-                  <Pause className="h-4 w-4" />
+                  <Pause size={16} weight="light" />
                   Pause
                 </button>
               )}
@@ -264,9 +264,9 @@ Requirements:
 
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 min-h-[300px]">
             {script ? (
-              <p className="text-slate-200 whitespace-pre-wrap leading-relaxed">{script}</p>
+              <p className="text-stone-200 whitespace-pre-wrap leading-relaxed">{script}</p>
             ) : (
-              <p className="text-slate-500">
+              <p className="text-stone-500">
                 Generate a future-self narrative to begin your guided visualization.
               </p>
             )}
@@ -284,7 +284,7 @@ Requirements:
         </div>
       </div>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-stone-500">
         This reflection tool supports calm focus and growth planning, and does not replace medical or mental health care.
       </p>
     </div>

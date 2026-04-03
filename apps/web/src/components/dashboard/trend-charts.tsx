@@ -172,7 +172,7 @@ export default function TrendCharts({
     return (
       <section className={chartWrapperClassName}>
         <h3 className="section-header mb-1">Trend chart</h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-stone-400">
           No check-in history yet. Complete a few check-ins to see trend lines.
         </p>
       </section>
@@ -183,7 +183,7 @@ export default function TrendCharts({
     return (
       <section className={chartWrapperClassName}>
         <h3 className="section-header mb-1">Trend chart</h3>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-stone-400">
           Check-ins are available, but no dimension scores were found for charting.
         </p>
       </section>
@@ -195,7 +195,7 @@ export default function TrendCharts({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="section-header mb-0">Trend chart</h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-stone-500 mt-1">
             Track score changes over time with adjustable windows.
           </p>
         </div>
@@ -208,8 +208,8 @@ export default function TrendCharts({
               onClick={() => setWindowDays(days)}
               className={`px-2.5 py-1.5 text-xs rounded-md transition-colors ${
                 windowDays === days
-                  ? 'bg-blue-500/20 text-blue-200 border border-blue-500/40'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10 border border-transparent'
+                  ? 'bg-accent-500/20 text-accent-200 border border-accent-500/40'
+                  : 'text-stone-300 hover:text-white hover:bg-white/10 border border-transparent'
               }`}
               aria-pressed={windowDays === days}
             >
@@ -221,8 +221,8 @@ export default function TrendCharts({
 
       <div className="mt-4 space-y-3">
         {validPair && (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
-            <p className="text-xs text-blue-200">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-accent-500/20 bg-accent-500/10 p-3">
+            <p className="text-xs text-accent-200">
               Highlighted correlation pair:{' '}
               <span className="font-semibold">
                 {formatDimensionLabel(validPair[0])} + {formatDimensionLabel(validPair[1])}
@@ -231,7 +231,7 @@ export default function TrendCharts({
             <button
               type="button"
               onClick={() => setOverlayPairEnabled((current) => !current)}
-              className="text-xs rounded-md border border-blue-400/40 px-2.5 py-1 text-blue-200 hover:text-white hover:border-blue-300"
+              className="text-xs rounded-md border border-accent-400/40 px-2.5 py-1 text-accent-200 hover:text-white hover:border-accent-300"
             >
               {overlayPairEnabled ? 'Overlay enabled' : 'Overlay disabled'}
             </button>
@@ -260,8 +260,8 @@ export default function TrendCharts({
                 disabled={disabled}
                 className={`px-2.5 py-1.5 rounded-full text-xs border transition-colors ${
                   selected
-                    ? 'border-blue-400/50 bg-blue-500/20 text-blue-100'
-                    : 'border-white/15 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10'
+                    ? 'border-accent-400/50 bg-accent-500/20 text-accent-100'
+                    : 'border-white/15 bg-white/5 text-stone-300 hover:text-white hover:bg-white/10'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {formatDimensionLabel(dimension)}
@@ -272,11 +272,11 @@ export default function TrendCharts({
       </div>
 
       {displayedDimensions.length === 0 ? (
-        <p className="text-sm text-slate-400 mt-6">
+        <p className="text-sm text-stone-400 mt-6">
           Select at least one dimension to render trend lines.
         </p>
       ) : chartData.length === 0 ? (
-        <p className="text-sm text-slate-400 mt-6">
+        <p className="text-sm text-stone-400 mt-6">
           No data in this window. Try a wider range to include more check-ins.
         </p>
       ) : (
