@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/db/schema';
+import { db } from '@/lib/db';
 import { DayView } from '@/components/schedule/DayView';
 import { WeekView } from '@/components/schedule/WeekView';
 import { Card } from '@life-design/ui';
