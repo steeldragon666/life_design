@@ -33,6 +33,9 @@ supabase/.temp/
 # Test coverage
 coverage/
 
+# Test results
+test-results/
+
 # Debug
 npm-debug.log*
 pnpm-debug.log*

@@ -11,7 +11,7 @@ import { getUserProfile } from '@/lib/services/user-profile-service';
 import { getGoals } from '@/lib/services/goal-service';
 import { sendMentorMessage, buildSystemPrompt } from '@life-design/ai';
 import type { UserContext } from '@life-design/ai';
-import { MentorType, computeDimensionAverage, getGranularContext } from '@life-design/core';
+import { MentorType, getGranularContext } from '@life-design/core';
 import { buildWeatherContext } from '@/lib/integrations/weather';
 import { buildSpotifyContext } from '@/lib/integrations/spotify';
 import { buildHealthContext } from '@/lib/integrations/apple-health';
@@ -53,6 +53,9 @@ export async function sendMessage(
   const goals = goalsResult.data ?? [];
   const userProfile = userProfileResult.data;
 
+  // Build enriched user context
+  const userContext: UserContext = {};
+
   // Add personality profile to context for personalized mentor behavior
   if (userProfile) {
     userContext.personalityProfile = {
@@ -65,9 +68,6 @@ export async function sendMessage(
       selfEfficacy: userProfile.self_efficacy,
     };
   }
-
-  // Build enriched user context
-  const userContext: UserContext = {};
 
   // Get latest check-in data
   const { data: latestCheckin } = await supabase

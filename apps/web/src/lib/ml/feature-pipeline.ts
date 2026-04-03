@@ -159,7 +159,7 @@ export class FeaturePipeline implements IFeatureExtractor {
     for (const feature of NUMERIC_FEATURES) {
       const rawValue = rawSignals[feature] as number | undefined;
       if (rawValue !== undefined) {
-        normalisedPartial[feature] = await this.normStore.normalise(feature, rawValue);
+        (normalisedPartial as Record<string, number>)[feature] = await this.normStore.normalise(feature, rawValue);
         // Update running stats
         await this.normStore.updateStats(feature, rawValue);
       } else {

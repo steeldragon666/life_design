@@ -155,6 +155,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
 
   // Streak: count consecutive days from today backwards where all tasks done
   function computeStreak(): number {
+    if (!challenge || !active) return 0;
     let streak = 0;
     for (let d = currentDayNumber; d >= 1; d--) {
       const day = challenge.days.find((cd) => cd.day === d);
@@ -187,7 +188,7 @@ export default function ActiveChallengeView({ activeChallengeId }: ActiveChallen
 
   async function handleAbandon() {
     const confirmed = window.confirm(
-      `Are you sure you want to abandon "${challenge.title}"? Your progress will be lost.`,
+      `Are you sure you want to abandon "${challenge?.title}"? Your progress will be lost.`,
     );
     if (!confirmed) return;
     setIsAbandoning(true);

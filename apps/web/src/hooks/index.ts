@@ -15,4 +15,3 @@ export {
   type UseParallaxReturn,
 } from './use-parallax';
 
-export { default as useML, type UseMLReturn } from './useML';

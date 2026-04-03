@@ -9,11 +9,29 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { question_id, answer, current_section, current_step } = body;
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
 
-  if (!question_id || answer === undefined) {
+  const { question_id, answer, current_section, current_step } = body as Record<string, unknown>;
+
+  if (typeof question_id !== 'string' || !question_id || answer === undefined) {
     return NextResponse.json({ error: 'Missing question_id or answer' }, { status: 400 });
+  }
+
+  // Validate answer type and size
+  const isValidAnswer =
+    typeof answer === 'string' ||
+    typeof answer === 'number' ||
+    (Array.isArray(answer) && answer.every((v) => typeof v === 'string'));
+  if (!isValidAnswer) {
+    return NextResponse.json({ error: 'Invalid answer format' }, { status: 400 });
+  }
+  if (typeof answer === 'string' && answer.length > 4000) {
+    return NextResponse.json({ error: 'Answer too long' }, { status: 400 });
   }
 
   // Get current session

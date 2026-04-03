@@ -19,5 +19,5 @@
     }
   },
   "include": ["next-env.d.ts", "src/types/r3f.d.ts", "src/types/speech-recognition.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/app/sw.ts", "src/__tests__"]
 }

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Image from 'next/image';
 import { listMentors, getUserMentors } from '@/lib/services/mentor-service';
 import MentorListClient from './mentor-list-client';
-import { Sparkles, MessageCircle } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default async function MentorsPage() {
   const supabase = await createClient();

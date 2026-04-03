@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { QUESTIONS, SECTIONS, getQuestionsForSection } from '@/lib/profiling/question-schema';
+import { SECTIONS, getQuestionsForSection } from '@/lib/profiling/question-schema';
 import type { RawAnswers, ProfileSummaryTemplate } from '@life-design/core';
 import { createClient } from '@/lib/supabase/client';
 import { useGuest } from '@/lib/guest-context';
@@ -24,6 +24,7 @@ export default function ProfilingWizard() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [summary, setSummary] = useState<ProfileSummaryTemplate | null>(null);
   const [userName, setUserName] = useState<string>('');
+  const [pendingMultiSelect, setPendingMultiSelect] = useState<string[] | null>(null);
 
   // Initialise session
   useEffect(() => {
@@ -31,6 +32,13 @@ export default function ProfilingWizard() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       const isGuest = !session;
+
+      // Try to get user's name for personalized summary
+      if (session?.user?.user_metadata?.full_name) {
+        setUserName(session.user.user_metadata.full_name.split(' ')[0]);
+      } else if (session?.user?.email) {
+        setUserName(session.user.email.split('@')[0]);
+      }
 
       if (isGuest) {
         const savedSessionStr = localStorage.getItem('life-design-onboarding-session');
@@ -238,6 +246,11 @@ export default function ProfilingWizard() {
   }
 
   if (phase === 'question' && currentQuestion) {
+    const isMultiSelect = currentQuestion.type === 'multi_select';
+    const displayValue = isMultiSelect
+      ? (pendingMultiSelect ?? (Array.isArray(answers[currentQuestion.id]) ? answers[currentQuestion.id] as string[] : []))
+      : (answers[currentQuestion.id] ?? null);
+
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#FAFAF8] to-[#F5F3EF]">
         <header className="sticky top-0 z-50 px-4 py-4 bg-[#FAFAF8]/80 backdrop-blur-sm">
@@ -265,9 +278,27 @@ export default function ProfilingWizard() {
             </h2>
             <QuestionRenderer
               question={currentQuestion}
-              value={answers[currentQuestion.id] ?? null}
-              onChange={handleAnswer}
+              value={displayValue}
+              onChange={isMultiSelect
+                ? (val) => setPendingMultiSelect(val as string[])
+                : handleAnswer
+              }
             />
+            {isMultiSelect && (
+              <button
+                onClick={() => {
+                  const val = pendingMultiSelect ?? [];
+                  if (val.length > 0) {
+                    setPendingMultiSelect(null);
+                    handleAnswer(val);
+                  }
+                }}
+                disabled={!(pendingMultiSelect && pendingMultiSelect.length > 0)}
+                className="w-full py-3 rounded-xl font-medium text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-[#1A1816] text-white hover:bg-[#1A1816]/90"
+              >
+                Continue
+              </button>
+            )}
           </div>
         </main>
       </div>
