@@ -86,7 +86,15 @@ export default async function DashboardPage() {
   }[];
 
   // Build goals summary
-  const activeGoals = (goalsResult.data ?? []) as Array<Record<string, unknown>>;
+  const activeGoals = (goalsResult.data ?? []) as Array<{
+    [key: string]: unknown;
+    id: string;
+    title: string;
+    horizon: string;
+    target_date: string | null;
+    goal_dimensions?: Array<{ dimension: string }>;
+    goal_milestones?: Array<{ id: string; completed: boolean }>;
+  }>;
   const goalsSummary = {
     total: activeGoals.length,
     byHorizon: {
@@ -103,8 +111,11 @@ export default async function DashboardPage() {
       : null,
   };
 
-  const nudges = worldContext 
-    ? await generateNudges(latestScores, activeGoals, worldContext)
+  const scoresRecord = Object.fromEntries(
+    (latestScores as { dimension: string; score: number }[]).map(s => [s.dimension, s.score])
+  );
+  const nudges = worldContext
+    ? await generateNudges(scoresRecord, activeGoals, worldContext)
     : [];
 
   // Derive firstName: prefer profile field, fall back to email prefix
@@ -121,14 +132,7 @@ export default async function DashboardPage() {
       dimensionTrends={dimensionTrends}
       recentInsights={recentInsights}
       goalsSummary={goalsSummary}
-      activeGoals={activeGoals as Array<{
-        id: string;
-        title: string;
-        horizon: string;
-        target_date: string | null;
-        goal_dimensions?: Array<{ dimension: string }>;
-        goal_milestones?: Array<{ id: string; completed: boolean }>;
-      }>}
+      activeGoals={activeGoals}
       nudges={nudges}
       firstName={firstName}
     />

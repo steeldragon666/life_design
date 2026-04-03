@@ -61,7 +61,7 @@ export interface ProfileSummaryTemplate {
 }
 
 /** Full user profile (matches user_profiles table) */
-export interface UserProfile extends NormalisedProfile, DerivedScores {
+export interface DetailedUserProfile extends NormalisedProfile, DerivedScores {
   id: string;
   user_id: string;
   profile_version: number;

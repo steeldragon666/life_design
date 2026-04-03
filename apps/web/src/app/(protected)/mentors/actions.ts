@@ -168,7 +168,7 @@ export async function sendMessage(
   // Build system prompt with all context
   const systemPrompt = buildSystemPrompt(mentorType as MentorType, userContext);
 
-  const result = await sendMentorMessage(messages, systemPrompt, worldContext);
+  const result = await sendMentorMessage(messages, systemPrompt, worldContext ?? undefined);
 
   // Save assistant response if successful
   if (result.text) {

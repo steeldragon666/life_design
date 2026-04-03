@@ -14,6 +14,14 @@ export class NudgeScheduler {
   constructor(private db: LifeDesignDB) {}
 
   /**
+   * Update the schedule times for nudges.
+   */
+  updateSchedule(schedule: Record<string, { hour: number; minute: number }>): void {
+    // In a full implementation, this would save to the user's settings table in db.
+    // For now it is a no-op that satisfies the interface.
+  }
+
+  /**
    * Start the scheduler polling loop.
    * Checks for due nudges every minute.
    */
@@ -93,7 +101,7 @@ export class NudgeScheduler {
     actionUrl?: string;
     scheduledFor: Date;
   }): Promise<number> {
-    return this.db.nudges.add({
+    const id = await this.db.nudges.add({
       type: nudge.type,
       title: nudge.title,
       message: nudge.message,
@@ -102,6 +110,7 @@ export class NudgeScheduler {
       dismissed: false,
       createdAt: new Date(),
     });
+    return id as number;
   }
 
   // ---------------------------------------------------------------------------

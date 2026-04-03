@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { QUESTIONS, SECTIONS, getQuestionsForSection } from '@/lib/profiling/question-schema';
 import type { RawAnswers, ProfileSummaryTemplate } from '@life-design/core';
+import { createClient } from '@/lib/supabase/client';
+import { useGuest } from '@/lib/guest-context';
 import ProgressBar from './progress-bar';
 import SectionHeader from './section-header';
 import QuestionRenderer from './question-renderer';
@@ -14,6 +16,7 @@ type WizardPhase = 'loading' | 'section_intro' | 'question' | 'mentors' | 'compl
 
 export default function ProfilingWizard() {
   const router = useRouter();
+  const { setProfile } = useGuest();
   const [phase, setPhase] = useState<WizardPhase>('loading');
   const [sectionIndex, setSectionIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -25,6 +28,35 @@ export default function ProfilingWizard() {
   // Initialise session
   useEffect(() => {
     async function init() {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const isGuest = !session;
+
+      if (isGuest) {
+        const savedSessionStr = localStorage.getItem('life-design-onboarding-session');
+        if (savedSessionStr) {
+          try {
+            const statusData = JSON.parse(savedSessionStr);
+            if (statusData.status === 'completed') {
+              router.push('/dashboard');
+              return;
+            }
+            setSessionId('guest-session');
+            setAnswers(statusData.raw_answers ?? {});
+            const sIdx = SECTIONS.findIndex((s) => s.id === statusData.current_section);
+            if (sIdx >= 0) setSectionIndex(sIdx);
+            setQuestionIndex(statusData.current_step ?? 0);
+            setPhase('question');
+            return;
+          } catch (e) {
+            console.error('Failed to parse guest session', e);
+          }
+        }
+        setSessionId('guest-session');
+        setPhase('section_intro');
+        return;
+      }
+
       // Check for existing session
       const statusRes = await fetch('/api/onboarding/status');
       const statusData = await statusRes.json();
@@ -62,6 +94,16 @@ export default function ProfilingWizard() {
     const newAnswers = { ...answers, [questionId]: answer };
     setAnswers(newAnswers);
 
+    if (sessionId === 'guest-session') {
+      localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+        status: 'in_progress',
+        raw_answers: newAnswers,
+        current_section: currentSection?.id,
+        current_step: questionIndex,
+      }));
+      return;
+    }
+
     await fetch('/api/onboarding/answer', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -72,7 +114,7 @@ export default function ProfilingWizard() {
         current_step: questionIndex,
       }),
     });
-  }, [answers, currentSection, questionIndex]);
+  }, [answers, currentSection, questionIndex, sessionId]);
 
   const handleAnswer = useCallback(async (value: string | string[] | number) => {
     if (!currentQuestion) return;
@@ -107,11 +149,71 @@ export default function ProfilingWizard() {
 
   const handleComplete = useCallback(async () => {
     setPhase('completing');
-    const res = await fetch('/api/onboarding/complete', { method: 'POST' });
-    const data = await res.json();
-    setSummary(data.summary);
-    setPhase('summary');
-  }, []);
+
+    const buildFallbackSummary = (): ProfileSummaryTemplate => ({
+      strength: 'You have the awareness to reflect on what matters',
+      friction: 'Minor friction points — mostly manageable with the right structure',
+      strategy: 'Start small, measure often, and adjust as you learn what works',
+      this_week: 'This week: check in daily and notice what patterns emerge',
+    });
+
+    if (sessionId === 'guest-session') {
+      try {
+        const { normaliseRawAnswers, computeAllDerivedScores } = await import('@life-design/core');
+        const { generateSummaryTemplate } = await import('@/lib/profiling/summary-templates');
+
+        const normalised = normaliseRawAnswers(answers);
+        const derived = computeAllDerivedScores(normalised);
+        const summaryTemplate = generateSummaryTemplate(normalised, derived);
+
+        setProfile({
+          id: 'guest-user',
+          ...normalised,
+          ...derived,
+          onboarded: true,
+        } as any);
+
+        localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+          status: 'completed',
+          raw_answers: answers,
+        }));
+
+        setSummary(summaryTemplate);
+        setPhase('summary');
+      } catch (err) {
+        console.error('Guest onboarding completion failed, using fallback summary', err);
+        setProfile({ id: 'guest-user', onboarded: true } as any);
+        localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+          status: 'completed',
+          raw_answers: answers,
+        }));
+        setSummary(buildFallbackSummary());
+        setPhase('summary');
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/onboarding/complete', { method: 'POST' });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data = await res.json();
+      if (!data.summary) throw new Error('No summary in response');
+      setSummary(data.summary);
+      setPhase('summary');
+    } catch (err) {
+      console.error('Authenticated onboarding completion failed, computing client-side', err);
+      try {
+        const { normaliseRawAnswers, computeAllDerivedScores } = await import('@life-design/core');
+        const { generateSummaryTemplate } = await import('@/lib/profiling/summary-templates');
+        const normalised = normaliseRawAnswers(answers);
+        const derived = computeAllDerivedScores(normalised);
+        setSummary(generateSummaryTemplate(normalised, derived));
+      } catch {
+        setSummary(buildFallbackSummary());
+      }
+      setPhase('summary');
+    }
+  }, [sessionId, answers, setProfile]);
 
   if (phase === 'loading' || phase === 'completing') {
     return (

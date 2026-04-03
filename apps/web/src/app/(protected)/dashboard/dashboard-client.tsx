@@ -584,7 +584,7 @@ export default function DashboardClient({
                 body: i.body,
                 dimension: i.dimension ?? null,
               }))}
-              activeNudge={activeNudge ? { id: activeNudge.id, title: activeNudge.title, message: activeNudge.message, type: activeNudge.type } : null}
+              activeNudge={activeNudge ? { id: String(activeNudge.id), title: activeNudge.title, message: activeNudge.message, type: activeNudge.type } : null}
               latestDigest={latestDigest ?? null}
               onDismissInsight={() => {}}
               onDismissNudge={(id) => nudgeScheduler.markAsRead(id)}

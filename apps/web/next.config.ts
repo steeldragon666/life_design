@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next';
-import type { Configuration } from 'webpack';
 import path from 'path';
 
 const securityHeaders = [
@@ -43,30 +42,22 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Safety net: alias onnxruntime-node to empty shim in case any transitive
-      // dependency still tries to import it.
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'onnxruntime-node': path.resolve(__dirname, 'src/lib/onnxruntime-node-shim.js'),
-      };
-    }
-    return config;
-  },
   poweredByHeader: false,
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
-  /**
-   * Webpack overrides:
-   * - Stub out `expo-health` and `react-native` which are dynamically imported
-   *   by packages/core/src/connectors/apple-health.ts for iOS-only HealthKit
-   *   access. These modules are not available in the web build and must be
-   *   replaced with empty stubs to prevent "Module not found" build failures.
-   */
-  webpack(config: Configuration, { isServer }: { isServer: boolean }) {
+  webpack(config, { isServer }) {
+    // Alias onnxruntime-node to empty shim on client
+    if (!isServer) {
+      config.resolve = config.resolve ?? {};
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'onnxruntime-node': path.resolve(__dirname, 'src/lib/onnxruntime-node-shim.js'),
+      };
+    }
+
+    // Stub out expo-health and react-native for web builds
     config.resolve = config.resolve ?? {};
     config.resolve.fallback = {
       ...(config.resolve.fallback as Record<string, unknown>),
@@ -74,9 +65,7 @@ const nextConfig: NextConfig = {
       'react-native': false,
     };
 
-    // Prevent webpack from trying to bundle native .node binaries
-    // from onnxruntime-node (used by @huggingface/transformers).
-    // These are only needed at runtime on the server, not at build time.
+    // Prevent webpack from bundling native .node binaries on server
     if (isServer) {
       config.externals = config.externals ?? [];
       if (Array.isArray(config.externals)) {

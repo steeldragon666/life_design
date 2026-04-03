@@ -2,7 +2,7 @@
 
 import { useLiveQuery } from 'dexie-react-hooks';
 import Link from 'next/link';
-import { db } from '@/lib/db/schema';
+import { db } from '@/lib/db';
 import { DIMENSION_LABELS } from '@life-design/core';
 import { dimensionPalettes, BarStack, type BarSegment, ScheduleWidgetSkeleton } from '@life-design/ui';
 import { ArrowRight } from '@phosphor-icons/react';

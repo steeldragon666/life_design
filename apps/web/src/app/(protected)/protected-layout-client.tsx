@@ -13,7 +13,7 @@ import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVer
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; size?: number; weight?: string }>;
+  icon: React.ComponentType<{ className?: string; size?: string | number; weight?: string }>;
 };
 
 const navItems: NavItem[] = [

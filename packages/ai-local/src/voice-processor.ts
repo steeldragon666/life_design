@@ -35,19 +35,25 @@ export interface VoiceSession {
  * Matches patterns like "career is about a 7", "health: 8", "fitness 6 out of 10"
  */
 const SCORE_PATTERNS = [
-  // "career is about a 7" / "career is a 7"
-  /\b(career|finance|health|fitness|family|social|romance|growth)\s+(?:is\s+)?(?:about\s+)?(?:a\s+)?(\d+)\b/gi,
+  // "career is about a 7" / "career is a 7" / "fitness maybe 5"
+  /\b(career|finance|health|fitness|family|social|romance|growth)\s+(?:is\s+)?(?:about\s+|maybe\s+|like\s+|around\s+)?(?:a\s+)?(\d+)\b/gi,
   // "career: 7"
   /\b(career|finance|health|fitness|family|social|romance|growth)\s*:\s*(\d+)\b/gi,
   // "career 7 out of 10"
   /\b(career|finance|health|fitness|family|social|romance|growth)\s+(\d+)\s+(?:out of 10|\/10)\b/gi,
   // "I'd rate career a 7" / "I'd give career a 7"
   /\b(?:rate|give)\s+(career|finance|health|fitness|family|social|romance|growth)\s+(?:a\s+)?(\d+)\b/gi,
+  // "my social is a 8" / "I'd say my X is a Y"
+  /\bmy\s+(career|finance|health|fitness|family|social|romance|growth)\s+(?:is\s+)?(?:a\s+)?(\d+)\b/gi,
 ];
 
 /**
  * Extract explicit dimension scores from transcript text.
  */
+export function extractScoresFromSpeech(text: string): Partial<Record<DimensionLabel, number>> {
+  return extractExplicitScores(text);
+}
+
 function extractExplicitScores(text: string): Partial<Record<DimensionLabel, number>> {
   const scores: Partial<Record<DimensionLabel, number>> = {};
 
