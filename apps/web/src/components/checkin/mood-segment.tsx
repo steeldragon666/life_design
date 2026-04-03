@@ -27,7 +27,7 @@ export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-white">Mood</span>
-        <span className="text-sm text-slate-300">One tap</span>
+        <span className="text-sm text-stone-300">One tap</span>
       </div>
       <div role="radiogroup" aria-label="Quick mood selection" className="grid grid-cols-5 gap-2">
         {QUICK_MOOD_OPTIONS.map((option) => {
@@ -52,8 +52,8 @@ export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
               }}
               className={`rounded-md border px-2 py-2 text-center transition ${
                 selected
-                  ? 'border-indigo-400 bg-indigo-500/30 text-white'
-                  : 'border-white/20 bg-white/5 text-slate-200 hover:border-white/40 hover:bg-white/10'
+                  ? 'border-sage-500 bg-sage-500/30 text-white'
+                  : 'border-white/20 bg-white/5 text-stone-200 hover:border-white/40 hover:bg-white/10'
               }`}
             >
               <span className="block text-xl leading-none">{option.emoji}</span>

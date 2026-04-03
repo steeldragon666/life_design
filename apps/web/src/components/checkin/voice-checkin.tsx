@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Mic, Square, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Microphone, Square, CircleNotch, Sparkle, CheckCircle } from '@phosphor-icons/react';
 import { analyzeVoiceJournal } from '@life-design/ai'; // This will be called via a server action or client-side if key is safe
 
 export default function VoiceCheckin() {
@@ -9,7 +9,7 @@ export default function VoiceCheckin() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [status, setStatus] = useState<'idle' | 'recording' | 'transcribing' | 'analyzing' | 'success'>('idle');
-  
+
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
 
@@ -48,13 +48,13 @@ export default function VoiceCheckin() {
   const simulateAIAnalysis = async () => {
     setIsProcessing(true);
     setStatus('analyzing');
-    
+
     // Simulate Gemini 1.5 processing
     await new Promise(r => setTimeout(r, 3000));
-    
+
     setStatus('success');
     setIsProcessing(false);
-    
+
     setTimeout(() => {
       setStatus('idle');
     }, 5000);
@@ -63,7 +63,7 @@ export default function VoiceCheckin() {
   return (
     <div className="glass-card relative overflow-hidden group p-8 flex flex-col items-center justify-center text-center space-y-6">
       <div className="absolute inset-0 bg-primary-500/5 blur-[80px] rounded-full pointer-events-none" />
-      
+
       <div className="relative">
         <div className={`absolute inset-0 bg-primary-500/20 rounded-full blur-xl scale-150 transition-opacity duration-500 ${isRecording ? 'opacity-100 animate-pulse' : 'opacity-0'}`} />
         <button
@@ -71,13 +71,16 @@ export default function VoiceCheckin() {
           disabled={isProcessing}
           className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording ? 'bg-red-500 shadow-lg shadow-red-500/40' : 'bg-primary-600 hover:bg-primary-500'}`}
         >
-          {isRecording ? <Square className="h-10 w-10 text-white fill-white" /> : <Mic className="h-10 w-10 text-white" />}
+          {isRecording
+            ? <Square size={40} weight="fill" className="text-white" />
+            : <Microphone size={40} weight="light" className="text-white" />
+          }
         </button>
       </div>
 
       <div className="space-y-2">
         <h3 className="text-2xl font-bold text-white tracking-tight">Voice Journal</h3>
-        <p className="text-slate-400 font-medium max-w-xs mx-auto">
+        <p className="text-stone-400 font-medium max-w-xs mx-auto">
           {status === 'idle' && "Talk through your day. We'll extract the scores."}
           {status === 'recording' && "I'm listening. Tell me about your life right now."}
           {status === 'transcribing' && "Transcribing your thoughts..."}
@@ -88,14 +91,14 @@ export default function VoiceCheckin() {
 
       {isProcessing && (
         <div className="flex items-center gap-2 text-primary-400 font-bold animate-pulse">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <CircleNotch size={16} weight="light" className="animate-spin" />
           <span className="text-xs uppercase tracking-widest">AI Extraction Active</span>
         </div>
       )}
 
       {status === 'success' && (
         <div className="flex items-center gap-2 text-emerald-400 font-bold">
-          <CheckCircle2 className="h-5 w-5" />
+          <CheckCircle size={20} weight="light" />
           <span className="text-xs uppercase tracking-widest text-emerald-500">Multimodal Sync Complete</span>
         </div>
       )}

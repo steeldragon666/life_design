@@ -6,7 +6,7 @@ import type { ChatBubbleProps, PersonaBlend } from '@/components/mentors/chat-bu
 import ChatInput from '@/components/mentors/chat-input';
 import type { VoiceRecorderResult } from '@/components/mentors/voice-recorder';
 import { sendMessage } from '../../actions';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@phosphor-icons/react';
 import Link from 'next/link';
 import type { MentorArchetype } from '@/lib/mentor-archetypes';
 import { archetypeToMentorType, getArchetypeConfig } from '@/lib/mentor-archetypes';
@@ -256,7 +256,7 @@ export default function ChatClient({
             className="p-1.5 rounded-xl text-white/40 hover:text-white/80 hover:bg-white/10 transition-all duration-200"
             aria-label="Back to mentors"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft size={16} weight="light" />
           </Link>
           <div>
             <div className="flex items-center gap-2">

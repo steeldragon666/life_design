@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ALL_DIMENSIONS, computeAllPairCorrelations, detectSignificantPatterns } from '@life-design/core';
-import { Mic, Loader2, MessageSquare, Sparkles } from 'lucide-react';
+import { Microphone, CircleNotch, ChatDots, Sparkle } from '@phosphor-icons/react';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
@@ -156,7 +156,7 @@ Respond in two sections:
     <div className="space-y-4">
       <div className="glass-card p-5">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="h-4 w-4 text-cyan-300" />
+          <Sparkle size={16} weight="light" className="text-cyan-300" />
           <p className="text-sm text-cyan-200">{intro}</p>
         </div>
         <div className="flex gap-2">
@@ -164,14 +164,14 @@ Respond in two sections:
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             placeholder="Speak or type your goal intention..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500"
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-stone-500"
           />
           <button
             onClick={processInput}
             disabled={loading}
             className="btn-primary inline-flex items-center gap-2"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
+            {loading ? <CircleNotch size={16} weight="light" className="animate-spin" /> : <ChatDots size={16} weight="light" />}
             Guide
           </button>
         </div>
@@ -179,7 +179,7 @@ Respond in two sections:
 
       {response && (
         <div className="glass-card p-5">
-          <p className="text-slate-200 whitespace-pre-wrap text-sm">{response}</p>
+          <p className="text-stone-200 whitespace-pre-wrap text-sm">{response}</p>
         </div>
       )}
 
@@ -192,14 +192,14 @@ Respond in two sections:
       {draft && (
         <div className="glass-card p-5 space-y-3">
           <p className="text-white font-semibold">Goal Draft</p>
-          <p className="text-slate-300 text-sm">{draft.title}</p>
-          {draft.description && <p className="text-slate-400 text-sm">{draft.description}</p>}
+          <p className="text-stone-300 text-sm">{draft.title}</p>
+          {draft.description && <p className="text-stone-400 text-sm">{draft.description}</p>}
           <p className="text-xs text-cyan-300 uppercase tracking-wider">{draft.horizon} horizon</p>
           <button
             onClick={() => onCreateGoal(draft)}
             className="btn-secondary inline-flex items-center gap-2"
           >
-            <Mic className="h-4 w-4" />
+            <Microphone size={16} weight="light" />
             Save this goal
           </button>
         </div>

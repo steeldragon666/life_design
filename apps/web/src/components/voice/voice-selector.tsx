@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Volume2, Check, Mic, User, Globe } from 'lucide-react';
+import { SpeakerHigh, Check, Microphone, User, Globe } from '@phosphor-icons/react';
 
 interface VoiceOption {
   id: string;
@@ -76,10 +76,10 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
     };
 
     const preferences = voiceMappings[option.id] || [];
-    
+
     // Try to find a matching voice
     for (const pref of preferences) {
-      const match = availableVoices.find(v => 
+      const match = availableVoices.find(v =>
         v.name.includes(pref) || v.lang.includes(pref)
       );
       if (match) return match;
@@ -87,7 +87,7 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
 
     // Fallback to any English voice of preferred gender
     const genderPreference = option.gender === 'female' ? 'Female' : 'Male';
-    const fallback = availableVoices.find(v => 
+    const fallback = availableVoices.find(v =>
       v.lang.startsWith('en') && v.name.includes(genderPreference)
     );
 
@@ -102,7 +102,7 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
 
     const utterance = new SpeechSynthesisUtterance(option.previewText);
     const voice = findBestVoice(option);
-    
+
     if (voice) {
       utterance.voice = voice;
     }
@@ -128,7 +128,7 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
     <div className="w-full space-y-4">
       <div className="text-center mb-6">
         <h3 className="text-xl font-semibold text-white mb-2">Choose Your Companion</h3>
-        <p className="text-slate-400 text-sm">
+        <p className="text-stone-400 text-sm">
           Select a voice that feels most comforting to you
         </p>
       </div>
@@ -151,28 +151,28 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
               {/* Selected Indicator */}
               {isSelected && (
                 <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-teal-500 flex items-center justify-center">
-                  <Check className="h-4 w-4 text-white" />
+                  <Check size={16} className="text-white" />
                 </div>
               )}
 
               {/* Voice Avatar */}
               <div className="flex items-center gap-3 mb-4">
                 <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                  option.gender === 'female' 
-                    ? 'bg-gradient-to-br from-pink-400/30 to-purple-400/30' 
+                  option.gender === 'female'
+                    ? 'bg-gradient-to-br from-pink-400/30 to-purple-400/30'
                     : 'bg-gradient-to-br from-blue-400/30 to-teal-400/30'
                 }`}>
-                  <User className={`h-6 w-6 ${
+                  <User size={24} className={
                     option.gender === 'female' ? 'text-pink-300' : 'text-blue-300'
-                  }`} />
+                  } />
                 </div>
                 <div>
                   <h4 className="text-lg font-semibold text-white">{option.name}</h4>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <div className="flex items-center gap-2 text-xs text-stone-500">
                     <span className="capitalize">{option.gender}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <Globe className="h-3 w-3" />
+                      <Globe size={12} />
                       {option.accent}
                     </span>
                   </div>
@@ -180,7 +180,7 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
               </div>
 
               {/* Description */}
-              <p className="text-sm text-slate-400 leading-relaxed mb-4">
+              <p className="text-sm text-stone-400 leading-relaxed mb-4">
                 {option.description}
               </p>
 
@@ -198,17 +198,17 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
                   className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all ${
                     isPlaying
                       ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                      : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                      : 'bg-white/5 text-stone-300 hover:bg-white/10'
                   }`}
                 >
                   {isPlaying ? (
                     <>
-                      <Volume2 className="h-4 w-4 animate-pulse" />
+                      <SpeakerHigh size={16} className="animate-pulse" />
                       Stop Preview
                     </>
                   ) : (
                     <>
-                      <Mic className="h-4 w-4" />
+                      <Microphone size={16} />
                       Hear Sample
                     </>
                   )}
@@ -230,7 +230,7 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
 
       {/* Voice Info */}
       <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-stone-500">
           You can change your voice companion anytime in Settings
         </p>
       </div>
@@ -247,9 +247,9 @@ export function getSelectedVoice(voiceId: string, availableVoices: SpeechSynthes
   };
 
   const preferences = voiceMappings[voiceId] || voiceMappings['calm-british-female'];
-  
+
   for (const pref of preferences) {
-    const match = availableVoices.find(v => 
+    const match = availableVoices.find(v =>
       v.name.includes(pref) || v.lang.includes(pref)
     );
     if (match) return match;

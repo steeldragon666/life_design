@@ -38,10 +38,10 @@ export default function MentorIntro({ onContinue }: MentorIntroProps) {
   return (
     <div className="min-h-screen px-4 py-8 md:px-8">
       <div className="max-w-lg mx-auto">
-        <h1 className="font-['Instrument_Serif'] text-3xl text-[#1A1816] text-center mb-2">
+        <h1 className="font-serif text-3xl text-stone-900 text-center mb-2">
           Meet Your Mentors
         </h1>
-        <p className="text-[#A8A198] text-sm text-center mb-8">
+        <p className="text-stone-400 text-sm text-center mb-8">
           Three AI mentors, each with a different approach
         </p>
 
@@ -59,19 +59,19 @@ export default function MentorIntro({ onContinue }: MentorIntroProps) {
                   {mentor.name[0]}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-[#1A1816]">{mentor.name}</h3>
-                  <p className="text-xs text-[#A8A198]">{mentor.archetype}</p>
+                  <h3 className="font-semibold text-stone-900">{mentor.name}</h3>
+                  <p className="text-xs text-stone-400">{mentor.archetype}</p>
                 </div>
               </div>
-              <p className="text-sm text-[#1A1816]/80 mb-2">{mentor.description}</p>
-              <p className="text-sm italic text-[#1A1816]/60">"{mentor.greeting}"</p>
+              <p className="text-sm text-stone-900/80 mb-2">{mentor.description}</p>
+              <p className="text-sm italic text-stone-900/60">"{mentor.greeting}"</p>
             </div>
           ))}
         </div>
 
         <button
           onClick={onContinue}
-          className="w-full py-3 bg-[#1A1816] text-white rounded-xl text-sm font-medium hover:bg-[#1A1816]/90 transition-colors"
+          className="w-full py-3 bg-stone-900 text-white rounded-xl text-sm font-medium hover:bg-stone-900/90 transition-colors"
         >
           Continue to Summary
         </button>

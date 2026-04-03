@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BellRing, Clock3 } from 'lucide-react';
+import { BellRinging, Clock } from '@phosphor-icons/react';
 import type { MicroMomentNudge } from '@/lib/micro-moments';
 
 interface MicroMomentCardProps {
@@ -19,7 +19,7 @@ export default function MicroMomentCard({ nudge }: MicroMomentCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-2">
           <div className="h-8 w-8 rounded-lg bg-teal-500/20 flex items-center justify-center mt-0.5">
-            <BellRing className="h-4 w-4 text-teal-200" />
+            <BellRinging size={16} weight="light" className="text-teal-200" />
           </div>
           <div>
             <p className="text-sm font-semibold text-teal-100">{nudge.title}</p>
@@ -30,7 +30,7 @@ export default function MicroMomentCard({ nudge }: MicroMomentCardProps) {
 
       <div className="flex items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wide text-teal-300/90">
-          <Clock3 className="h-3.5 w-3.5" />
+          <Clock size={14} weight="light" />
           Suggestion window {formatWindowLabel(nudge.scheduledForIso)}
         </span>
         <Link href="/checkin" className="text-xs font-semibold text-teal-200 hover:text-teal-100 transition-colors">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, Square, AlertCircle } from 'lucide-react';
+import { Microphone, MicrophoneSlash, Square, WarningCircle } from '@phosphor-icons/react';
 import { WaveformBars } from './chat-bubble';
 
 export interface VoiceRecorderResult {
@@ -237,8 +237,8 @@ export default function VoiceRecorder({
       {/* Error state */}
       {state === 'error' && (
         <div className="flex items-start gap-2 text-rose-400 text-sm">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <p style={{ fontFamily: '"Erode", Georgia, serif' }}>{errorMessage}</p>
+          <WarningCircle size={16} weight="light" className="flex-shrink-0 mt-0.5" />
+          <p className="font-serif">{errorMessage}</p>
         </div>
       )}
 
@@ -248,10 +248,10 @@ export default function VoiceRecorder({
         {state === 'idle' || state === 'error' ? (
           <button
             onClick={handleStart}
-            className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 bg-indigo-600 hover:bg-indigo-500 active:scale-95 shadow-lg shadow-indigo-500/30"
+            className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 bg-sage-600 hover:bg-sage-500 active:scale-95 shadow-lg shadow-sage-500/30"
             aria-label="Start recording"
           >
-            <Mic className="h-5 w-5 text-white" />
+            <Microphone size={20} weight="light" className="text-white" />
           </button>
         ) : state === 'requesting' ? (
           <button
@@ -259,7 +259,7 @@ export default function VoiceRecorder({
             className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-white/10 cursor-wait"
             aria-label="Requesting microphone permission"
           >
-            <MicOff className="h-5 w-5 text-white/40" />
+            <MicrophoneSlash size={20} weight="light" className="text-white/40" />
           </button>
         ) : state === 'recording' ? (
           <button
@@ -268,24 +268,24 @@ export default function VoiceRecorder({
             style={{ animation: 'recordingPulse 1.5s ease-in-out infinite' }}
             aria-label="Stop recording"
           >
-            <Square className="h-4 w-4 text-white fill-white" />
+            <Square size={16} weight="fill" className="text-white" />
           </button>
         ) : (
           /* processing */
           <div className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-white/10">
-            <div className="h-4 w-4 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+            <div className="h-4 w-4 rounded-full border-2 border-sage-400 border-t-transparent animate-spin" />
           </div>
         )}
 
         {/* Status / waveform area */}
         <div className="flex-1 min-w-0">
           {state === 'idle' && (
-            <p className="text-sm text-white/40" style={{ fontFamily: '"Erode", Georgia, serif' }}>
+            <p className="text-sm text-white/40 font-serif">
               Tap to record a voice message
             </p>
           )}
           {state === 'requesting' && (
-            <p className="text-sm text-white/50" style={{ fontFamily: '"Erode", Georgia, serif' }}>
+            <p className="text-sm text-white/50 font-serif">
               Requesting microphone access...
             </p>
           )}
@@ -293,15 +293,14 @@ export default function VoiceRecorder({
             <div className="flex items-center gap-3">
               <WaveformBars count={16} active className="text-rose-400" />
               <span
-                className={`text-sm tabular-nums font-medium ${nearLimit ? 'text-amber-400' : 'text-white/70'}`}
-                style={{ fontFamily: '"JetBrains Mono", monospace' }}
+                className={`text-sm tabular-nums font-medium font-mono ${nearLimit ? 'text-amber-400' : 'text-white/70'}`}
               >
                 {formatTime(elapsed)}
               </span>
             </div>
           )}
           {state === 'processing' && (
-            <p className="text-sm text-white/50" style={{ fontFamily: '"Erode", Georgia, serif' }}>
+            <p className="text-sm text-white/50 font-serif">
               Processing audio...
             </p>
           )}

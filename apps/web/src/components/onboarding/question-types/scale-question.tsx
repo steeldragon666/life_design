@@ -18,8 +18,8 @@ export default function ScaleQuestion({ min, max, value, onChange }: ScaleQuesti
           onClick={() => onChange(n)}
           className={`w-11 h-11 rounded-full text-sm font-medium transition-all duration-200 ${
             value === n
-              ? 'bg-[#1A1816] text-white shadow-md scale-110'
-              : 'bg-white text-[#1A1816] border border-[#E8E4DD] hover:border-[#1A1816]/30 hover:shadow-sm'
+              ? 'bg-stone-900 text-white shadow-md scale-110'
+              : 'bg-white text-stone-900 border border-stone-200 hover:border-stone-900/30 hover:shadow-sm'
           }`}
           aria-label={`${n} out of ${max}`}
           aria-pressed={value === n}

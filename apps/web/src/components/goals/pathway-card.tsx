@@ -38,7 +38,7 @@ export default function PathwayCard({ pathway, onToggleStep, onDelete }: Pathway
             )}
           </div>
           {pathway.description && (
-            <p className="text-xs text-gray-500 mt-0.5">{pathway.description}</p>
+            <p className="text-xs text-stone-500 mt-0.5">{pathway.description}</p>
           )}
         </div>
         {onDelete && (
@@ -54,27 +54,27 @@ export default function PathwayCard({ pathway, onToggleStep, onDelete }: Pathway
       {/* Steps checklist */}
       {totalSteps > 0 && (
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Steps</span>
             <span>{completedSteps}/{totalSteps}</span>
           </div>
           {pathway.pathway_steps.map((step) => (
             <label
               key={step.id}
-              className="flex items-start gap-2 rounded border px-2.5 py-1.5 cursor-pointer hover:bg-gray-50 text-sm"
+              className="flex items-start gap-2 rounded border px-2.5 py-1.5 cursor-pointer hover:bg-stone-50 text-sm"
             >
               <input
                 type="checkbox"
                 checked={step.completed}
                 onChange={() => onToggleStep?.(step.id)}
-                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-indigo-600"
+                className="mt-0.5 h-3.5 w-3.5 rounded border-stone-300 text-sage-600"
               />
               <div>
-                <span className={step.completed ? 'line-through text-gray-400' : ''}>
+                <span className={step.completed ? 'line-through text-stone-400' : ''}>
                   {step.title}
                 </span>
                 {step.description && (
-                  <p className="text-xs text-gray-400 mt-0.5">{step.description}</p>
+                  <p className="text-xs text-stone-400 mt-0.5">{step.description}</p>
                 )}
               </div>
             </label>

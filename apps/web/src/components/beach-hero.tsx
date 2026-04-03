@@ -173,7 +173,7 @@ export function BeachHero({
 
       {/* Loading State */}
       {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#0a0e17]">
+        <div className="absolute inset-0 flex items-center justify-center bg-stone-900">
           <div className="animate-pulse flex flex-col items-center gap-4">
             <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
             <span className="text-white/60 text-sm font-light tracking-wider">

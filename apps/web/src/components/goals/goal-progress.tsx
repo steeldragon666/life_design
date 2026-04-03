@@ -61,12 +61,12 @@ export default function GoalProgress({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Milestones</h3>
-          <span className="text-xs text-gray-500">{done}/{total} completed ({percent}%)</span>
+          <span className="text-xs text-stone-500">{done}/{total} completed ({percent}%)</span>
         </div>
 
-        <div className="h-2 w-full rounded-full bg-gray-200">
+        <div className="h-2 w-full rounded-full bg-stone-200">
           <div
-            className="h-2 rounded-full bg-indigo-500 transition-all"
+            className="h-2 rounded-full bg-sage-500 transition-all"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -75,17 +75,17 @@ export default function GoalProgress({
           {milestones.map((ms) => (
             <label
               key={ms.id}
-              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer hover:bg-gray-50 ${
-                ms.completed ? 'bg-gray-50' : ''
+              className={`flex items-center gap-2.5 rounded-lg border p-2.5 cursor-pointer hover:bg-stone-50 ${
+                ms.completed ? 'bg-stone-50' : ''
               }`}
             >
               <input
                 type="checkbox"
                 checked={ms.completed}
                 onChange={() => onToggleMilestone?.(ms.id, !ms.completed)}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                className="h-4 w-4 rounded border-stone-300 text-sage-600"
               />
-              <span className={`text-sm ${ms.completed ? 'line-through text-gray-400' : ''}`}>
+              <span className={`text-sm ${ms.completed ? 'line-through text-stone-400' : ''}`}>
                 {ms.title}
               </span>
             </label>
@@ -116,7 +116,7 @@ export default function GoalProgress({
                   setNewMilestone('');
                 }
               }}
-              className="rounded-lg bg-gray-100 px-3 text-sm hover:bg-gray-200"
+              className="rounded-lg bg-stone-100 px-3 text-sm hover:bg-stone-200"
             >
               Add
             </button>
@@ -144,18 +144,18 @@ export default function GoalProgress({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Progress</h3>
-        <span className="text-lg font-bold text-indigo-600">
-          {current} <span className="text-sm font-normal text-gray-400">/ {target} {unit}</span>
+        <span className="text-lg font-bold text-sage-600">
+          {current} <span className="text-sm font-normal text-stone-400">/ {target} {unit}</span>
         </span>
       </div>
 
-      <div className="h-2 w-full rounded-full bg-gray-200">
+      <div className="h-2 w-full rounded-full bg-stone-200">
         <div
-          className="h-2 rounded-full bg-indigo-500 transition-all"
+          className="h-2 rounded-full bg-sage-500 transition-all"
           style={{ width: `${percent}%` }}
         />
       </div>
-      <p className="text-xs text-gray-500 text-right">{percent}% complete</p>
+      <p className="text-xs text-stone-500 text-right">{percent}% complete</p>
 
       {chartData.length > 1 && (
         <div className="h-32">
@@ -178,7 +178,7 @@ export default function GoalProgress({
 
       {onLogProgress && (
         <div className="rounded-lg border p-3 space-y-2">
-          <p className="text-xs font-medium text-gray-500">Log new value</p>
+          <p className="text-xs font-medium text-stone-500">Log new value</p>
           <div className="flex gap-2">
             <input
               type="number"
@@ -204,7 +204,7 @@ export default function GoalProgress({
                   setLogNote('');
                 }
               }}
-              className="rounded bg-indigo-600 px-3 text-sm text-white hover:bg-indigo-700"
+              className="rounded bg-sage-600 px-3 text-sm text-white hover:bg-sage-600/90"
             >
               Log
             </button>

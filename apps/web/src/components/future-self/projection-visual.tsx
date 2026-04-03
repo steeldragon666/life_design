@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import { Loader2 } from 'lucide-react';
+import { CircleNotch } from '@phosphor-icons/react';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 
 /**
@@ -14,7 +14,7 @@ const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[320px]">
-      <Loader2 className="h-10 w-10 text-cyan-400 animate-spin" />
+      <CircleNotch size={40} weight="light" className="text-cyan-400 animate-spin" />
     </div>
   ),
 });
@@ -40,7 +40,7 @@ function SoftProjectionFallback({ targetHarmony }: { targetHarmony: number }) {
       <div className="absolute h-56 w-56 rounded-full bg-cyan-300/15 blur-3xl animate-pulse" />
       <div className="absolute h-44 w-44 rounded-full border border-cyan-300/30 shadow-[0_0_40px_rgba(56,189,248,0.25)]" />
       <div className="relative text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Future Projection</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-stone-400">Future Projection</p>
         <p className="text-4xl font-black text-white mt-2">{targetHarmony}%</p>
         <p className="text-xs text-cyan-300 uppercase tracking-wider mt-1">Target Harmony</p>
       </div>
@@ -60,7 +60,7 @@ export default function ProjectionVisual({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-white tracking-tight">Future Projection</h2>
-          <p className="text-sm text-slate-400">Visualizing your likely harmony trajectory.</p>
+          <p className="text-sm text-stone-400">Visualizing your likely harmony trajectory.</p>
         </div>
         <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
           Target {targetHarmony}%
@@ -88,15 +88,15 @@ export default function ProjectionVisual({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Current</p>
+          <p className="text-[11px] uppercase tracking-wide text-stone-500">Current</p>
           <p className="text-lg font-semibold text-white">{currentHarmony}%</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Active Goals</p>
+          <p className="text-[11px] uppercase tracking-wide text-stone-500">Active Goals</p>
           <p className="text-lg font-semibold text-white">{activeGoalsCount}</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Recent Rituals</p>
+          <p className="text-[11px] uppercase tracking-wide text-stone-500">Recent Rituals</p>
           <p className="text-lg font-semibold text-white">{recentCheckinsCount}</p>
         </div>
       </div>

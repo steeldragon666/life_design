@@ -30,7 +30,7 @@ function SectionHeading({ id, children }: { id: string; children: React.ReactNod
 
 function SubHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-6 mb-2 text-base font-semibold text-slate-200">
+    <h3 className="mt-6 mb-2 text-base font-semibold text-stone-200">
       {children}
     </h3>
   );
@@ -44,11 +44,11 @@ export default function PrivacyPage() {
   const lastUpdated = '13 March 2026';
 
   return (
-    <main className="relative min-h-screen bg-[#0f0a1a] text-white overflow-hidden">
+    <main className="relative min-h-screen bg-stone-900 text-white overflow-hidden">
 
       {/* Atmospheric blobs */}
       <div
-        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[700px] rounded-full bg-indigo-600/8 blur-[140px]"
+        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[700px] rounded-full bg-sage-600/8 blur-[140px]"
         aria-hidden="true"
       />
       <div
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
         {/* Back link */}
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-300"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-stone-500 transition-colors hover:text-stone-300"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
             <path fillRule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clipRule="evenodd" />
@@ -71,16 +71,16 @@ export default function PrivacyPage() {
 
         {/* Header */}
         <header className="mb-10 border-b border-white/10 pb-10">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-indigo-400">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-sage-500">
             Legal
           </p>
           <h1 className="text-4xl font-bold tracking-tight text-white">
             Privacy Policy
           </h1>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-stone-500">
             Last updated: {lastUpdated}
           </p>
-          <p className="mt-4 text-slate-400 leading-relaxed">
+          <p className="mt-4 text-stone-400 leading-relaxed">
             Your privacy is foundational to what Life Design does. This policy explains
             exactly what data we collect, how we use it, and the rights you have over it.
             We believe in plain language, not legalese — but some sections are marked for
@@ -90,8 +90,8 @@ export default function PrivacyPage() {
 
         {/* Table of contents */}
         <nav aria-label="Privacy policy contents" className="mb-10 rounded-xl border border-white/10 bg-white/[0.03] p-6">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Contents</p>
-          <ol className="space-y-1.5 text-sm text-indigo-400">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">Contents</p>
+          <ol className="space-y-1.5 text-sm text-sage-500">
             {[
               ['data-collected', '1. Data We Collect'],
               ['data-use', '2. How We Use Your Data'],
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
               ['contact', '10. Contact Us'],
             ].map(([id, label]) => (
               <li key={id}>
-                <a href={`#${id}`} className="transition-colors hover:text-indigo-300">
+                <a href={`#${id}`} className="transition-colors hover:text-sage-400">
                   {label}
                 </a>
               </li>
@@ -118,13 +118,13 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="data-collected">1. Data We Collect</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           We collect only the data necessary to deliver cross-domain life insights.
           You are always in control of which data sources you connect.
         </p>
 
         <SubHeading>1.1 Account data</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Email address and hashed password (Supabase Auth)</li>
           <li>Display name and optional profile photo</li>
           <li>Account creation and last-login timestamps</li>
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
         </ul>
 
         <SubHeading>1.2 Daily check-in data</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Mood slider readings (numeric score, 1–10)</li>
           <li>Free-text journal entries (encrypted at rest)</li>
           <li>Voice memos — processed on-device; only derived features (not raw audio) are stored</li>
@@ -140,14 +140,14 @@ export default function PrivacyPage() {
         </ul>
 
         <SubHeading>1.3 Health metrics</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Apple Health / Google Fit: resting heart rate, HRV, sleep hours, steps, active energy, blood oxygen</li>
           <li>Strava: workout distance, duration, estimated VO2 max, training load</li>
           <li>Diet logs: calorie intake, macros, meal timing (manually entered)</li>
         </ul>
 
         <SubHeading>1.4 Calendar data</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Google Calendar: meeting hours, focus block counts, work hours, social events</li>
           <li>
             Event titles and descriptions are{' '}
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
         </ul>
 
         <SubHeading>1.5 Financial data</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Manually entered: revenue figures, expense categories, savings rate</li>
           <li>
             We do <strong className="text-white">not</strong> connect to bank accounts
@@ -173,12 +173,12 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="data-use">2. How We Use Your Data</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           Your data is used exclusively to provide the Life Design service to you.
           We will never sell your data to third parties or use it for advertising.
         </p>
 
-        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-slate-400">
+        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-stone-400">
           <li>
             <strong className="text-white">Pattern analysis.</strong> We compute statistical
             correlations between your life dimensions to surface insights (e.g. &ldquo;your
@@ -213,7 +213,7 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="third-parties">3. Third-Party Services</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed mb-4">
+        <p className="text-stone-400 leading-relaxed mb-4">
           We work with a small number of trusted providers, each bound by Data Processing
           Agreements (DPAs) consistent with GDPR requirements.
         </p>
@@ -249,18 +249,18 @@ export default function PrivacyPage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-semibold text-white">{provider.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{provider.role}</p>
+                  <p className="text-xs text-stone-500 mt-0.5">{provider.role}</p>
                 </div>
                 <a
                   href={provider.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 text-xs text-indigo-400 underline underline-offset-2 hover:text-indigo-300"
+                  className="shrink-0 text-xs text-sage-500 underline underline-offset-2 hover:text-sage-400"
                 >
                   Privacy policy
                 </a>
               </div>
-              <p className="mt-3 text-sm text-slate-400 leading-relaxed">{provider.detail}</p>
+              <p className="mt-3 text-sm text-stone-400 leading-relaxed">{provider.detail}</p>
             </div>
           ))}
         </div>
@@ -273,13 +273,13 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="apple-health">4. Apple Health Data</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           Life Design requests read-only access to Apple Health data solely to compute
           the health and fitness features listed in Section 1.3. We handle this data
           with particular care:
         </p>
 
-        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-slate-400">
+        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-stone-400">
           <li>
             <strong className="text-white">On-device processing first.</strong> Raw HealthKit
             data is read and normalised on your device. Only the computed feature values
@@ -302,7 +302,7 @@ export default function PrivacyPage() {
           </li>
         </ul>
 
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-stone-500">
           Life Design complies with Apple&apos;s HealthKit guidelines and App Store Review
           Guidelines Section 5.1.3 (Health &amp; Fitness Apps).
         </p>
@@ -313,7 +313,7 @@ export default function PrivacyPage() {
         <SectionHeading id="retention">5. Data Retention &amp; Deletion</SectionHeading>
 
         <SubHeading>Retention periods</SubHeading>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Active account data: retained for the lifetime of the account</li>
           <li>Check-in data: retained for up to 7 years to support long-term trend analysis</li>
           <li>Billing records: retained for 7 years as required by Australian tax law</li>
@@ -321,7 +321,7 @@ export default function PrivacyPage() {
         </ul>
 
         <SubHeading>Your right to deletion</SubHeading>
-        <p className="text-sm text-slate-400 leading-relaxed">
+        <p className="text-sm text-stone-400 leading-relaxed">
           You can permanently delete your account and all associated data from
           Settings &rsaquo; Account &rsaquo; Delete Account. This action is irreversible.
           Data is purged from all Supabase tables within 30 days. Anonymised,
@@ -330,7 +330,7 @@ export default function PrivacyPage() {
         </p>
 
         <SubHeading>Data export</SubHeading>
-        <p className="text-sm text-slate-400 leading-relaxed">
+        <p className="text-sm text-stone-400 leading-relaxed">
           All subscribers can export their data as JSON or CSV at any time from
           Settings &rsaquo; Data &rsaquo; Export. Exports include all check-ins,
           feature store values, mentor chat history, and dimension scores.
@@ -345,13 +345,13 @@ export default function PrivacyPage() {
         {/* Confirm legal basis for each processing activity under GDPR Article 6 */}
         {/* Verify adequacy decisions or SCCs for transfers outside EEA */}
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           If you are located in the European Economic Area (EEA), United Kingdom, or
           Switzerland, GDPR (and UK GDPR / Swiss DPA respectively) grants you the
           following rights regarding your personal data:
         </p>
 
-        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-slate-400">
+        <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-stone-400">
           <li>
             <strong className="text-white">Right of access.</strong> Request a copy of all
             personal data we hold about you.
@@ -382,9 +382,9 @@ export default function PrivacyPage() {
           </li>
         </ul>
 
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="mt-4 text-sm text-stone-400">
           To exercise any of these rights, email{' '}
-          <a href="mailto:privacy@lifedesign.app" className="text-indigo-400 hover:underline">
+          <a href="mailto:privacy@lifedesign.app" className="text-sage-500 hover:underline">
             privacy@lifedesign.app
           </a>{' '}
           with the subject line &ldquo;Data Rights Request&rdquo;. We will respond within
@@ -392,10 +392,10 @@ export default function PrivacyPage() {
           complaint with your local supervisory authority.
         </p>
 
-        <p className="mt-3 text-sm text-slate-400">
+        <p className="mt-3 text-sm text-stone-400">
           Our lawful bases for processing under GDPR Article 6 are:
         </p>
-        <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Contract (Art. 6(1)(b)): to provide the subscribed service</li>
           <li>Legitimate interests (Art. 6(1)(f)): service improvement and fraud prevention</li>
           <li>Consent (Art. 6(1)(a)): optional features such as anonymised research sharing</li>
@@ -407,7 +407,7 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="security">7. Security</SectionHeading>
 
-        <ul className="list-disc pl-5 space-y-1 text-sm text-slate-400">
+        <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>All data in transit encrypted with TLS 1.3</li>
           <li>All data at rest encrypted with AES-256 (Supabase managed keys)</li>
           <li>Row-level security on every database table</li>
@@ -416,9 +416,9 @@ export default function PrivacyPage() {
           <li>We undergo periodic security reviews</li>
         </ul>
 
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="mt-4 text-sm text-stone-400">
           To report a security vulnerability, please email{' '}
-          <a href="mailto:security@lifedesign.app" className="text-indigo-400 hover:underline">
+          <a href="mailto:security@lifedesign.app" className="text-sage-500 hover:underline">
             security@lifedesign.app
           </a>. Please do not disclose vulnerabilities publicly until we have had a
           reasonable opportunity to investigate and remediate.
@@ -429,7 +429,7 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="children">8. Children&apos;s Privacy</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           Life Design is not directed at children under 16 years of age (or the relevant
           age of digital consent in your jurisdiction). We do not knowingly collect
           personal data from children. If you believe a child has provided us with their
@@ -441,7 +441,7 @@ export default function PrivacyPage() {
         {/* ---------------------------------------------------------------- */}
         <SectionHeading id="changes">9. Changes to This Policy</SectionHeading>
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           We may update this policy from time to time. Material changes will be announced
           by email to registered users at least 30 days before they take effect. Continued
           use of the service after the effective date constitutes acceptance of the revised
@@ -456,29 +456,29 @@ export default function PrivacyPage() {
         {/* LEGAL REVIEW NEEDED */}
         {/* Insert registered company name, ABN, and registered office address */}
 
-        <p className="text-slate-400 leading-relaxed">
+        <p className="text-stone-400 leading-relaxed">
           For all privacy matters:
         </p>
-        <address className="mt-3 not-italic text-sm text-slate-400 space-y-1">
+        <address className="mt-3 not-italic text-sm text-stone-400 space-y-1">
           <p className="font-semibold text-white">Life Design</p>
           <p>[Registered company name and address — to be completed]</p>
           <p>
             Email:{' '}
-            <a href="mailto:privacy@lifedesign.app" className="text-indigo-400 hover:underline">
+            <a href="mailto:privacy@lifedesign.app" className="text-sage-500 hover:underline">
               privacy@lifedesign.app
             </a>
           </p>
         </address>
 
         {/* Bottom nav */}
-        <div className="mt-16 border-t border-white/10 pt-8 flex flex-wrap gap-4 text-xs text-slate-600">
-          <Link href="/terms" className="hover:text-slate-400 transition-colors">
+        <div className="mt-16 border-t border-white/10 pt-8 flex flex-wrap gap-4 text-xs text-stone-600">
+          <Link href="/terms" className="hover:text-stone-400 transition-colors">
             Terms of Service
           </Link>
-          <Link href="/pricing" className="hover:text-slate-400 transition-colors">
+          <Link href="/pricing" className="hover:text-stone-400 transition-colors">
             Pricing
           </Link>
-          <Link href="/" className="hover:text-slate-400 transition-colors">
+          <Link href="/" className="hover:text-stone-400 transition-colors">
             Home
           </Link>
         </div>

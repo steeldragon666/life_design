@@ -17,9 +17,9 @@ interface DimensionImpactChartProps {
 }
 
 function getBarColor(impact: number): string {
-  if (impact >= 3) return '#16a34a';  // green-600
-  if (impact >= 1) return '#65a30d';  // lime-600
-  if (impact > -1) return '#9ca3af';  // gray-400
+  if (impact >= 3) return '#476447';  // sage-600
+  if (impact >= 1) return '#5A7F5A';  // sage-500
+  if (impact > -1) return '#A8A198';  // stone-400
   if (impact > -3) return '#ea580c';  // orange-600
   return '#dc2626';                    // red-600
 }
@@ -47,12 +47,12 @@ export default function DimensionImpactChart({ impacts }: DimensionImpactChartPr
                 return (
                   <div className="rounded-lg border bg-white p-2 shadow-sm text-xs max-w-[250px]">
                     <p className="font-semibold">{d.name}: {d.impact > 0 ? '+' : ''}{d.impact}</p>
-                    <p className="text-gray-600 mt-0.5">{d.explanation}</p>
+                    <p className="text-stone-600 mt-0.5">{d.explanation}</p>
                   </div>
                 );
               }}
             />
-            <ReferenceLine x={0} stroke="#d1d5db" />
+            <ReferenceLine x={0} stroke="#D4CFC5" />
             <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
               {data.map((entry, index) => (
                 <Cell key={index} fill={entry.fill} />
@@ -61,7 +61,7 @@ export default function DimensionImpactChart({ impacts }: DimensionImpactChartPr
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-xs text-gray-400 text-center">Hover for details. Scale: -5 (severe negative) to +5 (highly positive)</p>
+      <p className="text-xs text-stone-400 text-center">Hover for details. Scale: -5 (severe negative) to +5 (highly positive)</p>
     </div>
   );
 }

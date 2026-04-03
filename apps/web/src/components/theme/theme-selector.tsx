@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme, useThemeOptional } from './theme-provider';
-import { Sparkles, Waves, Crown, Check, Palette } from 'lucide-react';
+import { Sparkle, Waves, Crown, Check, Palette } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 const themes = [
@@ -9,7 +9,7 @@ const themes = [
     id: 'botanical' as const,
     name: 'Ethereal Botanical',
     description: 'Soft pinks, gentle purples, and organic warmth inspired by spring blossoms',
-    icon: Sparkles,
+    icon: Sparkle,
     colors: ['#e8b4d0', '#c5b8d4', '#b8c5a8'],
     cardClass: 'theme-card-botanical',
   },
@@ -40,11 +40,11 @@ export default function ThemeSelector() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
-          <Palette className="h-5 w-5 text-slate-300" />
+          <Palette size={20} weight="light" className="text-stone-300" />
         </div>
         <div>
           <h2 className="text-xl font-bold text-white">Choose Your Aesthetic</h2>
-          <p className="text-sm text-slate-500">Select a theme that resonates with you</p>
+          <p className="text-sm text-stone-500">Select a theme that resonates with you</p>
         </div>
       </div>
 
@@ -63,7 +63,7 @@ export default function ThemeSelector() {
               {/* Active Indicator */}
               {isActive && (
                 <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
-                  <Check className="h-4 w-4 text-white" />
+                  <Check size={16} weight="bold" className="text-white" />
                 </div>
               )}
 
@@ -79,12 +79,13 @@ export default function ThemeSelector() {
               </div>
 
               {/* Icon */}
-              <div 
+              <div
                 className="h-12 w-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
                 style={{ backgroundColor: `${theme.colors[0]}30` }}
               >
-                <Icon 
-                  className="h-6 w-6" 
+                <Icon
+                  size={24}
+                  weight="light"
                   style={{ color: theme.colors[0] }}
                 />
               </div>
@@ -93,15 +94,15 @@ export default function ThemeSelector() {
               <h3 className="text-lg font-semibold text-white mb-2">
                 {theme.name}
               </h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-stone-400 leading-relaxed">
                 {theme.description}
               </p>
 
               {/* Preview Bar */}
-              <div 
+              <div
                 className="mt-4 h-1.5 rounded-full w-full"
-                style={{ 
-                  background: `linear-gradient(90deg, ${theme.colors[0]} 0%, ${theme.colors[1]} 50%, ${theme.colors[2]} 100%)` 
+                style={{
+                  background: `linear-gradient(90deg, ${theme.colors[0]} 0%, ${theme.colors[1]} 50%, ${theme.colors[2]} 100%)`
                 }}
               />
             </button>
@@ -111,7 +112,7 @@ export default function ThemeSelector() {
 
       {/* Current Theme Display */}
       <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-stone-400">
           Currently active: <span className="text-white font-semibold">
             {themes.find(t => t.id === currentTheme)?.name}
           </span>
@@ -139,15 +140,16 @@ export function ThemeSelectorCompact() {
             key={t.id}
             onClick={() => setTheme(t.id)}
             className={`p-2 rounded-lg transition-all ${
-              theme === t.id 
-                ? 'bg-white/10 shadow-sm' 
+              theme === t.id
+                ? 'bg-white/10 shadow-sm'
                 : 'hover:bg-white/5'
             }`}
             title={t.name}
           >
-            <Icon 
-              className="h-4 w-4" 
-              style={{ color: theme === t.id ? t.colors[0] : '#64748b' }}
+            <Icon
+              size={16}
+              weight="light"
+              style={{ color: theme === t.id ? t.colors[0] : '#78716c' }}
             />
           </button>
         );

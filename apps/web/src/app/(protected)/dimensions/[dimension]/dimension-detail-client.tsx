@@ -829,7 +829,7 @@ export default function DimensionDetailClient({
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" weight="regular" />
           Dashboard
         </Link>
-        <span className="text-slate-700">/</span>
+        <span className="text-stone-700">/</span>
         <span className="text-stone-500 text-sm font-bold">{label}</span>
       </div>
 
@@ -925,7 +925,7 @@ export default function DimensionDetailClient({
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
               <span className="text-xs font-bold text-stone-500">Actual</span>
-              <div className="h-2 w-2 rounded-full bg-slate-600 border border-dashed border-slate-500" />
+              <div className="h-2 w-2 rounded-full bg-stone-600 border border-dashed border-stone-500" />
               <span className="text-xs font-bold text-stone-500">Forecast</span>
             </div>
           }

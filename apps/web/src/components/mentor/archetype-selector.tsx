@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Compass, Sparkles } from 'lucide-react';
+import { Brain, Compass, Sparkle } from '@phosphor-icons/react';
 import { ARCHETYPE_CONFIGS, type MentorArchetype } from '@/lib/mentor-archetypes';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +12,7 @@ interface ArchetypeSelectorProps {
 const icons = {
   therapist: Brain,
   coach: Compass,
-  sage: Sparkles,
+  sage: Sparkle,
 };
 
 export default function ArchetypeSelector({ selected, onSelect }: ArchetypeSelectorProps) {
@@ -39,7 +39,7 @@ export default function ArchetypeSelector({ selected, onSelect }: ArchetypeSelec
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-10 w-10 rounded-xl bg-sage-50 flex items-center justify-center">
-                  <Icon className="h-5 w-5 text-sage-600" />
+                  <Icon size={20} weight="light" className="text-sage-600" />
                 </div>
                 <div>
                   <p className="text-stone-800 font-semibold">{cfg.label}</p>

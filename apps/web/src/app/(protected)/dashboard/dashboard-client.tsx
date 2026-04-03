@@ -9,7 +9,22 @@ import {
   ALL_DIMENSIONS,
   computeOverallScore,
 } from '@life-design/core';
-import { Card, Badge, Skeleton } from '@life-design/ui';
+import { Card, Badge, Skeleton, colors, dimensionPalettes } from '@life-design/ui';
+import {
+  Sparkle,
+  Microphone,
+  Sun,
+  PencilSimple,
+  Fire,
+  ArrowsClockwise,
+  Warning,
+  CheckCircle,
+  CaretDown,
+  CaretUp,
+  TrendUp,
+  Pulse,
+  Trophy,
+} from '@phosphor-icons/react';
 import useDashboardData from '@/hooks/useDashboardData';
 import WeeklyDigestView from '@/components/digest/WeeklyDigestView';
 import type { StoredDigest } from '@/lib/digest/digest-generator';
@@ -30,139 +45,13 @@ const ResponsiveContainer = dynamic(() => import('recharts').then((m) => m.Respo
 const CartesianGrid = dynamic(() => import('recharts').then((m) => m.CartesianGrid), { ssr: false });
 
 // ---------------------------------------------------------------------------
-// Inline SVG icons (matching redesign stroke style)
+// Dimension styling — uses dimensionPalettes from @life-design/ui
 // ---------------------------------------------------------------------------
 
-function SparklesIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z" />
-      <path d="M19 17l.5 1.5L21 19l-1.5.5L19 21l-.5-1.5L17 19l1.5-.5L19 17z" />
-    </svg>
-  );
-}
-
-function MicIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="13" rx="3" />
-      <path d="M19 10v2a7 7 0 01-14 0v-2" />
-      <path d="M12 19v3" />
-    </svg>
-  );
-}
-
-function SunIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-    </svg>
-  );
-}
-
-function PenIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z" />
-    </svg>
-  );
-}
-
-function FlameIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
-    </svg>
-  );
-}
-
-function RefreshIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0115-6.7L21 8" />
-      <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 01-15 6.7L3 16" />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronUpIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m18 15-6-6-6 6" />
-    </svg>
-  );
-}
-
-function TrendUpIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
-    </svg>
-  );
-}
-
-function ActivityIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-    </svg>
-  );
-}
-
-function TrophyIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9H4.5a2.5 2.5 0 010-5H6" /><path d="M18 9h1.5a2.5 2.5 0 000-5H18" />
-      <path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22" />
-      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22" />
-      <path d="M18 2H6v7a6 6 0 0012 0V2z" />
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Dimension styling
-// ---------------------------------------------------------------------------
-
-const DIMENSION_STYLE: Record<string, { color: string; bg: string }> = {
-  health: { color: '#9BB89B', bg: '#F4F7F4' },
-  career: { color: '#5E9BC4', bg: '#F0F6FA' },
-  relationships: { color: '#E8A46D', bg: '#FEF7F0' },
-  growth: { color: '#8B7BA8', bg: '#F5F0FA' },
-  finance: { color: '#D4864A', bg: '#FEF7F0' },
-  creativity: { color: '#5A7F5A', bg: '#F4F7F4' },
-  spirituality: { color: '#85B8D8', bg: '#F0F6FA' },
-  environment: { color: '#A89B7B', bg: '#F9F7F3' },
-};
-
-function getDimStyle(dim: string) {
-  return DIMENSION_STYLE[dim] ?? { color: '#A8A198', bg: '#F5F3EF' };
+function getDimStyle(dim: string): { color: string; bg: string } {
+  const palette = dimensionPalettes[dim as Dimension];
+  if (palette) return { color: palette.accent, bg: palette.bg };
+  return { color: colors.stone[400], bg: colors.stone[100] };
 }
 
 // ---------------------------------------------------------------------------
@@ -336,7 +225,7 @@ function InsightsFeed({
         insights.map((insight) => (
           <Card key={insight.id} className="p-4">
             <div className="flex items-start gap-3">
-              <SparklesIcon className="w-4 h-4 text-accent-600 flex-shrink-0 mt-0.5" />
+              <Sparkle size={16} weight="light" className="text-accent-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <p className="text-sm font-semibold text-stone-800">{insight.title}</p>
@@ -466,13 +355,13 @@ export default function DashboardClient({
       {/* Error banner */}
       {error && (
         <div className="flex items-center gap-3 p-4 rounded-[16px] bg-red-50 border border-red-200/60 mb-6">
-          <AlertIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <Warning size={20} weight="light" className="text-red-500 flex-shrink-0" />
           <p className="text-sm text-red-700 flex-1">{error}</p>
           <button
             onClick={refetch}
             className="flex items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
           >
-            <RefreshIcon className="w-3.5 h-3.5" />
+            <ArrowsClockwise size={14} weight="light" />
             Retry
           </button>
         </div>
@@ -490,7 +379,7 @@ export default function DashboardClient({
             </h1>
             {unseenBadgeCount > 0 && (
               <Link href="/achievements" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warm-50 text-warm-500 text-xs font-medium">
-                <TrophyIcon className="w-3.5 h-3.5" />
+                <Trophy size={14} weight="light" />
                 {unseenBadgeCount} new
               </Link>
             )}
@@ -501,7 +390,7 @@ export default function DashboardClient({
           href="/checkin"
           className="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-[16px] bg-gradient-to-r from-sage-500 to-sage-600 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all"
         >
-          <MicIcon className="w-4 h-4" />
+          <Microphone size={16} weight="light" />
           Voice Check-in
         </Link>
       </div>
@@ -519,7 +408,7 @@ export default function DashboardClient({
             {/* Streak */}
             {streak > 0 && (
               <div className="flex items-center gap-1.5">
-                <FlameIcon className="w-4 h-4 text-warm-500" />
+                <Fire size={16} weight="light" className="text-warm-500" />
                 <span className="text-sm font-mono font-medium text-warm-500">{streak}d</span>
               </div>
             )}
@@ -579,7 +468,7 @@ export default function DashboardClient({
             <Card className="p-4 bg-gradient-to-r from-sage-50 to-sage-100/50 border-l-4 border-l-sage-400">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-sage-200 flex items-center justify-center flex-shrink-0">
-                  <SparklesIcon className="w-4 h-4 text-sage-600" />
+                  <Sparkle size={16} weight="light" className="text-sage-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-stone-800">Your Profile Insight</p>
@@ -595,7 +484,7 @@ export default function DashboardClient({
           )}
 
           <div className="flex items-center gap-2 mb-1">
-            <SparklesIcon className="w-4 h-4 text-accent-600" />
+            <Sparkle size={16} weight="light" className="text-accent-600" />
             <h2 className="font-serif text-xl text-stone-800">AI Insights</h2>
           </div>
 
@@ -689,12 +578,12 @@ export default function DashboardClient({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-warm-50 flex items-center justify-center">
-                  <SunIcon className="w-3.5 h-3.5 text-warm-500" />
+                  <Sun size={14} weight="light" className="text-warm-500" />
                 </div>
                 Daily Check-in
                 {todaysCheckin && (
                   <span className="ml-auto text-[11px] text-sage-500 font-medium flex items-center gap-1">
-                    <CheckCircleIcon className="w-3 h-3" /> Done
+                    <CheckCircle size={12} weight="light" /> Done
                   </span>
                 )}
               </Link>
@@ -702,8 +591,8 @@ export default function DashboardClient({
                 href="/checkin"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
-                <div className="w-7 h-7 rounded-lg bg-[#F0F6FA] flex items-center justify-center">
-                  <PenIcon className="w-3.5 h-3.5 text-accent-500" />
+                <div className="w-7 h-7 rounded-lg bg-accent-400/10 flex items-center justify-center">
+                  <PencilSimple size={14} weight="light" className="text-accent-500" />
                 </div>
                 Journal Entry
               </Link>
@@ -711,8 +600,8 @@ export default function DashboardClient({
                 href="/checkin"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
-                <div className="w-7 h-7 rounded-lg bg-[#F5F0FA] flex items-center justify-center">
-                  <MicIcon className="w-3.5 h-3.5 text-[#8B7BA8]" />
+                <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center">
+                  <Microphone size={14} weight="light" className="text-stone-500" />
                 </div>
                 Voice Reflection
               </Link>
@@ -739,7 +628,7 @@ export default function DashboardClient({
             <Skeleton className="h-44 rounded-xl" />
           ) : dataMaturity === 'cold' || moodChartData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <ActivityIcon className="w-10 h-10 text-stone-300" />
+              <Pulse size={40} weight="light" className="text-stone-300" />
               <p className="text-sm text-stone-500 font-serif italic">
                 Complete daily check-ins to see your mood and energy trends.
               </p>
@@ -759,17 +648,17 @@ export default function DashboardClient({
               <div className="h-44">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={moodChartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,228,221,0.5)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={`${colors.stone[200]}80`} />
                     <XAxis
                       dataKey="dateLabel"
-                      tick={{ fontSize: 9, fill: '#A8A198', fontFamily: "'DM Mono', monospace" }}
+                      tick={{ fontSize: 9, fill: colors.stone[400], fontFamily: 'monospace' }}
                       axisLine={false}
                       tickLine={false}
                       interval="preserveStartEnd"
                     />
                     <YAxis
                       domain={[0, 10]}
-                      tick={{ fontSize: 9, fill: '#A8A198', fontFamily: "'DM Mono', monospace" }}
+                      tick={{ fontSize: 9, fill: colors.stone[400], fontFamily: 'monospace' }}
                       axisLine={false}
                       tickLine={false}
                       tickCount={5}
@@ -777,17 +666,17 @@ export default function DashboardClient({
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: 'rgba(255,255,255,0.95)',
-                        border: '1px solid #E8E4DD',
+                        border: `1px solid ${colors.stone[200]}`,
                         borderRadius: '12px',
                         fontSize: '11px',
-                        fontFamily: "'DM Mono', monospace",
-                        color: '#2A2623',
+                        fontFamily: 'monospace',
+                        color: colors.stone[800],
                         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                       }}
-                      labelStyle={{ color: '#A8A198', marginBottom: '4px' }}
+                      labelStyle={{ color: colors.stone[400], marginBottom: '4px' }}
                     />
-                    <Line type="monotone" dataKey="mood" stroke="#5A7F5A" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#5A7F5A' }} name="Mood" />
-                    <Line type="monotone" dataKey="energy" stroke="#85B8D8" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#85B8D8' }} name="Energy" />
+                    <Line type="monotone" dataKey="mood" stroke={colors.sage[500]} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: colors.sage[500] }} name="Mood" />
+                    <Line type="monotone" dataKey="energy" stroke={colors.accent[400]} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: colors.accent[400] }} name="Energy" />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -804,7 +693,7 @@ export default function DashboardClient({
             <Skeleton className="h-44 rounded-xl" />
           ) : (dataMaturity === 'cold' || dataMaturity === 'warming') || !topCorrelation ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <TrendUpIcon className="w-10 h-10 text-stone-300" />
+              <TrendUp size={40} weight="light" className="text-stone-300" />
               <p className="text-sm text-stone-500 font-serif italic max-w-[220px]">
                 {dataMaturity === 'cold' || dataMaturity === 'warming'
                   ? 'Need at least 8 check-ins to detect cross-dimension correlations.'
@@ -816,11 +705,11 @@ export default function DashboardClient({
               <div className="flex items-center gap-3">
                 <div
                   className="h-14 w-14 rounded-[16px] flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${topCorrelation.coefficient > 0 ? '#9BB89B' : '#E8A46D'}20` }}
+                  style={{ backgroundColor: `${topCorrelation.coefficient > 0 ? colors.sage[300] : colors.warm[300]}20` }}
                 >
                   <span
                     className="text-lg font-bold font-mono"
-                    style={{ color: topCorrelation.coefficient > 0 ? '#5A7F5A' : '#D4864A' }}
+                    style={{ color: topCorrelation.coefficient > 0 ? colors.sage[500] : colors.warm[400] }}
                   >
                     {topCorrelation.coefficient > 0 ? '+' : ''}{topCorrelation.coefficient.toFixed(2)}
                   </span>
@@ -909,8 +798,8 @@ export default function DashboardClient({
           </div>
           <div className="flex-shrink-0 p-2 rounded-xl border border-stone-200/60 group-hover:border-sage-200/50 transition-colors ml-4">
             {activityCollapsed
-              ? <ChevronDownIcon className="w-4 h-4 text-stone-500" />
-              : <ChevronUpIcon className="w-4 h-4 text-stone-500" />
+              ? <CaretDown size={16} weight="light" className="text-stone-500" />
+              : <CaretUp size={16} weight="light" className="text-stone-500" />
             }
           </div>
         </button>
@@ -938,16 +827,16 @@ export default function DashboardClient({
             ) : (
               recentActivity.map((activity) => {
                 const iconConfig = {
-                  checkin: { icon: CheckCircleIcon, bg: 'bg-sage-50', color: 'text-sage-500' },
-                  achievement: { icon: FlameIcon, bg: 'bg-warm-50', color: 'text-warm-500' },
-                  insight: { icon: SparklesIcon, bg: 'bg-[#F5F0FA]', color: 'text-[#8B7BA8]' },
-                }[activity.type] ?? { icon: CheckCircleIcon, bg: 'bg-sage-50', color: 'text-sage-500' };
+                  checkin: { icon: CheckCircle, bg: 'bg-sage-50', color: 'text-sage-500' },
+                  achievement: { icon: Fire, bg: 'bg-warm-50', color: 'text-warm-500' },
+                  insight: { icon: Sparkle, bg: 'bg-stone-100', color: 'text-stone-500' },
+                }[activity.type] ?? { icon: CheckCircle, bg: 'bg-sage-50', color: 'text-sage-500' };
                 const Icon = iconConfig.icon;
 
                 return (
                   <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-colors">
                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconConfig.bg}`}>
-                      <Icon className={`w-4 h-4 ${iconConfig.color}`} />
+                      <Icon size={16} weight="light" className={iconConfig.color} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-stone-800 font-medium truncate">{activity.description}</p>

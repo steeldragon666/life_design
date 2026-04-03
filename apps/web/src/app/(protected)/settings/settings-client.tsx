@@ -119,7 +119,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
                 <div className="shrink-0 ml-4">
                   {isConnected ? (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-green-600 font-medium">Connected</span>
+                      <span className="text-xs text-sage-600 font-medium">Connected</span>
                       <button
                         onClick={() => handleDisconnect(integration!.id)}
                         className="text-xs text-red-500 hover:underline"

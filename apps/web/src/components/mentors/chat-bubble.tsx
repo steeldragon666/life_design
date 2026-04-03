@@ -124,10 +124,10 @@ export default function ChatBubble({
               style={{ background: 'linear-gradient(135deg, #4f46e5, #6d28d9)' }}
             >
               <div className="flex items-center gap-3 mb-2">
-                <SpeakerHigh className="h-4 w-4 text-indigo-200 flex-shrink-0" weight="regular" />
+                <SpeakerHigh className="h-4 w-4 text-sage-200 flex-shrink-0" weight="regular" />
                 <WaveformBars count={12} active={false} className="opacity-70" />
                 <span
-                  className="text-xs text-indigo-200 tabular-nums"
+                  className="text-xs text-sage-200 tabular-nums"
                   style={{ fontFamily: '"JetBrains Mono", monospace' }}
                 >
                   {formatDuration(voiceData.duration)}
@@ -140,7 +140,7 @@ export default function ChatBubble({
               </div>
               {voiceData.transcription && (
                 <p
-                  className="text-sm text-indigo-100 leading-relaxed"
+                  className="text-sm text-sage-100 leading-relaxed"
                   style={{ fontFamily: '"Erode", Georgia, serif' }}
                 >
                   {voiceData.transcription}
@@ -350,7 +350,7 @@ export default function ChatBubble({
           <div className="flex items-center gap-2 mt-2 ml-0.5">
             <button
               onClick={() => onSpeak(content)}
-              className="p-1.5 rounded-lg text-white/25 hover:text-indigo-400 hover:bg-indigo-400/10 transition-all duration-200"
+              className="p-1.5 rounded-lg text-white/25 hover:text-sage-500 hover:bg-sage-500/10 transition-all duration-200"
               aria-label="Speak this message"
             >
               <SpeakerHigh className="h-3.5 w-3.5" />

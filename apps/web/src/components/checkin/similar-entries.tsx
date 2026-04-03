@@ -81,7 +81,7 @@ export default function SimilarEntries({
           Similar past entries
         </span>
         {isSearching && (
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-indigo-400" />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sage-500" />
         )}
       </div>
       {entries.map((entry) => (
@@ -97,7 +97,7 @@ export default function SimilarEntries({
                 year: 'numeric',
               })}
             </span>
-            <span className="text-[11px] text-indigo-400/60">
+            <span className="text-[11px] text-sage-500/60">
               {Math.round(entry.similarity * 100)}% similar
             </span>
           </div>

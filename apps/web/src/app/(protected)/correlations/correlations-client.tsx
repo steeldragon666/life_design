@@ -27,13 +27,13 @@ import {
 import {
   GitBranch,
   List,
-  Network,
-  SlidersHorizontal,
-  ChevronDown,
-  ChevronUp,
-  AlertCircle,
-  Zap,
-} from 'lucide-react'; // kept: correlations uses complex UI, icons are minor
+  Graph,
+  Sliders,
+  CaretDown,
+  CaretUp,
+  WarningCircle,
+  Lightning,
+} from '@phosphor-icons/react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -44,7 +44,7 @@ type ViewMode = 'matrix' | 'list' | 'network';
 const VIEW_TABS: { id: ViewMode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'matrix', label: 'Matrix', icon: GitBranch },
   { id: 'list', label: 'List', icon: List },
-  { id: 'network', label: 'Network', icon: Network },
+  { id: 'network', label: 'Network', icon: Graph },
 ];
 
 const CAUSAL_BADGE: Record<
@@ -170,16 +170,16 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
         className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <SlidersHorizontal className="h-4 w-4 text-primary-400" />
+          <Sliders size={16} className="text-primary-400" />
           <span className="text-sm font-bold text-white">Filters</span>
           {(dimensions.length > 0 || minConfidence !== 0.5 || timePeriod !== '90d') && (
             <span className="h-2 w-2 rounded-full bg-primary-500 animate-pulse" />
           )}
         </div>
         {expanded ? (
-          <ChevronUp className="h-4 w-4 text-stone-500" />
+          <CaretUp size={16} className="text-stone-500" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-stone-500" />
+          <CaretDown size={16} className="text-stone-500" />
         )}
       </button>
 
@@ -997,7 +997,7 @@ export default function CorrelationsClient() {
       {/* Error state */}
       {error && (
         <div className="glass-dark rounded-3xl p-6 border border-red-500/20 flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+          <WarningCircle size={20} className="text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-300 font-medium">{error}</p>
         </div>
       )}
@@ -1017,7 +1017,7 @@ export default function CorrelationsClient() {
       <GlassCard className="p-6 border-white/5">
         <div className="flex items-start gap-4">
           <div className="h-10 w-10 rounded-2xl bg-primary-500/10 flex items-center justify-center flex-shrink-0">
-            <Zap className="h-5 w-5 text-primary-400" />
+            <Lightning size={20} className="text-primary-400" />
           </div>
           <div className="space-y-1">
             <p

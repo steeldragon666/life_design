@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Volume2 } from 'lucide-react';
+import { SpeakerHigh } from '@phosphor-icons/react';
 import { ARCHETYPE_CONFIGS, type MentorArchetype } from '@/lib/mentor-archetypes';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
 
@@ -45,29 +45,29 @@ export default function VoiceSettingsPanel() {
     <div className="space-y-4">
       {/* Toggle: Speak mentor responses */}
       <label className="flex items-center justify-between">
-        <span className="text-sm text-[#2A2623]">Speak mentor responses aloud</span>
+        <span className="text-sm text-stone-800">Speak mentor responses aloud</span>
         <input
           type="checkbox"
           checked={voiceEnabled}
           onChange={(e) => toggleVoice(e.target.checked)}
-          className="h-4 w-4 accent-[#5A7F5A]"
+          className="h-4 w-4 accent-sage-500"
         />
       </label>
 
       {/* Toggle: Auto-speak in voice conversations */}
       <label className="flex items-center justify-between">
-        <span className="text-sm text-[#2A2623]">Auto-speak in voice conversations</span>
+        <span className="text-sm text-stone-800">Auto-speak in voice conversations</span>
         <input
           type="checkbox"
           checked={autoSpeak}
           onChange={(e) => toggleAutoSpeak(e.target.checked)}
-          className="h-4 w-4 accent-[#5A7F5A]"
+          className="h-4 w-4 accent-sage-500"
         />
       </label>
 
       {/* Slider: Voice speed 0.75x - 1.25x */}
       <div>
-        <label className="text-sm text-[#2A2623]">
+        <label className="text-sm text-stone-800">
           Voice speed: {voiceSpeed.toFixed(2)}x
         </label>
         <input
@@ -77,25 +77,25 @@ export default function VoiceSettingsPanel() {
           step={0.05}
           value={voiceSpeed}
           onChange={(e) => updateSpeed(parseFloat(e.target.value))}
-          className="w-full accent-[#5A7F5A]"
+          className="w-full accent-sage-500"
         />
       </div>
 
       {/* Preview cards for each mentor */}
-      <div className="space-y-2 border-t border-[#E8E4DD] pt-4">
-        <p className="text-xs font-medium text-[#A8A198] uppercase tracking-wide">Voice Previews</p>
+      <div className="space-y-2 border-t border-stone-200 pt-4">
+        <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">Voice Previews</p>
         {ARCHETYPE_CONFIGS.map((config) => (
           <div
             key={config.id}
-            className="flex items-center justify-between rounded-lg bg-[#F5F3EF] px-3 py-2 border border-[#E8E4DD]"
+            className="flex items-center justify-between rounded-lg bg-stone-100 px-3 py-2 border border-stone-200"
           >
-            <span className="text-sm text-[#2A2623]">{config.characterName}</span>
+            <span className="text-sm text-stone-800">{config.characterName}</span>
             <button
               onClick={() => preview(config.id)}
-              className="flex items-center gap-1 text-xs text-[#5A7F5A] hover:text-[#4a6f4a]"
+              className="flex items-center gap-1 text-xs text-sage-500 hover:text-sage-600"
               aria-label={`Preview ${config.characterName}'s voice`}
             >
-              <Volume2 className="h-3.5 w-3.5" />
+              <SpeakerHigh size={14} weight="light" />
               {isSpeaking ? 'Stop' : 'Preview'}
             </button>
           </div>
@@ -103,7 +103,7 @@ export default function VoiceSettingsPanel() {
       </div>
 
       {/* Data usage note */}
-      <p className="text-xs text-[#A8A198]">
+      <p className="text-xs text-stone-400">
         Voice responses use approximately 50–100KB per message via ElevenLabs.
       </p>
     </div>
