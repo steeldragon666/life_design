@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   mockBuildHealthContext: vi.fn(),
   mockBuildNotionContext: vi.fn(),
   mockBuildBankingContext: vi.fn(),
+  mockGetUserProfile: vi.fn(),
+  mockGetGranularContext: vi.fn(),
   mockFrom: vi.fn(),
 }));
 
@@ -60,6 +62,18 @@ vi.mock('@/lib/integrations/banking', () => ({
   buildBankingContext: mocks.mockBuildBankingContext,
 }));
 
+vi.mock('@/lib/services/user-profile-service', () => ({
+  getUserProfile: mocks.mockGetUserProfile,
+}));
+
+vi.mock('@life-design/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@life-design/core')>();
+  return {
+    ...actual,
+    getGranularContext: mocks.mockGetGranularContext,
+  };
+});
+
 vi.mock('@life-design/ai', () => ({
   sendMentorMessage: mocks.mockSendMentorMessage,
   buildSystemPrompt: mocks.mockBuildSystemPrompt,
@@ -77,18 +91,27 @@ beforeEach(() => {
   mocks.mockBuildHealthContext.mockResolvedValue(null);
   mocks.mockBuildNotionContext.mockResolvedValue(null);
   mocks.mockBuildBankingContext.mockResolvedValue(null);
-  // Mock supabase.from() for the latest checkin query
-  mocks.mockFrom.mockReturnValue({
-    select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        }),
-      }),
-    }),
+  mocks.mockGetUserProfile.mockResolvedValue({ data: null, error: null });
+  mocks.mockGetGranularContext.mockResolvedValue(null);
+  // Mock supabase.from() for all queries (checkins, summaries, correlations)
+  const mockChain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    then: undefined as unknown,
+  };
+  // Make the chain thenable to resolve as { data: [], error: null } for non-single queries
+  Object.defineProperty(mockChain, 'then', {
+    get() {
+      return (resolve: (v: unknown) => void) => resolve({ data: [], error: null });
+    },
+    configurable: true,
   });
+  mockChain.select.mockReturnValue(mockChain);
+  mocks.mockFrom.mockReturnValue(mockChain);
 });
 
 describe('sendMessage', () => {

@@ -1,10 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import ProfilingWizard from '../profiling-wizard';
 
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
+}));
+
+// Mock Supabase client
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+    },
+  }),
+}));
+
+// Mock GuestProvider's useGuest hook
+const mockSetProfile = vi.fn();
+vi.mock('@/lib/guest-context', () => ({
+  useGuest: () => ({
+    profile: null,
+    setProfile: mockSetProfile,
+    goals: [],
+    setGoals: vi.fn(),
+    checkins: [],
+    addCheckin: vi.fn(),
+    conversationMemory: [],
+    addConversationMemory: vi.fn(),
+    integrations: [],
+    setIntegrations: vi.fn(),
+    clearAll: vi.fn(),
+  }),
 }));
 
 // Mock fetch responses
@@ -13,23 +41,12 @@ global.fetch = mockFetch;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Default: new session, not started
-  // Use mockResolvedValue as a fallback so any extra calls (e.g. from async effects
-  // still in flight when a test ends) do not produce unhandled rejections.
-  mockFetch
-    .mockResolvedValue({
-      json: () => Promise.resolve({}),
-    })
-    .mockResolvedValueOnce({
-      json: () => Promise.resolve({ status: 'not_started' }),
-    })
-    .mockResolvedValueOnce({
-      json: () => Promise.resolve({ session_id: 'test-session', resumed: false }),
-    });
+  localStorage.clear();
 });
 
 describe('ProfilingWizard', () => {
   it('shows section intro after initialisation', async () => {
+    // Guest mode: no saved session -> starts fresh
     render(<ProfilingWizard />);
     await waitFor(() => {
       expect(screen.getByText('Your Goal')).toBeInTheDocument();
@@ -37,14 +54,11 @@ describe('ProfilingWizard', () => {
   });
 
   it('redirects to dashboard if onboarding already completed', async () => {
-    mockFetch.mockReset();
-    mockFetch
-      .mockResolvedValue({
-        json: () => Promise.resolve({}),
-      })
-      .mockResolvedValueOnce({
-        json: () => Promise.resolve({ status: 'completed' }),
-      });
+    // Guest mode: saved completed session
+    localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+      status: 'completed',
+      raw_answers: {},
+    }));
     render(<ProfilingWizard />);
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/dashboard');
