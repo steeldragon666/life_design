@@ -155,10 +155,16 @@ export default function useDashboardData(): DashboardData {
       } = await supabase.auth.getUser();
 
       if (authError || !user) {
+        // Guest mode — no Supabase data available.
+        // Return empty state without an error so the dashboard renders cleanly
+        // using server-provided props and local Dexie data instead.
+        lastFetchRef.current = Date.now();
         setData((prev) => ({
           ...prev,
           loading: false,
-          error: authError?.message ?? 'Not authenticated',
+          error: null,
+          dataMaturity: 'cold',
+          checkinCount: 0,
         }));
         return;
       }

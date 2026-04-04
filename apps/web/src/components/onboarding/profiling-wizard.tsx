@@ -183,6 +183,10 @@ export default function ProfilingWizard() {
           onboarded: true,
         });
 
+        // Set onboarded cookie synchronously so middleware allows /dashboard
+        // before the GuestProvider useEffect fires.
+        document.cookie = 'life-design-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
+
         localStorage.setItem('life-design-onboarding-session', JSON.stringify({
           status: 'completed',
           raw_answers: answers,
@@ -211,6 +215,7 @@ export default function ProfilingWizard() {
       } catch (err) {
         console.error('Guest onboarding completion failed, using fallback summary', err);
         setProfile({ id: 'guest-user', onboarded: true });
+        document.cookie = 'life-design-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
         localStorage.setItem('life-design-onboarding-session', JSON.stringify({
           status: 'completed',
           raw_answers: answers,

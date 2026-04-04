@@ -3,6 +3,7 @@ const PROTECTED_GUEST_PREFIXES = [
   '/dashboard',
   '/goals',
   '/checkin',
+  '/mentor',
   '/mentors',
   '/insights',
   '/profile',
@@ -10,6 +11,13 @@ const PROTECTED_GUEST_PREFIXES = [
   '/meditations',
   '/future-self',
   '/rituals',
+  '/journal',
+  '/journey',
+  '/schedule',
+  '/simulator',
+  '/challenges',
+  '/achievements',
+  '/orb',
 ];
 
 export function isAssetOrInternalPath(pathname: string): boolean {
