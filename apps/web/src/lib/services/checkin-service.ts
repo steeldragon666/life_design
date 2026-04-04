@@ -77,6 +77,36 @@ export async function createCheckIn(
   // Fire-and-forget: compute and persist the journal embedding
   if (input.journalEntry && input.journalEntry.trim().length > 0) {
     persistJournalEmbedding(checkin.id).catch(() => {});
+
+    // Also create a journal_entries row for the unified journal feed
+    supabase
+      .from('journal_entries')
+      .insert({
+        user_id: userId,
+        content: input.journalEntry.trim(),
+        source: 'checkin',
+        checkin_id: checkin.id,
+      })
+      .then(({ data: journalRow, error: journalError }) => {
+        if (journalError) {
+          console.warn('[checkin-service] Journal entry insert failed:', journalError.message);
+        } else if (journalRow) {
+          // Fire-and-forget: analyze journal entry for sentiment & dimensions
+          import('@/lib/services/journal-analysis-service')
+            .then(({ analyzeJournalEntryAI }) =>
+              analyzeJournalEntryAI(input.journalEntry!.trim()),
+            )
+            .then(async (analysis) => {
+              const { updateJournalEntry } = await import('@/lib/services/journal-service');
+              await updateJournalEntry((journalRow as { id: string }).id, {
+                sentiment: analysis.sentiment,
+                themes: analysis.themes,
+                dimensions: analysis.dimensions,
+              });
+            })
+            .catch((err) => console.warn('[checkin-service] Journal analysis failed:', err));
+        }
+      });
   }
 
   return { data: checkin, error: null };

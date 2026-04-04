@@ -24,6 +24,8 @@ import {
   TrendUp,
   Pulse,
   Trophy,
+  Path,
+  Notebook,
 } from '@phosphor-icons/react';
 import useDashboardData from '@/hooks/useDashboardData';
 import WeeklyDigestView from '@/components/digest/WeeklyDigestView';
@@ -588,22 +590,22 @@ export default function DashboardClient({
                 )}
               </Link>
               <Link
-                href="/checkin"
+                href="/journal"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-accent-400/10 flex items-center justify-center">
-                  <PencilSimple size={14} weight="light" className="text-accent-500" />
+                  <Notebook size={14} weight="light" className="text-accent-500" />
                 </div>
                 Journal Entry
               </Link>
               <Link
-                href="/checkin"
+                href="/journey"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center">
-                  <Microphone size={14} weight="light" className="text-stone-500" />
+                  <Path size={14} weight="light" className="text-stone-500" />
                 </div>
-                Voice Reflection
+                My Journey
               </Link>
             </div>
           </div>

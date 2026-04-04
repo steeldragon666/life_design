@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { normaliseRawAnswers, computeAllDerivedScores } from '@life-design/core';
+import { normaliseRawAnswers, computeAllDerivedScores, computePsychometricProfile } from '@life-design/core';
 import { generateSummaryTemplate } from '@/lib/profiling/summary-templates';
+import { savePsychometricProfile, generatePsychometricNarrative } from '@/lib/services/psychometric-service';
 
 export async function POST() {
   const supabase = await createClient();
@@ -28,7 +29,7 @@ export async function POST() {
 
   // Require at least half the questions answered to generate a meaningful profile
   const answerCount = Object.keys(session.raw_answers ?? {}).length;
-  if (answerCount < 9) {
+  if (answerCount < 30) {
     return NextResponse.json(
       { error: `Insufficient answers (${answerCount}/18). Please complete more questions.` },
       { status: 400 },
@@ -39,6 +40,39 @@ export async function POST() {
   const normalised = normaliseRawAnswers(session.raw_answers);
   const derived = computeAllDerivedScores(normalised);
   const summaryTemplate = generateSummaryTemplate(normalised, derived);
+
+  // Score psychometric instruments
+  const psychometricResponses: Record<string, number> = {};
+  for (const [key, value] of Object.entries(session.raw_answers)) {
+    if (key.startsWith('perma_') || key.startsWith('tipi_') || key.startsWith('grit_') || key.startsWith('swls_') || key.startsWith('bpns_')) {
+      psychometricResponses[key] = Number(value);
+    }
+  }
+
+  let psychometricProfile = null;
+  let narrativeSummary = '';
+
+  if (Object.keys(psychometricResponses).length >= 25) {
+    psychometricProfile = computePsychometricProfile(psychometricResponses);
+
+    // Generate AI narrative (non-blocking, don't fail onboarding if this errors)
+    try {
+      narrativeSummary = await generatePsychometricNarrative(psychometricProfile);
+    } catch (err) {
+      console.error('Failed to generate psychometric narrative:', err);
+    }
+
+    // Save to database (non-critical)
+    const { error: psychError } = await savePsychometricProfile(
+      user.id,
+      psychometricProfile,
+      psychometricResponses,
+      narrativeSummary,
+    );
+    if (psychError) {
+      console.error('Failed to save psychometric profile:', psychError);
+    }
+  }
 
   // Create user_profile
   const { error: profileError } = await supabase
@@ -112,5 +146,7 @@ export async function POST() {
   return NextResponse.json({
     profile: { ...normalised, ...derived },
     summary: summaryTemplate,
+    psychometric: psychometricProfile,
+    psychometricNarrative: narrativeSummary,
   });
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVertical, Leaf, CalendarBlank } from '@phosphor-icons/react';
+import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVertical, Leaf, CalendarBlank, Notebook, Path } from '@phosphor-icons/react';
 import type { IconWeight } from '@phosphor-icons/react';
 
 // ---------------------------------------------------------------------------
@@ -21,6 +21,8 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: House },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/checkin', label: 'Check-in', icon: Sun },
+  { href: '/journal', label: 'Journal', icon: Notebook },
+  { href: '/journey', label: 'My Journey', icon: Path },
   { href: '/mentor', label: 'Mentor', icon: ChatCircle },
   { href: '/schedule', label: 'Schedule', icon: CalendarBlank },
   { href: '/simulator', label: 'Simulate', icon: Flask },
@@ -43,8 +45,8 @@ export default function ProtectedLayout({
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-  const mobileMainItems = navItems.slice(0, 4); // Home, Goals, Check-in, Mentor
-  const mobileMoreItems = navItems.slice(4); // Schedule, Simulate, Challenges, Badges, Settings
+  const mobileMainItems = navItems.slice(0, 5); // Home, Goals, Check-in, Journal, My Journey
+  const mobileMoreItems = navItems.slice(5); // Mentor, Schedule, Simulate, Challenges, Badges, Settings
   const isMoreActive = mobileMoreItems.some(i => isActive(i.href));
   const [moreOpen, setMoreOpen] = useState(false);
 

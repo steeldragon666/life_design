@@ -59,14 +59,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { checkin_id, goal_id } = body as {
+    const { checkin_id, goal_id, journal_entry_id } = body as {
       checkin_id?: string;
       goal_id?: string;
+      journal_entry_id?: string;
     };
 
-    if (!checkin_id && !goal_id) {
+    if (!checkin_id && !goal_id && !journal_entry_id) {
       return NextResponse.json(
-        { error: 'At least one of checkin_id or goal_id is required' },
+        { error: 'At least one of checkin_id, goal_id, or journal_entry_id is required' },
         { status: 400 }
       );
     }
@@ -140,6 +141,41 @@ export async function POST(request: NextRequest) {
         }
       } else {
         results.goal = false;
+      }
+    }
+
+    // --- Journal entry embedding ---
+    if (journal_entry_id) {
+      const { data: entry, error: fetchError } = await supabase
+        .from('journal_entries')
+        .select('id, content, user_id')
+        .eq('id', journal_entry_id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError || !entry) {
+        return NextResponse.json(
+          { error: 'Journal entry not found or access denied' },
+          { status: 404 }
+        );
+      }
+
+      if (entry.content && entry.content.trim().length > 0) {
+        const embedding = await computeEmbedding(entry.content);
+
+        const { error: updateError } = await supabase
+          .from('journal_entries')
+          .update({ embedding: JSON.stringify(embedding) })
+          .eq('id', journal_entry_id);
+
+        if (updateError) {
+          console.error('[embeddings] Failed to persist journal entry embedding:', updateError.message);
+          results.journal_entry = false;
+        } else {
+          results.journal_entry = true;
+        }
+      } else {
+        results.journal_entry = false;
       }
     }
 

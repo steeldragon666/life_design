@@ -1,7 +1,16 @@
 // packages/core/src/profiling/types.ts
 
 /** Sections in the onboarding questionnaire */
-export type ProfilingSection = 'goal' | 'habits' | 'energy' | 'style';
+export type ProfilingSection =
+  | 'goal'
+  | 'habits'
+  | 'energy'
+  | 'style'
+  | 'wellbeing'
+  | 'personality'
+  | 'drive'
+  | 'satisfaction'
+  | 'needs';
 
 /** Question input types */
 export type QuestionType = 'single_select' | 'multi_select' | 'scale';

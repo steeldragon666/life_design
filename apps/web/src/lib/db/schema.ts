@@ -151,6 +151,17 @@ export interface DBScheduleBlock {
   createdAt: Date;
 }
 
+export interface DBJournalEntry {
+  id?: number;
+  content: string;
+  source: 'standalone' | 'checkin';
+  checkinId?: number;
+  sentiment?: number;
+  themes?: string[];
+  dimensions?: string[];
+  createdAt: Date;
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
@@ -166,6 +177,7 @@ export class LifeDesignDB extends Dexie {
   activeChallenges!: EntityTable<DBActiveChallenge, 'id'>;
   badges!: EntityTable<DBBadge, 'id'>;
   scheduleBlocks!: EntityTable<DBScheduleBlock, 'id'>;
+  journalEntries!: EntityTable<DBJournalEntry, 'id'>;
   featureLogs!: EntityTable<FeatureLogRecord, 'date'>;
   mlModelWeights!: EntityTable<ModelWeightsRecord, 'id'>;
   guardianLogs!: EntityTable<GuardianLogEntry, 'id'>;
@@ -212,6 +224,10 @@ export class LifeDesignDB extends Dexie {
       seasons: '++id, name, isActive',
       normalisationStats: 'feature',
       spotifyReflections: '++id, date',
+    });
+
+    this.version(6).stores({
+      journalEntries: '++id, source, createdAt, *dimensions',
     });
   }
 }

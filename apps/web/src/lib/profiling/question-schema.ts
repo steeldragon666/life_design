@@ -3,13 +3,18 @@ import type { SectionMeta } from './types';
 
 export const SECTIONS: SectionMeta[] = [
   { id: 'goal', label: 'Your Goal', questionCount: 3 },
-  { id: 'habits', label: 'Your Habits', questionCount: 5 },
-  { id: 'energy', label: 'Your Energy', questionCount: 4 },
+  { id: 'wellbeing', label: 'Your Wellbeing', questionCount: 15 },
+  { id: 'personality', label: 'Your Personality', questionCount: 10 },
+  { id: 'drive', label: 'Your Drive', questionCount: 8 },
+  { id: 'satisfaction', label: 'Life Satisfaction', questionCount: 5 },
+  { id: 'needs', label: 'Your Needs', questionCount: 12 },
   { id: 'style', label: 'Your Style', questionCount: 6 },
 ];
 
 export const QUESTIONS: QuestionDefinition[] = [
-  // --- Section: goal (3 questions) ---
+  // =========================================================================
+  // Section: goal (3 questions) — context for personalisation
+  // =========================================================================
   {
     id: 'goal_domain',
     section: 'goal',
@@ -45,112 +50,451 @@ export const QUESTIONS: QuestionDefinition[] = [
       { value: 'critical', label: 'Critical' },
     ],
   },
-  // --- Section: habits (5 questions) ---
+
+  // =========================================================================
+  // Section: wellbeing — PERMA Profiler (Butler & Kern, 2016)
+  // 15 items, 0–10 scale, 3 items per subscale
+  // =========================================================================
+
+  // Positive Emotion
   {
-    id: 'execution_consistency',
-    section: 'habits',
-    type: 'single_select',
-    question: 'When you plan something for the day, how often do you follow through?',
-    options: [
-      { value: 'almost_always', label: 'Almost always' },
-      { value: 'often', label: 'Often' },
-      { value: 'sometimes', label: 'Sometimes' },
-      { value: 'rarely', label: 'Rarely' },
-    ],
-  },
-  {
-    id: 'structure_preference',
-    section: 'habits',
-    type: 'single_select',
-    question: 'How do you usually organise your day?',
-    options: [
-      { value: 'detailed_schedule', label: 'Detailed schedule' },
-      { value: 'rough_plan', label: 'Rough plan' },
-      { value: 'no_plan', label: 'No plan, decide as I go' },
-    ],
-  },
-  {
-    id: 'routine_stability',
-    section: 'habits',
-    type: 'single_select',
-    question: 'How consistent is your daily routine?',
-    options: [
-      { value: 'very_consistent', label: 'Very consistent' },
-      { value: 'mostly_consistent', label: 'Mostly consistent' },
-      { value: 'irregular', label: 'Irregular' },
-      { value: 'completely_unpredictable', label: 'Completely unpredictable' },
-    ],
-  },
-  {
-    id: 'chronotype',
-    section: 'habits',
-    type: 'single_select',
-    question: 'When are you naturally most productive?',
-    options: [
-      { value: 'early_morning', label: 'Early morning' },
-      { value: 'late_morning', label: 'Late morning' },
-      { value: 'afternoon', label: 'Afternoon' },
-      { value: 'evening', label: 'Evening' },
-      { value: 'late_night', label: 'Late night' },
-    ],
-  },
-  {
-    id: 'primary_failure_modes',
-    section: 'habits',
-    type: 'multi_select',
-    question: 'What most often stops you from achieving goals?',
-    maxSelections: 2,
-    options: [
-      { value: 'lack_of_time', label: 'Lack of time' },
-      { value: 'low_energy', label: 'Low energy' },
-      { value: 'losing_motivation', label: 'Losing motivation' },
-      { value: 'distractions', label: 'Distractions' },
-      { value: 'not_knowing_next', label: 'Not knowing what to do next' },
-      { value: 'overcommitting', label: 'Overcommitting' },
-      { value: 'stress_overwhelm', label: 'Stress / overwhelm' },
-    ],
-  },
-  // --- Section: energy (4 questions) ---
-  {
-    id: 'recovery_resilience',
-    section: 'energy',
-    type: 'single_select',
-    question: 'When you miss a day, what usually happens next?',
-    options: [
-      { value: 'immediately', label: 'I get back on track immediately' },
-      { value: 'struggle_recover', label: 'I struggle but recover' },
-      { value: 'fall_off', label: 'I often fall off completely' },
-    ],
-  },
-  {
-    id: 'energy_level',
-    section: 'energy',
+    id: 'perma_1',
+    section: 'wellbeing',
     type: 'scale',
-    question: 'How would you rate your daily energy levels?',
-    scaleMin: 1,
+    question: 'In general, how often do you feel joyful?',
+    scaleMin: 0,
     scaleMax: 10,
   },
   {
-    id: 'stress_load',
-    section: 'energy',
+    id: 'perma_2',
+    section: 'wellbeing',
     type: 'scale',
-    question: 'How overwhelmed do you feel day-to-day?',
-    scaleMin: 1,
+    question: 'In general, how often do you feel positive?',
+    scaleMin: 0,
     scaleMax: 10,
   },
   {
-    id: 'life_load',
-    section: 'energy',
-    type: 'single_select',
-    question: 'How many major commitments are you currently balancing?',
-    options: [
-      { value: '1_2', label: '1–2' },
-      { value: '3_4', label: '3–4' },
-      { value: '5_6', label: '5–6' },
-      { value: '7_plus', label: '7+' },
-    ],
+    id: 'perma_3',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'In general, to what extent do you feel contented?',
+    scaleMin: 0,
+    scaleMax: 10,
   },
-  // --- Section: style (6 questions) ---
+
+  // Engagement
+  {
+    id: 'perma_4',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How often do you become absorbed in what you are doing?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_5',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'In general, to what extent do you feel excited and interested in things?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_6',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How often do you lose track of time while doing something you enjoy?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+
+  // Relationships
+  {
+    id: 'perma_7',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'To what extent do you receive help and support from others when you need it?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_8',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'To what extent do you feel loved?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_9',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How satisfied are you with your personal relationships?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+
+  // Meaning
+  {
+    id: 'perma_10',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'In general, to what extent do you lead a purposeful and meaningful life?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_11',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'In general, to what extent do you feel that what you do in your life is valuable and worthwhile?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_12',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'To what extent do you generally feel you have a sense of direction in your life?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+
+  // Accomplishment
+  {
+    id: 'perma_13',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How much of the time do you feel you are making progress towards accomplishing your goals?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_14',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How often do you achieve the important goals you have set for yourself?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_15',
+    section: 'wellbeing',
+    type: 'scale',
+    question: 'How often are you able to handle your responsibilities?',
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+
+  // =========================================================================
+  // Section: personality — TIPI (Gosling et al., 2003)
+  // 10 items, 1–7 scale. Prefix: "I see myself as..."
+  // =========================================================================
+  {
+    id: 'tipi_1',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as extraverted and enthusiastic.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_2',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as critical and quarrelsome.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_3',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as dependable and self-disciplined.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_4',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as anxious and easily upset.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_5',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as open to new experiences and complex.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_6',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as reserved and quiet.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_7',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as sympathetic and warm.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_8',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as disorganized and careless.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_9',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as calm and emotionally stable.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_10',
+    section: 'personality',
+    type: 'scale',
+    question: 'I see myself as conventional and uncreative.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+
+  // =========================================================================
+  // Section: drive — Short Grit Scale (Duckworth & Quinn, 2009)
+  // 8 items, 1–5 scale
+  // =========================================================================
+  {
+    id: 'grit_1',
+    section: 'drive',
+    type: 'scale',
+    question: 'New ideas and projects sometimes distract me from previous ones.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_2',
+    section: 'drive',
+    type: 'scale',
+    question: "Setbacks don't discourage me. I don't give up easily.",
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_3',
+    section: 'drive',
+    type: 'scale',
+    question: 'I often set a goal but later choose to pursue a different one.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_4',
+    section: 'drive',
+    type: 'scale',
+    question: 'I am a hard worker.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_5',
+    section: 'drive',
+    type: 'scale',
+    question: 'I have difficulty maintaining my focus on projects that take more than a few months to complete.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_6',
+    section: 'drive',
+    type: 'scale',
+    question: 'I finish whatever I begin.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_7',
+    section: 'drive',
+    type: 'scale',
+    question: 'My interests change from year to year.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_8',
+    section: 'drive',
+    type: 'scale',
+    question: 'I am diligent. I never give up.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+
+  // =========================================================================
+  // Section: satisfaction — SWLS (Diener et al., 1985)
+  // 5 items, 1–7 scale
+  // =========================================================================
+  {
+    id: 'swls_1',
+    section: 'satisfaction',
+    type: 'scale',
+    question: 'In most ways my life is close to my ideal.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_2',
+    section: 'satisfaction',
+    type: 'scale',
+    question: 'The conditions of my life are excellent.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_3',
+    section: 'satisfaction',
+    type: 'scale',
+    question: 'I am satisfied with my life.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_4',
+    section: 'satisfaction',
+    type: 'scale',
+    question: 'So far I have gotten the important things I want in life.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_5',
+    section: 'satisfaction',
+    type: 'scale',
+    question: 'If I could live my life over, I would change almost nothing.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+
+  // =========================================================================
+  // Section: needs — Basic Psychological Needs Scale (Deci & Ryan)
+  // 12 items, 1–7 scale
+  // =========================================================================
+
+  // Autonomy
+  {
+    id: 'bpns_1',
+    section: 'needs',
+    type: 'scale',
+    question: 'I feel like I am free to decide for myself how to live my life.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_2',
+    section: 'needs',
+    type: 'scale',
+    question: 'I generally feel free to express my ideas and opinions.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_3',
+    section: 'needs',
+    type: 'scale',
+    question: 'I feel like I can pretty much be myself in my daily situations.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_4',
+    section: 'needs',
+    type: 'scale',
+    question: 'I feel pressured in my life.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+
+  // Competence
+  {
+    id: 'bpns_5',
+    section: 'needs',
+    type: 'scale',
+    question: 'Most days I feel a sense of accomplishment from what I do.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_6',
+    section: 'needs',
+    type: 'scale',
+    question: 'People I know tell me I am good at what I do.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_7',
+    section: 'needs',
+    type: 'scale',
+    question: 'I have been able to learn interesting new skills recently.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_8',
+    section: 'needs',
+    type: 'scale',
+    question: 'Most days I feel that I have met my responsibilities well.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+
+  // Relatedness
+  {
+    id: 'bpns_9',
+    section: 'needs',
+    type: 'scale',
+    question: 'I really like the people I interact with.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_10',
+    section: 'needs',
+    type: 'scale',
+    question: 'I get along with people I come into contact with.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_11',
+    section: 'needs',
+    type: 'scale',
+    question: 'People in my life care about me.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_12',
+    section: 'needs',
+    type: 'scale',
+    question: 'People I interact with on a daily basis tend to take my feelings into consideration.',
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+
+  // =========================================================================
+  // Section: style (6 questions) — existing behavioural profiling
+  // =========================================================================
   {
     id: 'motivation_type',
     section: 'style',

@@ -1,10 +1,13 @@
 'use client';
 
-import type { ProfileSummaryTemplate } from '@life-design/core';
+import type { ProfileSummaryTemplate, PsychometricProfile } from '@life-design/core';
+import PsychometricReport from './psychometric-report';
 
 interface ProfileSummaryProps {
   userName: string;
   summary: ProfileSummaryTemplate;
+  psychometric?: PsychometricProfile | null;
+  psychometricNarrative?: string;
   onComplete: () => void;
 }
 
@@ -15,7 +18,24 @@ const SUMMARY_LABELS: { key: keyof ProfileSummaryTemplate; label: string; icon: 
   { key: 'this_week', label: 'This Week', icon: '📅' },
 ];
 
-export default function ProfileSummary({ userName, summary, onComplete }: ProfileSummaryProps) {
+export default function ProfileSummary({
+  userName,
+  summary,
+  psychometric,
+  psychometricNarrative,
+  onComplete,
+}: ProfileSummaryProps) {
+  if (psychometric) {
+    return (
+      <PsychometricReport
+        profile={psychometric}
+        narrative={psychometricNarrative ?? ''}
+        userName={userName}
+        onComplete={onComplete}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen px-4 py-8 md:px-8">
       <div className="max-w-lg mx-auto">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { SECTIONS, getQuestionsForSection } from '@/lib/profiling/question-schema';
-import type { RawAnswers, ProfileSummaryTemplate } from '@life-design/core';
+import type { RawAnswers, ProfileSummaryTemplate, PsychometricProfile } from '@life-design/core';
 import { createClient } from '@/lib/supabase/client';
 import { useGuest } from '@/lib/guest-context';
 import ProgressBar from './progress-bar';
@@ -24,6 +24,8 @@ export default function ProfilingWizard() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [summary, setSummary] = useState<ProfileSummaryTemplate | null>(null);
   const [userName, setUserName] = useState<string>('');
+  const [psychometricProfile, setPsychometricProfile] = useState<PsychometricProfile | null>(null);
+  const [psychometricNarrative, setPsychometricNarrative] = useState<string>('');
   const [pendingMultiSelect, setPendingMultiSelect] = useState<string[] | null>(null);
 
   // Initialise session
@@ -167,7 +169,7 @@ export default function ProfilingWizard() {
 
     if (sessionId === 'guest-session') {
       try {
-        const { normaliseRawAnswers, computeAllDerivedScores } = await import('@life-design/core');
+        const { normaliseRawAnswers, computeAllDerivedScores, computePsychometricProfile } = await import('@life-design/core');
         const { generateSummaryTemplate } = await import('@/lib/profiling/summary-templates');
 
         const normalised = normaliseRawAnswers(answers);
@@ -185,6 +187,24 @@ export default function ProfilingWizard() {
           status: 'completed',
           raw_answers: answers,
         }));
+
+        // Compute psychometric profile client-side for guest users
+        const psychometricResponses: Record<string, number> = {};
+        for (const [key, value] of Object.entries(answers)) {
+          if (
+            key.startsWith('perma_') ||
+            key.startsWith('tipi_') ||
+            key.startsWith('grit_') ||
+            key.startsWith('swls_') ||
+            key.startsWith('bpns_')
+          ) {
+            psychometricResponses[key] = Number(value);
+          }
+        }
+        if (Object.keys(psychometricResponses).length >= 25) {
+          const psych = computePsychometricProfile(psychometricResponses);
+          setPsychometricProfile(psych);
+        }
 
         setSummary(summaryTemplate);
         setPhase('summary');
@@ -214,6 +234,10 @@ export default function ProfilingWizard() {
       const data = await res.json();
       if (!data.summary) throw new Error('No summary in response');
       setSummary(data.summary);
+      if (data.psychometric) {
+        setPsychometricProfile(data.psychometric);
+        setPsychometricNarrative(data.psychometricNarrative ?? '');
+      }
       setPhase('summary');
     } catch (err) {
       console.error('Authenticated onboarding completion failed, computing client-side', err);
@@ -326,6 +350,8 @@ export default function ProfilingWizard() {
         <ProfileSummary
           userName={userName}
           summary={summary}
+          psychometric={psychometricProfile}
+          psychometricNarrative={psychometricNarrative}
           onComplete={() => router.push('/dashboard')}
         />
       </div>

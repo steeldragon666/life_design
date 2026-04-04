@@ -1,0 +1,523 @@
+// packages/core/src/profiling/instruments.ts
+
+import type { PsychometricItem } from './psychometric-types';
+
+// ---------------------------------------------------------------------------
+// PERMA Profiler (Butler & Kern, 2016) — 15 items, 0-10 scale
+// ---------------------------------------------------------------------------
+
+const PERMA_ITEMS: PsychometricItem[] = [
+  // Positive Emotion
+  {
+    id: 'perma_1',
+    instrument: 'perma',
+    subscale: 'positiveEmotion',
+    text: 'In general, how often do you feel joyful?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_2',
+    instrument: 'perma',
+    subscale: 'positiveEmotion',
+    text: 'In general, how often do you feel positive?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_3',
+    instrument: 'perma',
+    subscale: 'positiveEmotion',
+    text: 'In general, to what extent do you feel contented?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  // Engagement
+  {
+    id: 'perma_4',
+    instrument: 'perma',
+    subscale: 'engagement',
+    text: 'How often do you become absorbed in what you are doing?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_5',
+    instrument: 'perma',
+    subscale: 'engagement',
+    text: 'In general, to what extent do you feel excited and interested in things?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_6',
+    instrument: 'perma',
+    subscale: 'engagement',
+    text: 'How often do you lose track of time while doing something you enjoy?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  // Relationships
+  {
+    id: 'perma_7',
+    instrument: 'perma',
+    subscale: 'relationships',
+    text: 'To what extent do you receive help and support from others when you need it?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_8',
+    instrument: 'perma',
+    subscale: 'relationships',
+    text: 'To what extent do you feel loved?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_9',
+    instrument: 'perma',
+    subscale: 'relationships',
+    text: 'How satisfied are you with your personal relationships?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  // Meaning
+  {
+    id: 'perma_10',
+    instrument: 'perma',
+    subscale: 'meaning',
+    text: 'In general, to what extent do you lead a purposeful and meaningful life?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_11',
+    instrument: 'perma',
+    subscale: 'meaning',
+    text: 'In general, to what extent do you feel that what you do in your life is valuable and worthwhile?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_12',
+    instrument: 'perma',
+    subscale: 'meaning',
+    text: 'To what extent do you generally feel you have a sense of direction in your life?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  // Accomplishment
+  {
+    id: 'perma_13',
+    instrument: 'perma',
+    subscale: 'accomplishment',
+    text: 'How much of the time do you feel you are making progress towards accomplishing your goals?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_14',
+    instrument: 'perma',
+    subscale: 'accomplishment',
+    text: 'How often do you achieve the important goals you have set for yourself?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+  {
+    id: 'perma_15',
+    instrument: 'perma',
+    subscale: 'accomplishment',
+    text: 'How often are you able to handle your responsibilities?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 10,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// TIPI (Gosling et al., 2003) — 10 items, 1-7 scale
+// Stem: "I see myself as..."
+// ---------------------------------------------------------------------------
+
+const TIPI_ITEMS: PsychometricItem[] = [
+  {
+    id: 'tipi_1',
+    instrument: 'tipi',
+    subscale: 'extraversion',
+    text: 'I see myself as... Extraverted, enthusiastic',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_2',
+    instrument: 'tipi',
+    subscale: 'agreeableness',
+    text: 'I see myself as... Critical, quarrelsome',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_3',
+    instrument: 'tipi',
+    subscale: 'conscientiousness',
+    text: 'I see myself as... Dependable, self-disciplined',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_4',
+    instrument: 'tipi',
+    subscale: 'emotionalStability',
+    text: 'I see myself as... Anxious, easily upset',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_5',
+    instrument: 'tipi',
+    subscale: 'openness',
+    text: 'I see myself as... Open to new experiences, complex',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_6',
+    instrument: 'tipi',
+    subscale: 'extraversion',
+    text: 'I see myself as... Reserved, quiet',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_7',
+    instrument: 'tipi',
+    subscale: 'agreeableness',
+    text: 'I see myself as... Sympathetic, warm',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_8',
+    instrument: 'tipi',
+    subscale: 'conscientiousness',
+    text: 'I see myself as... Disorganized, careless',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_9',
+    instrument: 'tipi',
+    subscale: 'emotionalStability',
+    text: 'I see myself as... Calm, emotionally stable',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'tipi_10',
+    instrument: 'tipi',
+    subscale: 'openness',
+    text: 'I see myself as... Conventional, uncreative',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Short Grit Scale (Duckworth & Quinn, 2009) — 8 items, 1-5 scale
+// Consistency subscale: items 1,3,5,7 (all reversed)
+// Perseverance subscale: items 2,4,6,8
+// ---------------------------------------------------------------------------
+
+const GRIT_ITEMS: PsychometricItem[] = [
+  {
+    id: 'grit_1',
+    instrument: 'grit',
+    subscale: 'consistency',
+    text: 'New ideas and projects sometimes distract me from previous ones',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_2',
+    instrument: 'grit',
+    subscale: 'perseverance',
+    text: 'Setbacks don\'t discourage me. I don\'t give up easily',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_3',
+    instrument: 'grit',
+    subscale: 'consistency',
+    text: 'I often set a goal but later choose to pursue a different one',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_4',
+    instrument: 'grit',
+    subscale: 'perseverance',
+    text: 'I am a hard worker',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_5',
+    instrument: 'grit',
+    subscale: 'consistency',
+    text: 'I have difficulty maintaining my focus on projects that take more than a few months to complete',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_6',
+    instrument: 'grit',
+    subscale: 'perseverance',
+    text: 'I finish whatever I begin',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_7',
+    instrument: 'grit',
+    subscale: 'consistency',
+    text: 'My interests change from year to year',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'grit_8',
+    instrument: 'grit',
+    subscale: 'perseverance',
+    text: 'I am diligent. I never give up',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// SWLS — Satisfaction with Life Scale (Diener et al., 1985) — 5 items, 1-7 scale
+// ---------------------------------------------------------------------------
+
+const SWLS_ITEMS: PsychometricItem[] = [
+  {
+    id: 'swls_1',
+    instrument: 'swls',
+    subscale: 'satisfaction',
+    text: 'In most ways my life is close to my ideal',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_2',
+    instrument: 'swls',
+    subscale: 'satisfaction',
+    text: 'The conditions of my life are excellent',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_3',
+    instrument: 'swls',
+    subscale: 'satisfaction',
+    text: 'I am satisfied with my life',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_4',
+    instrument: 'swls',
+    subscale: 'satisfaction',
+    text: 'So far I have gotten the important things I want in life',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'swls_5',
+    instrument: 'swls',
+    subscale: 'satisfaction',
+    text: 'If I could live my life over, I would change almost nothing',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// BPNS — Basic Psychological Needs Scale (Deci & Ryan) — 12 items, 1-7 scale
+// ---------------------------------------------------------------------------
+
+const BPNS_ITEMS: PsychometricItem[] = [
+  // Autonomy
+  {
+    id: 'bpns_1',
+    instrument: 'bpns',
+    subscale: 'autonomy',
+    text: 'I feel like I am free to decide for myself how to live my life',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_2',
+    instrument: 'bpns',
+    subscale: 'autonomy',
+    text: 'I generally feel free to express my ideas and opinions',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_3',
+    instrument: 'bpns',
+    subscale: 'autonomy',
+    text: 'I feel like I can pretty much be myself in my daily situations',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_4',
+    instrument: 'bpns',
+    subscale: 'autonomy',
+    text: 'I feel pressured in my life',
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  // Competence
+  {
+    id: 'bpns_5',
+    instrument: 'bpns',
+    subscale: 'competence',
+    text: 'Most days I feel a sense of accomplishment from what I do',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_6',
+    instrument: 'bpns',
+    subscale: 'competence',
+    text: 'People I know tell me I am good at what I do',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_7',
+    instrument: 'bpns',
+    subscale: 'competence',
+    text: 'I have been able to learn interesting new skills recently',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_8',
+    instrument: 'bpns',
+    subscale: 'competence',
+    text: 'Most days I feel that I have met my responsibilities well',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  // Relatedness
+  {
+    id: 'bpns_9',
+    instrument: 'bpns',
+    subscale: 'relatedness',
+    text: 'I really like the people I interact with',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_10',
+    instrument: 'bpns',
+    subscale: 'relatedness',
+    text: 'I get along with people I come into contact with',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_11',
+    instrument: 'bpns',
+    subscale: 'relatedness',
+    text: 'People in my life care about me',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+  {
+    id: 'bpns_12',
+    instrument: 'bpns',
+    subscale: 'relatedness',
+    text: 'People I interact with on a daily basis tend to take my feelings into consideration',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 7,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Combined export of all instrument items
+// ---------------------------------------------------------------------------
+
+export const PSYCHOMETRIC_ITEMS: PsychometricItem[] = [
+  ...PERMA_ITEMS,
+  ...TIPI_ITEMS,
+  ...GRIT_ITEMS,
+  ...SWLS_ITEMS,
+  ...BPNS_ITEMS,
+];
+
+// ---------------------------------------------------------------------------
+// Section metadata compatible with the onboarding wizard SectionMeta format
+// ---------------------------------------------------------------------------
+
+export const PSYCHOMETRIC_SECTIONS = [
+  { id: 'wellbeing',    label: 'Your Wellbeing',   instrument: 'perma', questionCount: 15 },
+  { id: 'personality',  label: 'Your Personality',  instrument: 'tipi',  questionCount: 10 },
+  { id: 'drive',        label: 'Your Drive',         instrument: 'grit',  questionCount: 8  },
+  { id: 'satisfaction', label: 'Life Satisfaction',  instrument: 'swls',  questionCount: 5  },
+  { id: 'needs',        label: 'Your Needs',         instrument: 'bpns',  questionCount: 12 },
+] as const;
