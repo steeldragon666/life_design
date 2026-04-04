@@ -71,6 +71,19 @@ export default function SignUpPage() {
               />
             </div>
 
+            <div>
+              <label htmlFor="inviteCode" className="block text-sm font-medium text-stone-700 mb-1">
+                Invite Code
+              </label>
+              <Input
+                id="inviteCode"
+                name="inviteCode"
+                type="text"
+                required
+                placeholder="Enter your invite code"
+              />
+            </div>
+
             {error && (
               <div className="rounded-xl bg-red-50 border border-red-200/60 px-4 py-3 text-sm text-red-600">
                 {error}
