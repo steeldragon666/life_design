@@ -1,4 +1,5 @@
 import { Dimension, IntegrationProvider } from './enums';
+import { computeExerciseMoodLag, type ExerciseSession, type MoodEntry } from './integrations/strava-mood';
 
 export interface NormalizedSignal {
   dimension: Dimension;
@@ -444,6 +445,36 @@ export function extractCalendarFeatures(events: CalendarEvent[]): NormalisedFeat
   features.push(makeFeat('event_count', Dimension.Career, eventCount, 'google_calendar', 1.0, day));
   features.push(makeFeat('meeting_minutes', Dimension.Career, meetingMinutes, 'google_calendar', 1.0, day));
   features.push(makeFeat('focus_minutes', Dimension.Career, focusMinutes, 'google_calendar', 0.8, day));
+
+  return features;
+}
+
+/**
+ * Extract exercise-mood lag correlation features.
+ * Produces features like `exercise_mood_lag0_corr`, `exercise_mood_lag1_corr`, etc.
+ */
+export function extractExerciseMoodFeatures(
+  exercises: ExerciseSession[],
+  moods: MoodEntry[],
+  maxLag: number = 3,
+): NormalisedFeature[] {
+  const correlations = computeExerciseMoodLag(exercises, moods, maxLag);
+  const now = new Date();
+  const features: NormalisedFeature[] = [];
+
+  for (const c of correlations) {
+    const confidence = c.sampleSize >= 14 ? 1.0 : c.sampleSize >= 4 ? 0.6 : 0.2;
+    features.push(
+      makeFeat(
+        `exercise_mood_lag${c.lagDays}_corr`,
+        Dimension.Health,
+        c.correlation,
+        'strava_mood',
+        confidence,
+        now,
+      ),
+    );
+  }
 
   return features;
 }
