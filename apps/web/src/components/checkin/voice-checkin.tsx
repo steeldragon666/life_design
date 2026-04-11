@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Microphone, Square, CircleNotch, Sparkle, CheckCircle } from '@phosphor-icons/react';
+import { Mic, Square, Loader2, Sparkles, CheckCircle } from 'lucide-react';
 import { analyzeVoiceJournal } from '@life-design/ai'; // This will be called via a server action or client-side if key is safe
 
 export default function VoiceCheckin() {
@@ -72,8 +72,8 @@ export default function VoiceCheckin() {
           className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording ? 'bg-red-500 shadow-lg shadow-red-500/40' : 'bg-primary-600 hover:bg-primary-500'}`}
         >
           {isRecording
-            ? <Square size={40} weight="fill" className="text-white" />
-            : <Microphone size={40} weight="light" className="text-white" />
+            ? <Square size={40} fill="currentColor" className="text-white" />
+            : <Mic size={40} className="text-white" />
           }
         </button>
       </div>
@@ -91,14 +91,14 @@ export default function VoiceCheckin() {
 
       {isProcessing && (
         <div className="flex items-center gap-2 text-primary-400 font-bold animate-pulse">
-          <CircleNotch size={16} weight="light" className="animate-spin" />
+          <Loader2 size={16} className="animate-spin" />
           <span className="text-xs uppercase tracking-widest">AI Extraction Active</span>
         </div>
       )}
 
       {status === 'success' && (
         <div className="flex items-center gap-2 text-emerald-400 font-bold">
-          <CheckCircle size={20} weight="light" />
+          <CheckCircle size={20} />
           <span className="text-xs uppercase tracking-widest text-emerald-500">Multimodal Sync Complete</span>
         </div>
       )}

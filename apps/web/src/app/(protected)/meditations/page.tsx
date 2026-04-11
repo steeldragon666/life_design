@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Play, Pause, Sparkle } from '@phosphor-icons/react';
+import { Play, Pause, Sparkles } from 'lucide-react';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt } from '@/lib/mentor-orchestrator';
 import { requestChatText } from '@/lib/chat-client';
@@ -88,7 +88,7 @@ export default function MeditationsPage() {
       <div className="glass-card p-8">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-            <Sparkle size={20} className="text-cyan-300" />
+            <Sparkles size={20} className="text-cyan-300" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white tracking-tight">Guided Meditations</h1>

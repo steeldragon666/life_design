@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle } from '@phosphor-icons/react';
+import { CheckCircle } from 'lucide-react';
 import { useGuest } from '@/lib/guest-context';
 import { Card } from '@life-design/ui';
 import CheckInClient from './checkin-client';
@@ -21,7 +21,7 @@ export default function CheckInPage() {
 
         <div className="text-center py-12 space-y-6">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-100 to-sage-200 flex items-center justify-center mx-auto">
-            <CheckCircle className="w-10 h-10 text-sage-500" weight="light" />
+            <CheckCircle className="w-10 h-10 text-sage-500" />
           </div>
           <div>
             <h2 className="font-serif text-3xl text-stone-900 mb-2">

@@ -1,5 +1,7 @@
 'use client';
 
+import { Clock, CheckCircle, Save } from 'lucide-react';
+
 interface ExpectationsCardProps {
   onNext: () => void;
 }
@@ -39,7 +41,7 @@ export default function ExpectationsCard({ onNext }: ExpectationsCardProps) {
         <div className="space-y-4 text-left">
           <div className="flex gap-3 items-start">
             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              <Clock size={16} className="text-blue-600" />
             </div>
             <div>
               <h3 className="font-medium text-sm text-stone-900">Takes about 10-15 minutes</h3>
@@ -48,7 +50,7 @@ export default function ExpectationsCard({ onNext }: ExpectationsCardProps) {
           </div>
           <div className="flex gap-3 items-start">
             <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-600"><path d="m9 12 2 2 4-4" /><circle cx="12" cy="12" r="10" /></svg>
+              <CheckCircle size={16} className="text-green-600" />
             </div>
             <div>
               <h3 className="font-medium text-sm text-stone-900">No right or wrong answers</h3>
@@ -57,7 +59,7 @@ export default function ExpectationsCard({ onNext }: ExpectationsCardProps) {
           </div>
           <div className="flex gap-3 items-start">
             <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-600"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /></svg>
+              <Save size={16} className="text-violet-600" />
             </div>
             <div>
               <h3 className="font-medium text-sm text-stone-900">You can save and come back</h3>

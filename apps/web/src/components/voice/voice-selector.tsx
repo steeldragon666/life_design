@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SpeakerHigh, Check, Microphone, User, Globe } from '@phosphor-icons/react';
+import { Volume2, Check, Mic, User, Globe } from 'lucide-react';
 
 interface VoiceOption {
   id: string;
@@ -203,12 +203,12 @@ export default function VoiceSelector({ selectedVoice, onSelect, showPreview = t
                 >
                   {isPlaying ? (
                     <>
-                      <SpeakerHigh size={16} className="animate-pulse" />
+                      <Volume2 size={16} className="animate-pulse" />
                       Stop Preview
                     </>
                   ) : (
                     <>
-                      <Microphone size={16} />
+                      <Mic size={16} />
                       Hear Sample
                     </>
                   )}

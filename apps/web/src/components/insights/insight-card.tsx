@@ -1,5 +1,7 @@
 'use client';
 
+import { X } from 'lucide-react';
+
 interface InsightInfo {
   id: string;
   type: 'trend' | 'correlation' | 'suggestion' | 'goal_progress' | 'goal_risk';
@@ -102,9 +104,7 @@ export default function InsightCard({ insight, onDismiss }: InsightCardProps) {
               aria-label="Dismiss insight"
               className="flex-shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-stone-300 hover:text-stone-500 hover:bg-stone-100"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              <X className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
 

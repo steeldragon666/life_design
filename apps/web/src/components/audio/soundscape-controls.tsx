@@ -1,6 +1,6 @@
 'use client';
 
-import { Sliders, Waves } from '@phosphor-icons/react';
+import { SlidersHorizontal, Waves } from 'lucide-react';
 import { useGuest } from '@/lib/guest-context';
 
 const HUM_PRESETS = [100, 136.1, 432, 528];
@@ -40,7 +40,7 @@ export default function SoundscapeControls() {
 
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-stone-400">
-          <Sliders size={14} />
+          <SlidersHorizontal size={14} />
           Volume ({Math.round(soundscape.volume * 100)}%)
         </div>
         <input

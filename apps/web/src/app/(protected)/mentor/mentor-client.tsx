@@ -8,14 +8,14 @@ import PersonaDisplay from '@/components/mentors/persona-display';
 import type { VoiceRecorderResult } from '@/components/mentors/voice-recorder';
 import { createClient } from '@/lib/supabase/client';
 import {
-  Sparkle,
-  SidebarSimple,
-  ChatCircle,
-  ClockCounterClockwise,
-  Sliders,
+  Sparkles,
+  PanelLeft,
+  MessageCircle,
+  History,
+  SlidersHorizontal,
   Plus,
   Clock,
-} from '@phosphor-icons/react';
+} from 'lucide-react';
 
 /* -------------------------------------------------------------------- */
 /* Types                                                                  */
@@ -165,7 +165,7 @@ function MentorSidebar({
               : 'text-stone-500 hover:text-stone-700'
           }`}
         >
-          <ClockCounterClockwise className="h-3.5 w-3.5" weight="regular" />
+          <History className="h-3.5 w-3.5" />
           History
         </button>
         <button
@@ -178,7 +178,7 @@ function MentorSidebar({
               : 'text-stone-500 hover:text-stone-700'
           }`}
         >
-          <Sliders className="h-3.5 w-3.5" weight="regular" />
+          <SlidersHorizontal className="h-3.5 w-3.5" />
           Persona
         </button>
       </div>
@@ -189,7 +189,7 @@ function MentorSidebar({
           <div className="space-y-1.5">
             {sessions.length === 0 ? (
               <div className="text-center py-8">
-                <ChatCircle className="h-8 w-8 text-stone-200 mx-auto mb-2" weight="regular" />
+                <MessageCircle className="h-8 w-8 text-stone-200 mx-auto mb-2" />
                 <p className="text-xs text-stone-500" style={{ fontFamily: '"Erode", Georgia, serif' }}>
                   No previous conversations
                 </p>
@@ -203,7 +203,7 @@ function MentorSidebar({
                   aria-label={`Load conversation: ${session.title}`}
                 >
                   <div className="flex items-start gap-2">
-                    <Clock className="h-3.5 w-3.5 text-stone-300 mt-0.5 flex-shrink-0 group-hover:text-stone-500 transition-colors" weight="regular" />
+                    <Clock className="h-3.5 w-3.5 text-stone-300 mt-0.5 flex-shrink-0 group-hover:text-stone-500 transition-colors" />
                     <div className="flex-1 min-w-0">
                       <p
                         className="text-xs font-medium text-stone-600 group-hover:text-stone-800 truncate transition-colors"
@@ -517,7 +517,7 @@ export default function MentorClient({
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Sparkle className="h-4 w-4 text-sage-500" weight="regular" />
+              <Sparkles className="h-4 w-4 text-sage-500" />
               <span
                 className="text-sm font-semibold text-stone-800"
                 style={{ fontFamily: '"Cabinet Grotesk", system-ui, sans-serif' }}
@@ -530,7 +530,7 @@ export default function MentorClient({
               className="p-1 rounded-lg text-stone-500 hover:text-stone-700 hover:bg-stone-200 transition-all duration-200"
               aria-label="Close sidebar"
             >
-              <SidebarSimple className="h-4 w-4" weight="regular" />
+              <PanelLeft className="h-4 w-4" />
             </button>
           </div>
           <MentorSidebar
@@ -554,7 +554,7 @@ export default function MentorClient({
                 className="p-1.5 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-all duration-200"
                 aria-label="Open sidebar"
               >
-                <SidebarSimple className="h-4 w-4" weight="regular" />
+                <PanelLeft className="h-4 w-4" />
               </button>
             )}
             <div>

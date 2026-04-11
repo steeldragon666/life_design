@@ -23,6 +23,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
+import { Upload, Loader2, Check } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import {
   parseAppleHealthExport,
@@ -414,20 +415,7 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
           ].join(' ')}
         >
           {/* Upload icon */}
-          <svg
-            className="h-10 w-10 text-stone-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-            />
-          </svg>
+          <Upload className="h-10 w-10 text-stone-500" strokeWidth={1.5} aria-hidden="true" />
 
           <div>
             <p className="text-sm font-medium text-stone-200">
@@ -539,27 +527,7 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
       {step === 'importing' && (
         <div className="rounded-xl bg-stone-800 border border-stone-700 p-6 text-center space-y-3">
           {/* Spinner */}
-          <svg
-            className="mx-auto h-8 w-8 animate-spin text-sage-500"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-sage-500" aria-hidden="true" />
           <p className="text-sm font-medium text-stone-200">Extracting and storing features...</p>
           <p className="text-xs text-stone-500">Please keep this tab open.</p>
         </div>
@@ -571,16 +539,7 @@ export default function AppleHealthImport({ userId, onImportComplete }: AppleHea
           <div className="px-5 py-4 flex items-center gap-3">
             {/* Checkmark icon */}
             <div className="flex-shrink-0 rounded-full bg-emerald-900/60 p-2">
-              <svg
-                className="h-5 w-5 text-emerald-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <Check className="h-5 w-5 text-emerald-400" aria-hidden="true" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">Import complete</h3>

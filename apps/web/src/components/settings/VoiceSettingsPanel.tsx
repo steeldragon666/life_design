@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SpeakerHigh } from '@phosphor-icons/react';
+import { Volume2 } from 'lucide-react';
 import { ARCHETYPE_CONFIGS, type MentorArchetype } from '@/lib/mentor-archetypes';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
 
@@ -95,7 +95,7 @@ export default function VoiceSettingsPanel() {
               className="flex items-center gap-1 text-xs text-sage-500 hover:text-sage-600"
               aria-label={`Preview ${config.characterName}'s voice`}
             >
-              <SpeakerHigh size={14} weight="light" />
+              <Volume2 size={14} />
               {isSpeaking ? 'Stop' : 'Preview'}
             </button>
           </div>

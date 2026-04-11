@@ -18,7 +18,7 @@ import type { DBCheckIn } from '@/lib/db/schema';
 import type { PredictionResult } from '@/lib/ml/types';
 import { TrainingClient } from '@/lib/ml/training-client';
 import { FeaturePipeline, getFeatureConfidence } from '@/lib/ml/feature-pipeline';
-import { CheckCircle, ArrowLeft, Microphone } from '@phosphor-icons/react/dist/ssr';
+import { CheckCircle, ArrowLeft, Mic } from 'lucide-react';
 import { Button, Card, Textarea, colors } from '@life-design/ui';
 
 // ---------------------------------------------------------------------------
@@ -520,7 +520,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                       onClick={() => setShowVoice(!showVoice)}
                       className="flex items-center gap-2 text-sm text-stone-500 hover:text-sage-500 transition-colors"
                     >
-                      <Microphone size={16} weight="regular" />
+                      <Mic size={16} />
                       {showVoice ? 'Hide voice check-in' : 'Or use voice check-in'}
                     </button>
                     {showVoice && (
@@ -663,7 +663,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                       onClick={() => setShowVoice(!showVoice)}
                       className="flex items-center gap-2 text-sm text-stone-500 hover:text-sage-500 transition-colors"
                     >
-                      <Microphone size={16} weight="regular" />
+                      <Mic size={16} />
                       {showVoice ? 'Hide voice check-in' : 'Or use voice check-in'}
                     </button>
                     {showVoice && (
@@ -794,7 +794,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         {step === completeStep && (
           <div className="text-center py-12 space-y-6">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage-100 to-sage-200 flex items-center justify-center mx-auto">
-              <CheckCircle size={40} weight="regular" className="text-sage-500" />
+              <CheckCircle size={40} className="text-sage-500" />
             </div>
             <div>
               <h2 className="font-serif text-3xl text-stone-900 mb-2">Check-in Complete</h2>
@@ -846,7 +846,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
               onClick={() => setStep(step - 1)}
               className="flex items-center gap-2 rounded-2xl"
             >
-              <ArrowLeft size={16} weight="regular" />
+              <ArrowLeft size={16} />
               Back
             </Button>
           )}

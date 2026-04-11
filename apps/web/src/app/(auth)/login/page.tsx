@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGuest } from '@/lib/guest-context';
-import { Leaf, Microphone, ArrowRight, Sparkle, Compass, Target } from '@phosphor-icons/react';
+import { Leaf, Mic, ArrowRight, Sparkles, Compass, Target } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Feature card data
 // ---------------------------------------------------------------------------
 
 const FEATURE_CARDS = [
-  { icon: Microphone, title: 'Voice Agent', desc: 'Natural conversation', color: 'from-warm-300/15 to-warm-400/5', iconColor: 'text-warm-400' },
+  { icon: Mic, title: 'Voice Agent', desc: 'Natural conversation', color: 'from-warm-300/15 to-warm-400/5', iconColor: 'text-warm-400' },
   { icon: Target, title: 'Goal Tracking', desc: 'Multi-horizon goals', color: 'from-sage-300/15 to-sage-400/5', iconColor: 'text-sage-500' },
   { icon: Compass, title: 'Daily Check-ins', desc: 'Track your progress', color: 'from-accent-400/15 to-accent-500/5', iconColor: 'text-accent-500' },
-  { icon: Sparkle, title: 'AI Insights', desc: 'Personalized wisdom', color: 'from-dim-social/15 to-dim-social/5', iconColor: 'text-dim-social' },
+  { icon: Sparkles, title: 'AI Insights', desc: 'Personalized wisdom', color: 'from-dim-social/15 to-dim-social/5', iconColor: 'text-dim-social' },
 ];
 
 const TRUST_BADGES = [
@@ -74,7 +74,7 @@ export default function LoginPage() {
       <header className="relative z-20 flex items-center justify-between px-6 lg:px-12 py-6">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
-            <Leaf size={20} weight="light" className="text-white" />
+            <Leaf size={20} className="text-white" />
           </div>
           <span className="font-serif text-xl text-stone-800">Opt In</span>
         </Link>
@@ -107,18 +107,18 @@ export default function LoginPage() {
                 onClick={startGuestMode}
                 className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-sage-500/20 hover:shadow-xl hover:shadow-sage-500/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Microphone size={18} weight="light" />
+                <Microphone size={18} />
                 {hasOnboardingProgress || profile ? 'Resume Your Journey' : 'Start Your Journey'}
-                <ArrowRight size={16} weight="light" className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
             ) : (
               <button
                 onClick={continueAsGuest}
                 className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-sage-500/20 hover:shadow-xl hover:shadow-sage-500/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Sparkle size={18} weight="light" />
+                <Sparkle size={18} />
                 Continue to Dashboard
-                <ArrowRight size={16} weight="light" className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
             )}
             <p className="text-[13px] text-stone-400 self-center">No account needed</p>
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   className={`animate-fade-up stagger-${i + 2} group p-5 rounded-2xl bg-white/80 backdrop-blur-sm border border-stone-200/60 hover:border-sage-200/50 hover:shadow-lg hover:shadow-sage-300/5 transition-all duration-300 hover:-translate-y-1 cursor-default`}
                 >
                   <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                    <item.icon size={20} weight="light" className={item.iconColor} />
+                    <item.icon size={20} className={item.iconColor} />
                   </div>
                   <p className="text-sm font-semibold text-stone-800">{item.title}</p>
                   <p className="text-xs text-stone-400 mt-0.5">{item.desc}</p>
@@ -188,7 +188,7 @@ export default function LoginPage() {
       <footer className="relative z-10 border-t border-stone-200/60 px-6 lg:px-12 py-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <div className="flex items-center gap-2">
-            <Leaf size={16} weight="light" className="text-sage-300" />
+            <Leaf size={16} className="text-sage-300" />
             <span>Opt In</span>
           </div>
           <p>Crafted with care for meaningful living</p>

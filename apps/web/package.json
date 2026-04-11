@@ -24,7 +24,6 @@
     "@life-design/ai-local": "workspace:*",
     "@life-design/core": "workspace:*",
     "@life-design/ui": "workspace:*",
-    "@phosphor-icons/react": "^2.1.10",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@supabase/ssr": "^0.6.1",

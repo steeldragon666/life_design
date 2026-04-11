@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Warning, ShieldCheck, Lightning, X } from '@phosphor-icons/react';
+import { AlertTriangle, ShieldCheck, Zap, X } from 'lucide-react';
 import { DIMENSION_LABELS, type Dimension } from '@life-design/core';
 import type { GuardianLogEntry } from '@/lib/ml/types';
 
@@ -22,10 +22,10 @@ interface GuardianAlertProps {
 
 const TRIGGER_META: Record<
   GuardianLogEntry['triggerType'],
-  { icon: typeof Warning; label: string; colour: string; bgColour: string }
+  { icon: typeof AlertTriangle; label: string; colour: string; bgColour: string }
 > = {
   burnout: {
-    icon: Warning,
+    icon: AlertTriangle,
     label: 'Burnout Risk Detected',
     colour: 'text-warm-400',
     bgColour: 'bg-warm-400/10',
@@ -37,7 +37,7 @@ const TRIGGER_META: Record<
     bgColour: 'bg-amber-500/10',
   },
   flow_state: {
-    icon: Lightning,
+    icon: Zap,
     label: 'Flow State Protected',
     colour: 'text-sage-500',
     bgColour: 'bg-sage-500/10',
@@ -109,13 +109,13 @@ export default function GuardianAlert({
           aria-label="Dismiss alert"
           className="absolute right-4 top-4 rounded-lg p-1 text-stone-500 hover:bg-stone-200 transition-colors"
         >
-          <X className="h-5 w-5" weight="bold" />
+          <X className="h-5 w-5" strokeWidth={2.5} />
         </button>
 
         {/* Icon + heading */}
         <div className="flex items-center gap-3 mb-4">
           <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${meta.bgColour}`}>
-            <Icon className={`h-5 w-5 ${meta.colour}`} weight="fill" />
+            <Icon className={`h-5 w-5 ${meta.colour}`} fill="currentColor" />
           </div>
           <h2
             id="guardian-alert-title"

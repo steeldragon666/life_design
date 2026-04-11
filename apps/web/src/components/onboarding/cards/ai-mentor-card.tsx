@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { User, Activity, Sun, Shield } from 'lucide-react';
 
 interface AIMentorCardProps {
   onComplete: () => void;
@@ -27,10 +28,7 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 opacity-20 animate-ping" />
             <div className="absolute inset-2 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 opacity-30 animate-pulse" />
             <div className="absolute inset-4 rounded-full bg-gradient-to-br from-sage-200 to-sage-400 shadow-lg flex items-center justify-center">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3V6a4 4 0 0 1 4-4z" />
-                <path d="M12 14c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4z" />
-              </svg>
+              <User size={40} className="text-white" strokeWidth={1.5} />
             </div>
           </div>
         </div>
@@ -47,7 +45,7 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
             }`}
           >
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+              <Activity size={20} className="text-blue-600" />
             </div>
             <div>
               <h3 className="font-medium text-stone-900">Personalized insights</h3>
@@ -61,7 +59,7 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
             }`}
           >
             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-purple-600"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" /></svg>
+              <Sun size={20} className="text-purple-600" />
             </div>
             <div>
               <h3 className="font-medium text-stone-900">Evolves with you</h3>
@@ -75,7 +73,7 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
             }`}
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+              <Shield size={20} className="text-emerald-600" />
             </div>
             <div>
               <h3 className="font-medium text-stone-900">Private & secure</h3>

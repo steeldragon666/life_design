@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, CircleNotch } from '@phosphor-icons/react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Dimension, DIMENSION_LABELS, ALL_DIMENSIONS } from '@life-design/core';
 import { DimensionBadge, ScoreRing, dimensionColor } from '@life-design/ui';
 import type { LifeOrbDimension } from '@/components/dashboard/life-orb';
@@ -17,7 +17,7 @@ const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[400px] w-[400px]">
-      <CircleNotch size={48} className="text-sage-500 animate-spin" />
+      <Loader2 size={48} className="text-sage-500 animate-spin" />
     </div>
   ),
 });

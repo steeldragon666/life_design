@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { db } from '@/lib/db';
 import { DIMENSION_LABELS } from '@life-design/core';
 import { dimensionPalettes, BarStack, type BarSegment, ScheduleWidgetSkeleton } from '@life-design/ui';
-import { ArrowRight } from '@phosphor-icons/react';
+import { ArrowRight } from 'lucide-react';
 
 export function ScheduleWidget() {
   const today = new Date().toISOString().split('T')[0];

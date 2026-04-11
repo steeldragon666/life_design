@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Sparkle, Leaf, Waves, Sun } from '@phosphor-icons/react';
+import { Sparkles, Leaf, Waves, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AssetLoadProgress } from '@/lib/asset-loader';
 import { loadingMessages } from '@/config/assets';
@@ -288,9 +288,9 @@ export function LoadingScreen({
                         : '1px solid rgba(201,168,108,0.15)',
                   }}
                 >
-                  {theme === 'botanical' && <Leaf size={28} weight="light" style={{ color: '#e8b4d0' }} />}
-                  {theme === 'ocean' && <Waves size={28} weight="light" style={{ color: '#5fb3b3' }} />}
-                  {theme === 'modern' && <Sun size={28} weight="light" style={{ color: '#c9a86c' }} />}
+                  {theme === 'botanical' && <Leaf size={28} style={{ color: '#e8b4d0' }} />}
+                  {theme === 'ocean' && <Waves size={28} style={{ color: '#5fb3b3' }} />}
+                  {theme === 'modern' && <Sun size={28} style={{ color: '#c9a86c' }} />}
                 </div>
                 <div className="text-left">
                   <h1 className="text-xl font-semibold tracking-tight text-white/90">
@@ -358,9 +358,8 @@ export function LoadingScreen({
                 'animate-fade-in'
               )}
             >
-              <Sparkle
+              <Sparkles
                 size={16}
-                weight="light"
                 style={{
                   color: theme === 'botanical'
                     ? 'rgba(232,180,208,0.6)'

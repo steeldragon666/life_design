@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { signUp } from '../actions';
-import { Leaf } from '@phosphor-icons/react';
+import { Leaf } from 'lucide-react';
 import { Input, Button } from '@life-design/ui';
 
 export default function SignUpPage() {
@@ -33,7 +33,7 @@ export default function SignUpPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
-              <Leaf size={20} weight="light" className="text-white" />
+              <Leaf size={20} className="text-white" />
             </div>
             <span className="font-serif text-xl text-stone-800">Opt In</span>
           </Link>

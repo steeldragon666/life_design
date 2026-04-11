@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Leaf, Lightning, Sun, Scales } from '@phosphor-icons/react';
+import { Leaf, Zap, Sun, Scale } from 'lucide-react';
 import { DIMENSION_LABELS, type Dimension } from '@life-design/core';
 import {
   SeasonManager,
@@ -15,11 +15,11 @@ import type { SeasonName, SeasonRecord } from '@/lib/ml/types';
 // Constants
 // ---------------------------------------------------------------------------
 
-const SEASON_ICONS: Record<SeasonName, typeof Lightning> = {
-  Sprint: Lightning,
+const SEASON_ICONS: Record<SeasonName, typeof Zap> = {
+  Sprint: Zap,
   Recharge: Leaf,
   Exploration: Sun,
-  Maintenance: Scales,
+  Maintenance: Scale,
 };
 
 const SEASON_COLOURS: Record<SeasonName, { bg: string; border: string; text: string; ring: string }> = {
@@ -185,7 +185,7 @@ function ActiveSeasonBanner({ season }: { season: SeasonRecord }) {
       `}
     >
       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${colours.bg}`}>
-        <Icon className={`h-5 w-5 ${colours.text}`} weight="fill" />
+        <Icon className={`h-5 w-5 ${colours.text}`} fill="currentColor" />
       </div>
       <div className="flex-1">
         <p className={`text-sm font-semibold ${colours.text}`}>
@@ -242,7 +242,7 @@ function SeasonCard({
 
       <Icon
         className={`h-6 w-6 mb-2 ${isActive ? colours.text : 'text-stone-500'}`}
-        weight={isActive ? 'fill' : 'regular'}
+        fill={isActive ? 'currentColor' : 'none'}
       />
 
       <p className={`text-sm font-semibold mb-1 ${isActive ? colours.text : 'text-stone-900'}`}>
@@ -274,7 +274,7 @@ function HistoryRow({ record }: { record: SeasonRecord }) {
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white p-3">
-      <Icon className={`h-4 w-4 ${colours.text}`} weight="regular" />
+      <Icon className={`h-4 w-4 ${colours.text}`} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-stone-900">{record.name}</p>
         <p className="text-xs text-stone-500 truncate">

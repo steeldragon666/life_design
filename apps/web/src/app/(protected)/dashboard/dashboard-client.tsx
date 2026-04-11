@@ -11,22 +11,22 @@ import {
 } from '@life-design/core';
 import { Card, Badge, Skeleton, colors, dimensionPalettes } from '@life-design/ui';
 import {
-  Sparkle,
-  Microphone,
+  Sparkles,
+  Mic,
   Sun,
-  PencilSimple,
-  Fire,
-  ArrowsClockwise,
-  Warning,
+  PenLine,
+  Flame,
+  RefreshCw,
+  AlertTriangle,
   CheckCircle,
-  CaretDown,
-  CaretUp,
-  TrendUp,
-  Pulse,
+  ChevronDown,
+  ChevronUp,
+  TrendingUp,
+  Activity,
   Trophy,
-  Path,
-  Notebook,
-} from '@phosphor-icons/react';
+  Route,
+  BookOpen,
+} from 'lucide-react';
 import useDashboardData from '@/hooks/useDashboardData';
 import WeeklyDigestView from '@/components/digest/WeeklyDigestView';
 import type { StoredDigest } from '@/lib/digest/digest-generator';
@@ -227,7 +227,7 @@ function InsightsFeed({
         insights.map((insight) => (
           <Card key={insight.id} className="p-4">
             <div className="flex items-start gap-3">
-              <Sparkle size={16} weight="light" className="text-accent-600 flex-shrink-0 mt-0.5" />
+              <Sparkles size={16} className="text-accent-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <p className="text-sm font-semibold text-stone-800">{insight.title}</p>
@@ -357,13 +357,13 @@ export default function DashboardClient({
       {/* Error banner */}
       {error && (
         <div className="flex items-center gap-3 p-4 rounded-[16px] bg-red-50 border border-red-200/60 mb-6">
-          <Warning size={20} weight="light" className="text-red-500 flex-shrink-0" />
+          <AlertTriangle size={20} className="text-red-500 flex-shrink-0" />
           <p className="text-sm text-red-700 flex-1">{error}</p>
           <button
             onClick={refetch}
             className="flex items-center gap-1.5 text-xs font-medium text-red-600 hover:text-red-800 transition-colors"
           >
-            <ArrowsClockwise size={14} weight="light" />
+            <RefreshCw size={14} />
             Retry
           </button>
         </div>
@@ -381,7 +381,7 @@ export default function DashboardClient({
             </h1>
             {unseenBadgeCount > 0 && (
               <Link href="/achievements" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warm-50 text-warm-500 text-xs font-medium">
-                <Trophy size={14} weight="light" />
+                <Trophy size={14} />
                 {unseenBadgeCount} new
               </Link>
             )}
@@ -392,7 +392,7 @@ export default function DashboardClient({
           href="/checkin"
           className="hidden lg:flex items-center gap-2 px-4 py-2.5 rounded-[16px] bg-gradient-to-r from-sage-500 to-sage-600 text-white text-sm font-medium shadow-sm hover:shadow-md transition-all"
         >
-          <Microphone size={16} weight="light" />
+          <Mic size={16} />
           Voice Check-in
         </Link>
       </div>
@@ -410,7 +410,7 @@ export default function DashboardClient({
             {/* Streak */}
             {streak > 0 && (
               <div className="flex items-center gap-1.5">
-                <Fire size={16} weight="light" className="text-warm-500" />
+                <Flame size={16} className="text-warm-500" />
                 <span className="text-sm font-mono font-medium text-warm-500">{streak}d</span>
               </div>
             )}
@@ -470,7 +470,7 @@ export default function DashboardClient({
             <Card className="p-4 bg-gradient-to-r from-sage-50 to-sage-100/50 border-l-4 border-l-sage-400">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-sage-200 flex items-center justify-center flex-shrink-0">
-                  <Sparkle size={16} weight="light" className="text-sage-600" />
+                  <Sparkles size={16} className="text-sage-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-stone-800">Your Profile Insight</p>
@@ -486,7 +486,7 @@ export default function DashboardClient({
           )}
 
           <div className="flex items-center gap-2 mb-1">
-            <Sparkle size={16} weight="light" className="text-accent-600" />
+            <Sparkles size={16} className="text-accent-600" />
             <h2 className="font-serif text-xl text-stone-800">AI Insights</h2>
           </div>
 
@@ -580,12 +580,12 @@ export default function DashboardClient({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-warm-50 flex items-center justify-center">
-                  <Sun size={14} weight="light" className="text-warm-500" />
+                  <Sun size={14} className="text-warm-500" />
                 </div>
                 Daily Check-in
                 {todaysCheckin && (
                   <span className="ml-auto text-[11px] text-sage-500 font-medium flex items-center gap-1">
-                    <CheckCircle size={12} weight="light" /> Done
+                    <CheckCircle size={12} /> Done
                   </span>
                 )}
               </Link>
@@ -594,7 +594,7 @@ export default function DashboardClient({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-accent-400/10 flex items-center justify-center">
-                  <Notebook size={14} weight="light" className="text-accent-500" />
+                  <BookOpen size={14} className="text-accent-500" />
                 </div>
                 Journal Entry
               </Link>
@@ -603,7 +603,7 @@ export default function DashboardClient({
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
               >
                 <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center">
-                  <Path size={14} weight="light" className="text-stone-500" />
+                  <Route size={14} className="text-stone-500" />
                 </div>
                 My Journey
               </Link>
@@ -630,7 +630,7 @@ export default function DashboardClient({
             <Skeleton className="h-44 rounded-xl" />
           ) : dataMaturity === 'cold' || moodChartData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <Pulse size={40} weight="light" className="text-stone-300" />
+              <Activity size={40} className="text-stone-300" />
               <p className="text-sm text-stone-500 font-serif italic">
                 Complete daily check-ins to see your mood and energy trends.
               </p>
@@ -695,7 +695,7 @@ export default function DashboardClient({
             <Skeleton className="h-44 rounded-xl" />
           ) : (dataMaturity === 'cold' || dataMaturity === 'warming') || !topCorrelation ? (
             <div className="flex flex-col items-center justify-center h-44 text-center gap-3">
-              <TrendUp size={40} weight="light" className="text-stone-300" />
+              <TrendingUp size={40} className="text-stone-300" />
               <p className="text-sm text-stone-500 font-serif italic max-w-[220px]">
                 {dataMaturity === 'cold' || dataMaturity === 'warming'
                   ? 'Need at least 8 check-ins to detect cross-dimension correlations.'
@@ -800,8 +800,8 @@ export default function DashboardClient({
           </div>
           <div className="flex-shrink-0 p-2 rounded-xl border border-stone-200/60 group-hover:border-sage-200/50 transition-colors ml-4">
             {activityCollapsed
-              ? <CaretDown size={16} weight="light" className="text-stone-500" />
-              : <CaretUp size={16} weight="light" className="text-stone-500" />
+              ? <ChevronDown size={16} className="text-stone-500" />
+              : <ChevronUp size={16} className="text-stone-500" />
             }
           </div>
         </button>
@@ -830,15 +830,15 @@ export default function DashboardClient({
               recentActivity.map((activity) => {
                 const iconConfig = {
                   checkin: { icon: CheckCircle, bg: 'bg-sage-50', color: 'text-sage-500' },
-                  achievement: { icon: Fire, bg: 'bg-warm-50', color: 'text-warm-500' },
-                  insight: { icon: Sparkle, bg: 'bg-stone-100', color: 'text-stone-500' },
+                  achievement: { icon: Flame, bg: 'bg-warm-50', color: 'text-warm-500' },
+                  insight: { icon: Sparkles, bg: 'bg-stone-100', color: 'text-stone-500' },
                 }[activity.type] ?? { icon: CheckCircle, bg: 'bg-sage-50', color: 'text-sage-500' };
                 const Icon = iconConfig.icon;
 
                 return (
                   <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-stone-50 transition-colors">
                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconConfig.bg}`}>
-                      <Icon size={16} weight="light" className={iconConfig.color} />
+                      <Icon size={16} className={iconConfig.color} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-stone-800 font-medium truncate">{activity.description}</p>

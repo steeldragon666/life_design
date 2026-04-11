@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Image from 'next/image';
+import { Sparkles } from 'lucide-react';
 import { listMentors, getUserMentors } from '@/lib/services/mentor-service';
 import MentorListClient from './mentor-list-client';
 
@@ -37,7 +38,7 @@ export default async function MentorsPage() {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 rounded-xl bg-sage-100">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-6 w-6 text-sage-500" fill="currentColor"><path d="M128,24 C128,24 148,108 232,128 C148,148 128,232 128,232 C128,232 108,148 24,128 C108,108 128,24 128,24Z" strokeWidth="12" stroke="currentColor" fill="none" /></svg>
+              <Sparkles className="h-6 w-6 text-sage-500" />
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight font-serif">
               AI Mentors

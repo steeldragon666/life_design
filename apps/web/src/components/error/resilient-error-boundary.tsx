@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Warning, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ResilientErrorBoundaryProps {
@@ -40,7 +40,7 @@ export function GlassErrorFallbackCard({
   return (
     <div className={cn('glass-card p-6 flex flex-col items-center justify-center text-center', className)}>
       <div className="h-12 w-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
-        <Warning size={24} className="text-red-400" />
+        <AlertTriangle size={24} className="text-red-400" />
       </div>
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <p className="text-sm text-stone-400 max-w-sm mt-2">{description}</p>
@@ -49,7 +49,7 @@ export function GlassErrorFallbackCard({
           onClick={onRetry}
           className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/8 hover:bg-white/12 border border-white/10 px-3 py-2 text-sm text-white transition-colors"
         >
-          <ArrowCounterClockwise size={16} />
+          <RefreshCw size={16} />
           Try Again
         </button>
       ) : null}

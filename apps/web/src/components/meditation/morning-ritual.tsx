@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Pause, Play, Sparkle } from '@phosphor-icons/react';
+import { Pause, Play, Sparkles } from 'lucide-react';
 import { getSelectedVoice } from '@/components/voice/voice-selector';
 import { useGuest } from '@/lib/guest-context';
 import { buildGuidedMeditationPrompt } from '@/lib/mentor-orchestrator';
@@ -130,7 +130,7 @@ Additional ritual requirements:
       <div className="glass-card p-8">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20">
-            <Sparkle size={20} weight="light" className="text-cyan-300" />
+            <Sparkles size={20} className="text-cyan-300" />
           </div>
           <div>
             <h1 className="tracking-tight text-3xl font-bold text-white">Morning Ritual</h1>
@@ -160,12 +160,12 @@ Additional ritual requirements:
         <div className="flex gap-2">
           {!isSpeaking ? (
             <button onClick={playScript} className="btn-secondary inline-flex items-center gap-2" type="button">
-              <Play size={16} weight="light" />
+              <Play size={16} />
               Play Ritual
             </button>
           ) : (
             <button onClick={stopScript} className="btn-secondary inline-flex items-center gap-2" type="button">
-              <Pause size={16} weight="light" />
+              <Pause size={16} />
               Pause
             </button>
           )}

@@ -1,4 +1,4 @@
-import { Check, Warning, X, Info } from '@phosphor-icons/react';
+import { Check, AlertTriangle, X, Info } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../utils/cn';
 
@@ -33,7 +33,7 @@ const toastVariants = cva(
 
 const iconMap: Record<string, React.ComponentType<{ size: number; className?: string }>> = {
   success: Check,
-  warning: Warning,
+  warning: AlertTriangle,
   error: X,
   info: Info,
 };

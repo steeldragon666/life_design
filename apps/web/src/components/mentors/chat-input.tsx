@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { PaperPlaneTilt, Microphone, CircleNotch } from '@phosphor-icons/react';
+import { Send, Mic, Loader2 } from 'lucide-react';
 import VoiceRecorder from './voice-recorder';
 import type { VoiceRecorderResult } from './voice-recorder';
 
@@ -144,7 +144,7 @@ export default function ChatInput({
             aria-label="Record voice message"
             title="Record voice message"
           >
-            <Microphone className="h-4 w-4" weight="regular" />
+            <Mic className="h-4 w-4" />
           </button>
 
           {/* Send button */}
@@ -160,9 +160,9 @@ export default function ChatInput({
             aria-label={loading ? 'Sending…' : 'Send message'}
           >
             {loading ? (
-              <CircleNotch className="h-4 w-4 text-white animate-spin" weight="bold" />
+              <Loader2 className="h-4 w-4 text-white animate-spin" strokeWidth={2.5} />
             ) : (
-              <PaperPlaneTilt className="h-4 w-4 text-white" weight="regular" />
+              <Send className="h-4 w-4 text-white" />
             )}
           </button>
         </form>

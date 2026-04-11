@@ -1,5 +1,6 @@
 'use client';
 
+import { Check } from 'lucide-react';
 import type { ProfileSummaryTemplate, PsychometricProfile } from '@life-design/core';
 import PsychometricReport from './psychometric-report';
 
@@ -41,9 +42,7 @@ export default function ProfileSummary({
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            <Check size={32} className="text-emerald-500" />
           </div>
           <h1 className="font-serif text-3xl text-stone-900">
             {userName ? `Welcome, ${userName}` : 'Your Profile is Ready'}
@@ -56,7 +55,7 @@ export default function ProfileSummary({
             <div key={key}>
               <h2 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
                 {icon} {label}
-              </h3>
+              </h2>
               <p className="text-sm text-stone-900">{summary[key]}</p>
             </div>
           ))}

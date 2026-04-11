@@ -3,15 +3,15 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
-  PencilSimple,
-  Fire,
-  MagnifyingGlass,
+  PenLine,
+  Flame,
+  Search,
   X,
-  Trash,
-  NotePencil,
-  ChatCenteredText,
-  Sparkle,
-} from '@phosphor-icons/react';
+  Trash2,
+  FileEdit,
+  MessageSquare,
+  Sparkles,
+} from 'lucide-react';
 import { Card, Button, Textarea } from '@life-design/ui';
 import { db } from '@/lib/db';
 import type { DBJournalEntry } from '@/lib/db/schema';
@@ -83,7 +83,7 @@ function StreakPill({ current, longest }: { current: number; longest: number }) 
     <div className="flex items-center gap-3">
       {current > 0 && (
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-warm-50 border border-warm-100">
-          <Fire size={14} weight="light" className="text-warm-500" />
+          <Flame size={14} className="text-warm-500" />
           <span className="text-xs font-mono font-medium text-warm-600">{current}d streak</span>
         </div>
       )}
@@ -110,7 +110,7 @@ function SmartPromptBar({
           onClick={() => onSelect(p.prompt)}
           className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 bg-stone-50 hover:bg-sage-50 hover:border-sage-200 text-xs text-stone-600 hover:text-sage-700 transition-all"
         >
-          <Sparkle size={11} weight="light" className="text-stone-400 group-hover:text-sage-400" />
+          <Sparkles size={11} className="text-stone-400 group-hover:text-sage-400" />
           <span className="truncate max-w-[200px]">{p.prompt}</span>
         </button>
       ))}
@@ -224,7 +224,7 @@ function EntryCard({
               onClick={() => setEditing(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-500 hover:text-stone-700 hover:bg-stone-100 transition-colors"
             >
-              <NotePencil size={13} weight="light" />
+              <FileEdit size={13} />
               Edit
             </button>
           )}
@@ -232,7 +232,7 @@ function EntryCard({
             onClick={onDelete}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors ml-auto"
           >
-            <Trash size={13} weight="light" />
+            <Trash2 size={13} />
             Delete
           </button>
         </div>
@@ -400,7 +400,7 @@ export default function JournalClient() {
           className="flex items-center gap-2"
           size="sm"
         >
-          <PencilSimple size={14} weight="light" />
+          <PenLine size={14} />
           New Entry
         </Button>
       </div>
@@ -474,10 +474,9 @@ export default function JournalClient() {
 
         {/* Search input */}
         <div className="flex-1 min-w-[160px] relative">
-          <MagnifyingGlass
+          <Search
             size={14}
-            weight="light"
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
+                       className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
           />
           <input
             type="text"
@@ -505,7 +504,7 @@ export default function JournalClient() {
       {entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center gap-5">
           <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center">
-            <ChatCenteredText size={32} weight="light" className="text-stone-400" />
+            <MessageSquare size={32} className="text-stone-400" />
           </div>
           <div>
             <h2 className="font-serif text-xl text-stone-700">

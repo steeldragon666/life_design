@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import { CircleNotch } from '@phosphor-icons/react';
+import { Loader2 } from 'lucide-react';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 
 /**
@@ -14,7 +14,7 @@ const LifeOrb = dynamic(() => import('@/components/dashboard/life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[320px]">
-      <CircleNotch size={40} weight="light" className="text-cyan-400 animate-spin" />
+      <Loader2 size={40} className="text-cyan-400 animate-spin" />
     </div>
   ),
 });

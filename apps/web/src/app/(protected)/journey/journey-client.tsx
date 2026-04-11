@@ -4,20 +4,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Card, Badge, Button, Skeleton } from '@life-design/ui';
 import {
-  TrendUp,
+  TrendingUp,
   Star,
   Repeat,
   Flag,
-  Fire,
+  Flame,
   Sun,
   Target,
-  Sparkle,
+  Sparkles,
   ArrowUp,
   ArrowDown,
   Minus,
-  ArrowsClockwise,
-} from '@phosphor-icons/react';
-import type { IconProps } from '@phosphor-icons/react';
+  RefreshCw,
+  type LucideIcon,
+} from 'lucide-react';
 import type {
   JourneyNarrative,
   JourneyHighlight,
@@ -74,10 +74,10 @@ type HighlightType = JourneyHighlight['type'];
 
 const HIGHLIGHT_CONFIG: Record<
   HighlightType,
-  { icon: React.FC<IconProps>; badgeVariant: 'sage' | 'accent' | 'warm' | 'stone'; iconClass: string; bgClass: string }
+  { icon: LucideIcon; badgeVariant: 'sage' | 'accent' | 'warm' | 'stone'; iconClass: string; bgClass: string }
 > = {
   improvement: {
-    icon: TrendUp,
+    icon: TrendingUp,
     badgeVariant: 'sage',
     iconClass: 'text-sage-500',
     bgClass: 'bg-sage-50',
@@ -108,12 +108,12 @@ const HIGHLIGHT_CONFIG: Record<
 
 type TimelineType = TimelineEvent['type'];
 
-const TIMELINE_CONFIG: Record<TimelineType, { icon: React.FC<IconProps>; iconClass: string }> = {
+const TIMELINE_CONFIG: Record<TimelineType, { icon: LucideIcon; iconClass: string }> = {
   first_checkin: { icon: Sun, iconClass: 'text-warm-500' },
   goal_created: { icon: Target, iconClass: 'text-accent-500' },
   milestone_hit: { icon: Flag, iconClass: 'text-stone-500' },
-  streak_record: { icon: Fire, iconClass: 'text-warm-500' },
-  insight: { icon: Sparkle, iconClass: 'text-sage-500' },
+  streak_record: { icon: Flame, iconClass: 'text-warm-500' },
+  insight: { icon: Sparkles, iconClass: 'text-sage-500' },
 };
 
 // ---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ function HighlightCard({ highlight }: { highlight: JourneyHighlight }) {
     <div className="rounded-2xl border border-stone-200 bg-white p-4 flex flex-col gap-2">
       <div className="flex items-start gap-2">
         <div className={`h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 ${config.bgClass}`}>
-          <Icon size={16} weight="light" className={config.iconClass} />
+          <Icon size={16} className={config.iconClass} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-stone-800 leading-snug">{highlight.title}</p>
@@ -183,7 +183,7 @@ function TimelineItem({ event, isLast }: { event: TimelineEvent; isLast: boolean
       {/* Right: content */}
       <div className="flex items-start gap-2 pb-5">
         <div className="flex-shrink-0 mt-0.5">
-          <Icon size={14} weight="light" className={config.iconClass} />
+          <Icon size={14} className={config.iconClass} />
         </div>
         <div>
           <span className="font-mono text-[11px] text-stone-400 block leading-none mb-1">
@@ -283,7 +283,7 @@ export default function JourneyClient() {
         </header>
         <Card className="p-10 text-center flex flex-col items-center gap-5">
           <div className="h-16 w-16 rounded-2xl bg-sage-50 flex items-center justify-center">
-            <Sparkle size={32} weight="light" className="text-sage-400" />
+            <Sparkles size={32} className="text-sage-400" />
           </div>
           <div>
             <p className="font-serif text-lg text-stone-800 mb-1">Your story is waiting to be told</p>
@@ -295,7 +295,7 @@ export default function JourneyClient() {
             href="/checkin"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] bg-sage-600 text-white text-[13px] font-semibold shadow-sm hover:bg-sage-600/90 transition-colors"
           >
-            <Sun size={16} weight="light" />
+            <Sun size={16} />
             Start a check-in
           </Link>
         </Card>
@@ -328,7 +328,7 @@ export default function JourneyClient() {
         <StatCard
           value={stats.currentStreak}
           label="Day streak"
-          icon={<Fire size={16} weight="light" />}
+          icon={<Flame size={16} />}
           iconClass="text-warm-500"
         />
         <StatCard value={stats.daysSinceStart} label="Days active" />
@@ -337,11 +337,11 @@ export default function JourneyClient() {
           label="Avg mood"
           icon={
             moodTrend === 'improving' ? (
-              <ArrowUp size={14} weight="bold" />
+              <ArrowUp size={14} strokeWidth={2.5} />
             ) : moodTrend === 'declining' ? (
-              <ArrowDown size={14} weight="bold" />
+              <ArrowDown size={14} strokeWidth={2.5} />
             ) : (
-              <Minus size={14} weight="bold" />
+              <Minus size={14} strokeWidth={2.5} />
             )
           }
           iconClass={
@@ -361,7 +361,7 @@ export default function JourneyClient() {
         <div className="rounded-2xl border border-sage-200 bg-sage-50 px-6 py-5">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <Sparkle size={16} weight="light" className="text-sage-500 flex-shrink-0" />
+              <Sparkles size={16} className="text-sage-500 flex-shrink-0" />
               <h2 id="narrative-heading" className="font-serif text-base text-sage-700 font-medium">
                 Your Story
               </h2>
@@ -375,7 +375,7 @@ export default function JourneyClient() {
               className="flex-shrink-0 gap-1.5 text-sage-600 hover:bg-sage-100"
               aria-label="Refresh journey story"
             >
-              {!refreshing && <ArrowsClockwise size={13} weight="light" />}
+              {!refreshing && <RefreshCw size={13} />}
               Refresh
             </Button>
           </div>

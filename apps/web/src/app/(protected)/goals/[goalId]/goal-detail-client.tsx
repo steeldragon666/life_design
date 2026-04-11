@@ -9,7 +9,7 @@ import TradeoffDashboard from '@/components/goals/tradeoff-dashboard';
 import ScenarioComparison from '@/components/goals/scenario-comparison';
 import { DIMENSION_LABELS, GOAL_HORIZON_LABELS, GoalStatus, type Dimension, type GoalHorizon } from '@life-design/core';
 import { Button, Badge, Select, Card } from '@life-design/ui';
-import { ArrowLeft } from '@phosphor-icons/react';
+import { ArrowLeft } from 'lucide-react';
 import {
   updateGoalAction,
   deleteGoalAction,
@@ -227,7 +227,7 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
         onClick={() => router.push('/goals')}
         className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 hover:underline transition-colors"
       >
-        <ArrowLeft weight="regular" className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4" />
         Back to all goals
       </button>
     </div>

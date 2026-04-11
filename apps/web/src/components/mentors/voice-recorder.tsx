@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Microphone, MicrophoneSlash, Square, WarningCircle } from '@phosphor-icons/react';
+import { Mic, MicOff, Square, AlertCircle } from 'lucide-react';
 import { WaveformBars } from './chat-bubble';
 
 export interface VoiceRecorderResult {
@@ -237,7 +237,7 @@ export default function VoiceRecorder({
       {/* Error state */}
       {state === 'error' && (
         <div className="flex items-start gap-2 text-rose-400 text-sm">
-          <WarningCircle size={16} weight="light" className="flex-shrink-0 mt-0.5" />
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
           <p className="font-serif">{errorMessage}</p>
         </div>
       )}
@@ -251,7 +251,7 @@ export default function VoiceRecorder({
             className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 bg-sage-600 hover:bg-sage-500 active:scale-95 shadow-lg shadow-sage-500/30"
             aria-label="Start recording"
           >
-            <Microphone size={20} weight="light" className="text-white" />
+            <Mic size={20} className="text-white" />
           </button>
         ) : state === 'requesting' ? (
           <button
@@ -259,7 +259,7 @@ export default function VoiceRecorder({
             className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-white/10 cursor-wait"
             aria-label="Requesting microphone permission"
           >
-            <MicrophoneSlash size={20} weight="light" className="text-white/40" />
+            <MicOff size={20} className="text-white/40" />
           </button>
         ) : state === 'recording' ? (
           <button
@@ -268,7 +268,7 @@ export default function VoiceRecorder({
             style={{ animation: 'recordingPulse 1.5s ease-in-out infinite' }}
             aria-label="Stop recording"
           >
-            <Square size={16} weight="fill" className="text-white" />
+            <Square size={16} fill="currentColor" className="text-white" />
           </button>
         ) : (
           /* processing */

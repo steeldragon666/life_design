@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ALL_DIMENSIONS, computeAllPairCorrelations, detectSignificantPatterns } from '@life-design/core';
-import { Microphone, CircleNotch, ChatDots, Sparkle } from '@phosphor-icons/react';
+import { Mic, Loader2, MessageSquareMore, Sparkles } from 'lucide-react';
 import { buildMentorSystemPrompt } from '@/lib/mentor-orchestrator';
 import { useGuest } from '@/lib/guest-context';
 import { inferMoodAdaptation } from '@/lib/mood-adapter';
@@ -156,7 +156,7 @@ Respond in two sections:
     <div className="space-y-4">
       <div className="glass-card p-5">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkle size={16} weight="light" className="text-cyan-300" />
+          <Sparkles size={16} className="text-cyan-300" />
           <p className="text-sm text-cyan-200">{intro}</p>
         </div>
         <div className="flex gap-2">
@@ -172,7 +172,7 @@ Respond in two sections:
             disabled={loading}
             className="btn-primary inline-flex items-center gap-2"
           >
-            {loading ? <CircleNotch size={16} weight="light" className="animate-spin" /> : <ChatDots size={16} weight="light" />}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <MessageSquareMore size={16} />}
             Guide
           </button>
         </div>
@@ -200,7 +200,7 @@ Respond in two sections:
             onClick={() => onCreateGoal(draft)}
             className="btn-secondary inline-flex items-center gap-2"
           >
-            <Microphone size={16} weight="light" />
+            <Mic size={16} />
             Save this goal
           </button>
         </div>

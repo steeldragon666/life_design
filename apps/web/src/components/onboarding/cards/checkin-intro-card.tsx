@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Clock, Activity, Sun, Zap } from 'lucide-react';
 
 interface CheckInIntroCardProps {
   onNext: () => void;
@@ -61,7 +62,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
           <div className="space-y-4 text-left">
             <div className="flex gap-3 items-start">
               <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                <Clock size={16} className="text-blue-600" />
               </div>
               <div>
                 <h3 className="font-medium text-sm text-stone-900">Takes under 60 seconds</h3>
@@ -70,7 +71,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
             </div>
             <div className="flex gap-3 items-start">
               <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-600"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                <Activity size={16} className="text-emerald-600" />
               </div>
               <div>
                 <h3 className="font-medium text-sm text-stone-900">AI finds the patterns</h3>
@@ -79,7 +80,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
             </div>
             <div className="flex gap-3 items-start">
               <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-600"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" /></svg>
+                <Sun size={16} className="text-violet-600" />
               </div>
               <div>
                 <h3 className="font-medium text-sm text-stone-900">Insights get smarter over time</h3>
@@ -159,7 +160,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
           <p className="text-stone-500 mt-3">You've just taken the first step. Come back tomorrow to start building your streak.</p>
         </div>
         <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+          <Zap size={16} />
           1 day streak started
         </div>
         <button

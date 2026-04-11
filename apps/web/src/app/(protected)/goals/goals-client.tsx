@@ -6,7 +6,7 @@ import { DIMENSION_LABELS, type Dimension, computeTrend } from '@life-design/cor
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { Button, Badge, dimensionPalettes } from '@life-design/ui';
-import { Plus, Check, Warning } from '@phosphor-icons/react';
+import { Plus, Check, AlertTriangle } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types & config
@@ -258,7 +258,7 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
                       if (daysLeft > 0 && daysLeft < totalDays * 0.3 && progress < 70 && momentum.slope <= 0) {
                         return (
                           <div className="mt-2 flex items-center gap-1.5 text-[11px] text-warm-500 font-medium">
-                            <Warning weight="regular" className="w-3 h-3" /> Timeline risk — momentum stalling
+                            <AlertTriangle className="w-3 h-3" /> Timeline risk — momentum stalling
                           </div>
                         );
                       }

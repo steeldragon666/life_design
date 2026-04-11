@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { House, Target, Sun, ChatCircle, Flask, Fire, Trophy, Gear, DotsThreeVertical, Leaf, CalendarBlank, Notebook, Path } from '@phosphor-icons/react';
-import type { IconWeight } from '@phosphor-icons/react';
+import { Home, Target, Sun, MessageCircle, FlaskConical, Flame, Trophy, Settings, MoreVertical, Leaf, Calendar, BookOpen, Route, type LucideIcon } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Nav config
@@ -14,21 +13,21 @@ import type { IconWeight } from '@phosphor-icons/react';
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; size?: string | number; weight?: IconWeight }>;
+  icon: LucideIcon;
 };
 
 const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: House },
+  { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/checkin', label: 'Check-in', icon: Sun },
-  { href: '/journal', label: 'Journal', icon: Notebook },
-  { href: '/journey', label: 'My Journey', icon: Path },
-  { href: '/mentor', label: 'Mentor', icon: ChatCircle },
-  { href: '/schedule', label: 'Schedule', icon: CalendarBlank },
-  { href: '/simulator', label: 'Simulate', icon: Flask },
-  { href: '/challenges', label: 'Challenges', icon: Fire },
+  { href: '/journal', label: 'Journal', icon: BookOpen },
+  { href: '/journey', label: 'My Journey', icon: Route },
+  { href: '/mentor', label: 'Mentor', icon: MessageCircle },
+  { href: '/schedule', label: 'Schedule', icon: Calendar },
+  { href: '/simulator', label: 'Simulate', icon: FlaskConical },
+  { href: '/challenges', label: 'Challenges', icon: Flame },
   { href: '/achievements', label: 'Badges', icon: Trophy },
-  { href: '/settings', label: 'Settings', icon: Gear },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 // ---------------------------------------------------------------------------
@@ -70,7 +69,7 @@ export default function ProtectedLayout({
         <div className="p-6 pb-2">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
-              <Leaf size={20} weight="regular" className="text-white" />
+              <Leaf size={20} className="text-white" />
             </div>
             <span className="font-serif text-xl text-stone-800">Opt In</span>
           </Link>
@@ -87,7 +86,7 @@ export default function ProtectedLayout({
                   : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
                 }`}
             >
-              <item.icon size={20} weight="regular" className={isActive(item.href) ? 'text-sage-600' : 'text-stone-500'} />
+              <item.icon size={20} className={isActive(item.href) ? 'text-sage-600' : 'text-stone-500'} />
               {item.label}
             </Link>
           ))}
@@ -116,7 +115,7 @@ export default function ProtectedLayout({
               className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all
                 ${isActive(item.href) ? 'text-sage-600' : 'text-stone-500'}`}
             >
-              <item.icon size={20} weight="regular" />
+              <item.icon size={20} />
               <span className="text-[11px] font-medium">{item.label}</span>
               {isActive(item.href) && (
                 <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
@@ -129,7 +128,7 @@ export default function ProtectedLayout({
             onClick={() => setMoreOpen(!moreOpen)}
             className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all ${moreOpen || isMoreActive ? 'text-sage-600' : 'text-stone-500'}`}
           >
-            <DotsThreeVertical size={20} weight="regular" />
+            <MoreVertical size={20} />
             <span className="text-[11px] font-medium">More</span>
             {isMoreActive && !moreOpen && (
               <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
@@ -151,7 +150,7 @@ export default function ProtectedLayout({
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
                   ${isActive(item.href) ? 'bg-sage-100 text-sage-600' : 'text-stone-500 hover:bg-stone-100'}`}
               >
-                <item.icon size={20} weight="regular" />
+                <item.icon size={20} />
                 {item.label}
               </Link>
             ))}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme, useThemeOptional } from './theme-provider';
-import { Sparkle, Waves, Crown, Check, Palette } from '@phosphor-icons/react';
+import { Sparkles, Waves, Crown, Check, Palette } from 'lucide-react';
 import { useState } from 'react';
 
 const themes = [
@@ -9,7 +9,7 @@ const themes = [
     id: 'botanical' as const,
     name: 'Ethereal Botanical',
     description: 'Soft pinks, gentle purples, and organic warmth inspired by spring blossoms',
-    icon: Sparkle,
+    icon: Sparkles,
     colors: ['#e8b4d0', '#c5b8d4', '#b8c5a8'],
     cardClass: 'theme-card-botanical',
   },
@@ -63,7 +63,7 @@ export default function ThemeSelector() {
               {/* Active Indicator */}
               {isActive && (
                 <div className="absolute top-4 right-4 h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
-                  <Check size={16} weight="bold" className="text-white" />
+                  <Check size={16} strokeWidth={2.5} className="text-white" />
                 </div>
               )}
 
@@ -85,8 +85,7 @@ export default function ThemeSelector() {
               >
                 <Icon
                   size={24}
-                  weight="light"
-                  style={{ color: theme.colors[0] }}
+                                   style={{ color: theme.colors[0] }}
                 />
               </div>
 
@@ -148,8 +147,7 @@ export function ThemeSelectorCompact() {
           >
             <Icon
               size={16}
-              weight="light"
-              style={{ color: theme === t.id ? t.colors[0] : '#78716c' }}
+                           style={{ color: theme === t.id ? t.colors[0] : '#78716c' }}
             />
           </button>
         );

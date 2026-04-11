@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { useGuest } from '@/lib/guest-context';
 import { Dimension } from '@life-design/core';
 import { dimensionPalettes, colors, semantic } from '@life-design/ui';
-import { Flask, ArrowRight, ArrowCounterClockwise, Lightning, TrendUp, TrendDown, Equals } from '@phosphor-icons/react';
+import { FlaskConical, ArrowRight, RefreshCw, Zap, TrendingUp, TrendingDown, Equal } from 'lucide-react';
 import Link from 'next/link';
 
 // ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@ export default function SimulatorPage() {
         <header className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-sage-100 to-sage-200 flex items-center justify-center">
-              <Flask size={24} weight="regular" className="text-sage-600" />
+              <FlaskConical size={24} className="text-sage-600" />
             </div>
             <div>
               <h1 className="font-serif text-3xl text-stone-800">Life Simulator</h1>
@@ -239,7 +239,7 @@ export default function SimulatorPage() {
                   onClick={resetAll}
                   className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 transition-colors"
                 >
-                  <ArrowCounterClockwise size={14} />
+                  <RefreshCw size={14} />
                   Reset
                 </button>
               )}
@@ -265,7 +265,7 @@ export default function SimulatorPage() {
                       <span className="text-sm font-semibold" style={{ color: palette.text }}>{label}</span>
                       {Math.abs(cascadeDelta) > 0.05 && (
                         <span className="text-[10px] text-stone-400 flex items-center gap-0.5">
-                          <Lightning size={10} />
+                          <Zap size={10} />
                           cascade {cascadeDelta > 0 ? '+' : ''}{cascadeDelta.toFixed(1)}
                         </span>
                       )}
@@ -360,7 +360,7 @@ export default function SimulatorPage() {
                         <div key={dim} className="flex items-center justify-between text-sm">
                           <span className="font-medium" style={{ color: palette.text }}>{DIMENSION_LABELS[dim]}</span>
                           <span className={`flex items-center gap-1 font-mono text-xs font-semibold ${delta > 0 ? 'text-sage-600' : 'text-red-500'}`}>
-                            {delta > 0 ? <TrendUp size={14} /> : delta < 0 ? <TrendDown size={14} /> : <Equals size={14} />}
+                            {delta > 0 ? <TrendingUp size={14} /> : delta < 0 ? <TrendingDown size={14} /> : <Equal size={14} />}
                             {delta > 0 ? '+' : ''}{delta.toFixed(1)}
                           </span>
                         </div>

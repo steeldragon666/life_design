@@ -7,6 +7,7 @@ import type { RawAnswers, ProfileSummaryTemplate, PsychometricProfile } from '@l
 import { createClient } from '@/lib/supabase/client';
 import { useGuest } from '@/lib/guest-context';
 import { encryptLocalStorageString, decryptLocalStorageString } from '@/lib/local-storage-crypto';
+import { ChevronLeft } from 'lucide-react';
 import ProgressBar from './progress-bar';
 import SectionHeader from './section-header';
 import QuestionRenderer from './question-renderer';
@@ -318,9 +319,7 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
           <div className="max-w-lg mx-auto flex items-center gap-3">
             {canGoBack && (
               <button onClick={handleBack} className="p-2 rounded-lg hover:bg-stone-200/50" aria-label="Go back">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
+                <ChevronLeft size={20} />
               </button>
             )}
             <div className="flex-1">

@@ -34,15 +34,15 @@ import {
   DIMENSION_TW_COLORS,
 } from '@life-design/ui';
 import {
-  TrendUp,
-  TrendDown,
+  TrendingUp,
+  TrendingDown,
   ArrowLeft,
   Target,
-  Lightning,
-  Warning,
+  Zap,
+  AlertTriangle,
   Clock,
-  CaretRight,
-} from '@phosphor-icons/react';
+  ChevronRight,
+} from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dynamic recharts imports (SSR disabled)
@@ -826,7 +826,7 @@ export default function DimensionDetailClient({
           href="/dashboard"
           className="flex items-center gap-2 text-stone-500 hover:text-white transition-colors text-sm font-bold group"
         >
-          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" weight="regular" />
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           Dashboard
         </Link>
         <span className="text-stone-700">/</span>
@@ -1112,7 +1112,7 @@ export default function DimensionDetailClient({
               className="flex items-center gap-1.5 text-xs font-bold text-primary-400 hover:text-primary-300 transition-colors"
             >
               Full Explorer
-              <CaretRight className="h-3.5 w-3.5" weight="regular" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           }
         />
@@ -1215,7 +1215,7 @@ export default function DimensionDetailClient({
         {isColdStart ? (
           <div className="glass-opaque rounded-3xl border border-amber-500/20 p-8 flex items-start gap-4">
             <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <Warning className="h-5 w-5 text-amber-400" weight="regular" />
+              <AlertTriangle className="h-5 w-5 text-amber-400" />
             </div>
             <div>
               <p
@@ -1335,7 +1335,7 @@ export default function DimensionDetailClient({
               <div className="flex items-start justify-between gap-2">
                 <div className="h-9 w-9 rounded-2xl flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${color}15` }}>
-                  <Target className="h-4 w-4" style={{ color }} weight="regular" />
+                  <Target className="h-4 w-4" style={{ color }} />
                 </div>
                 <EffortBadge effort={action.effort} />
               </div>
@@ -1377,7 +1377,7 @@ export default function DimensionDetailClient({
                     Timeframe
                   </p>
                   <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-stone-500" weight="regular" />
+                    <Clock className="h-3 w-3 text-stone-500" />
                     <p className="text-xs font-bold text-stone-500">{action.timeframe}</p>
                   </div>
                 </div>
@@ -1412,16 +1412,14 @@ export default function DimensionDetailClient({
                     }}
                   >
                     {insight.direction === 'positive' ? (
-                      <TrendUp
+                      <TrendingUp
                         className="h-5 w-5"
                         style={{ color: '#10b981' }}
-                        weight="regular"
                       />
                     ) : (
-                      <TrendDown
+                      <TrendingDown
                         className="h-5 w-5"
                         style={{ color: '#ef4444' }}
-                        weight="regular"
                       />
                     )}
                   </div>
@@ -1451,7 +1449,7 @@ export default function DimensionDetailClient({
 
           {/* Methodology disclaimer */}
           <div className="glass rounded-2xl p-4 border border-white/5 flex items-start gap-3">
-            <Lightning className="h-4 w-4 text-primary-400 flex-shrink-0 mt-0.5" weight="regular" />
+            <Zap className="h-4 w-4 text-primary-400 flex-shrink-0 mt-0.5" />
             <p
               className="text-xs text-stone-500 leading-relaxed"
               style={{ fontFamily: '"Erode", Georgia, serif' }}

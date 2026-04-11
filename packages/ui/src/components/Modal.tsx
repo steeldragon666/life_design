@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 export interface ModalProps {
@@ -26,7 +27,7 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-serif text-xl">{title}</h2>
               <button onClick={onClose} aria-label="Close" className="cursor-pointer text-stone-400 hover:text-stone-700 transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                <X size={20} />
               </button>
             </div>
           )}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sun, Moon } from '@phosphor-icons/react';
+import { Sun, Moon } from 'lucide-react';
 
 const rituals = [
   {
@@ -45,7 +45,7 @@ export default function RitualsPage() {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className={`h-11 w-11 rounded-xl ${ritual.iconBg} flex items-center justify-center`}>
-                <ritual.icon size={22} weight="regular" className={ritual.iconColor} />
+                <ritual.icon size={22} className={ritual.iconColor} />
               </div>
               <h2 className="font-serif text-xl text-stone-800">{ritual.label}</h2>
             </div>

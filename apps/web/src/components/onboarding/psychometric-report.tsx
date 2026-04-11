@@ -1,7 +1,7 @@
 'use client';
 
 import type { PsychometricProfile } from '@life-design/core';
-import { CheckCircle } from '@phosphor-icons/react';
+import { CheckCircle } from 'lucide-react';
 
 interface PsychometricReportProps {
   profile: PsychometricProfile;
@@ -189,7 +189,7 @@ export default function PsychometricReport({
         {/* ── Header ── */}
         <div className="text-center mb-2">
           <div className="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle weight="fill" size={32} color="#10b981" aria-hidden="true" />
+            <CheckCircle fill="#10b981" size={32} color="#10b981" aria-hidden="true" />
           </div>
           <h1 className="font-serif text-3xl text-stone-900">Your Opt In Profile</h1>
           {userName && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, Shield } from 'lucide-react';
 
 interface DataImportCardProps {
   onNext: () => void;
@@ -61,7 +62,7 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
                   <span className="text-lg">{integration.icon}</span>
                   <span className="font-medium text-sm text-stone-900">{integration.name}</span>
                   {isConnected && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-emerald-600 ml-auto"><path d="m9 12 2 2 4-4" /></svg>
+                    <Check size={14} className="text-emerald-600 ml-auto" strokeWidth={3} />
                   )}
                 </div>
                 <p className="text-xs text-stone-500">{integration.description}</p>
@@ -71,7 +72,7 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-400 flex-shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+          <Shield size={16} className="text-stone-400 flex-shrink-0" />
           <p className="text-xs text-stone-500">We only read data — we never post or modify anything in your connected accounts.</p>
         </div>
 

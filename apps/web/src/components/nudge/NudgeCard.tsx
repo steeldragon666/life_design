@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, Button } from '@life-design/ui';
-import { X } from '@phosphor-icons/react';
+import { X } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -92,7 +92,7 @@ export default function NudgeCard({
             aria-label="Dismiss nudge"
             className="p-1 rounded-lg text-stone-300 hover:text-stone-500 hover:bg-stone-100 transition-colors"
           >
-            <X className="h-4 w-4" weight="regular" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 

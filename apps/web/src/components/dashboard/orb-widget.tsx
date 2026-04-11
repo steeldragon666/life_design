@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowRight, Planet, CircleNotch } from '@phosphor-icons/react';
+import { ArrowRight, Orbit, Loader2 } from 'lucide-react';
 import { GlassCard } from '@life-design/ui';
 import type { LifeOrbDimension } from './life-orb';
 
@@ -16,7 +16,7 @@ const LifeOrb = dynamic(() => import('./life-orb'), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[200px] w-[200px]">
-      <CircleNotch size={32} className="text-sage-500 animate-spin" />
+      <Loader2 size={32} className="text-sage-500 animate-spin" />
     </div>
   ),
 });
@@ -47,7 +47,7 @@ export default function OrbWidget({
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-sage-500/10 flex items-center justify-center flex-shrink-0">
-            <Planet size={16} className="text-sage-500" />
+            <Orbit size={16} className="text-sage-500" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-white tracking-tight">Life Orb</h3>

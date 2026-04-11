@@ -2,7 +2,7 @@
 
 import { useEarnedBadges } from '@/lib/db/hooks';
 import { BADGE_DEFINITIONS, type BadgeDefinition } from '@/lib/achievements/badge-definitions';
-import { Check } from '@phosphor-icons/react';
+import { Check } from 'lucide-react';
 
 function BadgeCard({ badge, earned }: { badge: BadgeDefinition; earned: boolean }) {
   return (
@@ -30,7 +30,7 @@ function BadgeCard({ badge, earned }: { badge: BadgeDefinition; earned: boolean 
           <p className="text-sm text-stone-500 mt-0.5">{badge.description}</p>
           {earned ? (
             <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-sage-600 bg-sage-500/10 rounded-full px-2.5 py-0.5">
-              <Check size={10} weight="bold" aria-hidden="true" />
+              <Check size={10} strokeWidth={2.5} aria-hidden="true" />
               Earned
             </span>
           ) : (
