@@ -29,30 +29,6 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     category: 'milestone',
     criteria: { type: 'checkin_count', threshold: 1 },
   },
-  {
-    id: 'ten-checkins',
-    name: 'Getting Started',
-    description: 'Complete 10 check-ins',
-    emoji: '\u{1F4CB}',
-    category: 'milestone',
-    criteria: { type: 'checkin_count', threshold: 10 },
-  },
-  {
-    id: 'fifty-checkins',
-    name: 'Committed',
-    description: 'Complete 50 check-ins',
-    emoji: '\u{1F3C6}',
-    category: 'milestone',
-    criteria: { type: 'checkin_count', threshold: 50 },
-  },
-  {
-    id: 'hundred-checkins',
-    name: 'Centurion',
-    description: 'Complete 100 check-ins',
-    emoji: '\u{1F4AF}',
-    category: 'milestone',
-    criteria: { type: 'checkin_count', threshold: 100 },
-  },
 
   // --- Streak badges ---
   {
@@ -104,14 +80,6 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     emoji: '\u{1F4DD}',
     category: 'exploration',
     criteria: { type: 'journal_count', threshold: 5 },
-  },
-  {
-    id: 'journal-twenty',
-    name: 'Deep Thinker',
-    description: 'Write 20 journal entries',
-    emoji: '\u{1F9E0}',
-    category: 'exploration',
-    criteria: { type: 'journal_count', threshold: 20 },
   },
 
   // --- Special badges ---
