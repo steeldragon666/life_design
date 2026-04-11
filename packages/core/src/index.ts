@@ -13,3 +13,4 @@ export * from './connectors/google-calendar';
 export * from './connectors/oauth-manager';
 export * from './profiling';
 export * from './privacy';
+export * from './jitai';
