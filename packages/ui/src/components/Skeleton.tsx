@@ -39,3 +39,42 @@ export function ScheduleWidgetSkeleton({ className }: SkeletonProps) {
     </div>
   );
 }
+
+export function DimensionGridSkeleton({ className }: SkeletonProps) {
+  return (
+    <div className={cn('grid grid-cols-2 lg:grid-cols-4 gap-3', className)}>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <CardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+export function InsightFeedSkeleton({ className }: SkeletonProps) {
+  return (
+    <div className={cn('space-y-3', className)}>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <CardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+export function MentorPanelSkeleton({ className }: SkeletonProps) {
+  return (
+    <div className={cn('flex flex-col h-full', className)}>
+      <div className="flex items-center gap-3 p-4 border-b border-stone-200">
+        <Skeleton className="w-10 h-10 rounded-full" />
+        <div>
+          <Skeleton className="w-24 h-4 mb-1" />
+          <Skeleton className="w-16 h-3" />
+        </div>
+      </div>
+      <div className="flex-1 p-4 space-y-3">
+        <Skeleton className="w-3/4 h-12 rounded-2xl" />
+        <Skeleton className="w-1/2 h-12 rounded-2xl ml-auto" />
+        <Skeleton className="w-2/3 h-12 rounded-2xl" />
+      </div>
+    </div>
+  );
+}

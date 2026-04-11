@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect } from '@storybook/test';
-import { Skeleton, CardSkeleton, SparklineSkeleton, ProgressRingSkeleton, ScheduleWidgetSkeleton } from '../components/Skeleton';
+import { Skeleton, CardSkeleton, SparklineSkeleton, ProgressRingSkeleton, ScheduleWidgetSkeleton, DimensionGridSkeleton, InsightFeedSkeleton, MentorPanelSkeleton } from '../components/Skeleton';
 
 const meta: Meta<typeof Skeleton> = {
   title: 'Components/Skeleton',
@@ -32,4 +32,16 @@ export const ProgressRing: Story = {
 
 export const ScheduleWidget: Story = {
   render: () => <ScheduleWidgetSkeleton />,
+};
+
+export const DimensionGrid: Story = {
+  render: () => <DimensionGridSkeleton />,
+};
+
+export const InsightFeed: Story = {
+  render: () => <InsightFeedSkeleton />,
+};
+
+export const MentorPanel: Story = {
+  render: () => <MentorPanelSkeleton />,
 };
