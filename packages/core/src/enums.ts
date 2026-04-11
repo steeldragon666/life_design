@@ -70,7 +70,6 @@ export enum IntegrationProvider {
   GoogleCalendar = 'google_calendar',
   Gmail = 'gmail',
   Slack = 'slack',
-  Instagram = 'instagram',
   Weather = 'weather',
   Spotify = 'spotify',
   AppleHealth = 'apple_health',

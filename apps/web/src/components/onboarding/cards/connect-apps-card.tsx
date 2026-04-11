@@ -12,7 +12,6 @@ const INTEGRATIONS = [
   { id: 'google', name: 'Google Calendar', description: 'Schedule & time use', icon: '📅', authUrl: '/api/auth/google' },
   { id: 'slack', name: 'Slack', description: 'Communication activity', icon: '💬', authUrl: '/api/auth/slack' },
   { id: 'notion', name: 'Notion', description: 'Notes & knowledge', icon: '📝', authUrl: '/api/auth/notion' },
-  { id: 'instagram', name: 'Instagram', description: 'Social & visual diary', icon: '📸', authUrl: '/api/auth/instagram' },
 ];
 
 export default function ConnectAppsCard({ onNext }: ConnectAppsCardProps) {

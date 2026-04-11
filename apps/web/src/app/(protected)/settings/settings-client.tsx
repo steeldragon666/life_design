@@ -70,8 +70,6 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
       window.location.href = `/api/auth/google?scope=${provider}`;
     } else if (provider === 'slack') {
       window.location.href = '/api/auth/slack';
-    } else if (provider === 'instagram') {
-      window.location.href = '/api/auth/instagram';
     } else if (provider === 'weather') {
       alert('Weather integration uses your postcode from your Profile. Make sure you have set it!');
     } else if (provider === 'spotify') {

@@ -10,7 +10,6 @@ const OAUTH_PENDING_COOKIE_BY_PROVIDER: Record<string, string> = {
   spotify: 'life-design-oauth-spotify',
   slack: 'life-design-oauth-slack',
   notion: 'life-design-oauth-notion',
-  instagram: 'life-design-oauth-instagram',
 };
 
 export async function GET(request: NextRequest) {

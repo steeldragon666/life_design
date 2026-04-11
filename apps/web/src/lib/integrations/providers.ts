@@ -36,13 +36,6 @@ export const INTEGRATION_PROVIDERS: ProviderConfig[] = [
     authType: 'oauth2',
   },
   {
-    id: 'instagram',
-    name: 'Instagram',
-    description: 'Track social media usage patterns. Your mentor can help if screen time correlates with lower mood scores.',
-    dimension: 'Social, Romance',
-    authType: 'oauth2',
-  },
-  {
     id: 'weather',
     name: 'Weather',
     description: 'Automatic weather tracking based on your postcode. AI warns about bad weather for outdoor plans and suggests indoor alternatives.',

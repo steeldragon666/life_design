@@ -81,15 +81,6 @@ export const SLACK_CONFIG: OAuthProvider = {
   scopes: ['channels:history', 'channels:read', 'users:read'],
 };
 
-export const INSTAGRAM_CONFIG: OAuthProvider = {
-  name: 'instagram',
-  authUrl: 'https://api.instagram.com/oauth/authorize',
-  tokenUrl: 'https://api.instagram.com/oauth/access_token',
-  clientId: process.env.INSTAGRAM_CLIENT_ID ?? '',
-  clientSecret: process.env.INSTAGRAM_CLIENT_SECRET ?? '',
-  scopes: ['user_profile', 'user_media'],
-};
-
 export function buildAuthorizationUrl(
   provider: OAuthProvider,
   redirectUri: string,

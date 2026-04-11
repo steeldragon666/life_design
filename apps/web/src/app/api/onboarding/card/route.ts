@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const VALID_PROVIDERS = [
   'strava', 'spotify', 'google_calendar', 'slack',
-  'notion', 'instagram', 'apple_health', 'banking',
+  'notion', 'apple_health', 'banking',
   'google_fit', 'samsung_health', 'screen_time',
 ];
 

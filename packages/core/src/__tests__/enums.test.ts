@@ -130,7 +130,6 @@ describe('IntegrationProvider', () => {
     expect(IntegrationProvider.GoogleCalendar).toBe('google_calendar');
     expect(IntegrationProvider.Gmail).toBe('gmail');
     expect(IntegrationProvider.Slack).toBe('slack');
-    expect(IntegrationProvider.Instagram).toBe('instagram');
     expect(IntegrationProvider.Weather).toBe('weather');
   });
 });

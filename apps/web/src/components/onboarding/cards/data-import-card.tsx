@@ -13,7 +13,6 @@ const INTEGRATIONS = [
   { id: 'google', name: 'Google Calendar', description: 'Events & time management', icon: '\u{1F4C5}', authUrl: '/api/auth/google' },
   { id: 'slack', name: 'Slack', description: 'Communication patterns', icon: '\u{1F4AC}', authUrl: '/api/auth/slack' },
   { id: 'notion', name: 'Notion', description: 'Notes & productivity', icon: '\u{1F4DD}', authUrl: '/api/auth/notion' },
-  { id: 'instagram', name: 'Instagram', description: 'Social & visual diary', icon: '\u{1F4F8}', authUrl: '/api/auth/instagram' },
 ];
 
 export default function DataImportCard({ onNext }: DataImportCardProps) {
