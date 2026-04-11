@@ -21,6 +21,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Dimension } from '../enums';
 import type { NormalisedFeature } from '../feature-extraction';
+import { computeHRVMetrics, type RRInterval } from '../health/hrv-analysis';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Core data types
@@ -48,6 +49,8 @@ export interface AppleHealthData {
   respiratoryRate?: number;
   /** Blood oxygen saturation percentage (0–100). */
   bloodOxygen?: number;
+  /** Raw RR intervals for detailed HRV analysis. */
+  rrIntervals?: RRInterval[];
   /** Timestamp representing when this data was recorded. */
   recordedAt: Date;
 }
@@ -117,6 +120,16 @@ export function extractAppleHealthFeatures(rawData: AppleHealthData): Normalised
     features.push(feat('blood_oxygen', Dimension.Health, rawData.bloodOxygen, 1.0, ts));
   }
 
+  // Detailed HRV stress analysis from RR intervals
+  if (rawData.rrIntervals && rawData.rrIntervals.length >= 2) {
+    const hrvMetrics = computeHRVMetrics(rawData.rrIntervals);
+    if (hrvMetrics) {
+      features.push(feat('hrv_rmssd', Dimension.Health, hrvMetrics.rmssd, 1.0, ts));
+      features.push(feat('hrv_sdnn', Dimension.Health, hrvMetrics.sdnn, 1.0, ts));
+      features.push(feat('hrv_stress_score', Dimension.Health, hrvMetrics.stressScore, 0.9, ts));
+    }
+  }
+
   return features;
 }
 
@@ -165,6 +178,7 @@ export async function storeFeatures(
 export type HealthKitDataType =
   | 'HKQuantityTypeIdentifierRestingHeartRate'
   | 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN'
+  | 'HKQuantityTypeIdentifierHeartRate'
   | 'HKCategoryTypeIdentifierSleepAnalysis'
   | 'HKQuantityTypeIdentifierStepCount'
   | 'HKQuantityTypeIdentifierActiveEnergyBurned'
@@ -229,6 +243,7 @@ export interface AppleHealthExport {
 export const DEFAULT_READ_TYPES: HealthKitDataType[] = [
   'HKQuantityTypeIdentifierRestingHeartRate',
   'HKQuantityTypeIdentifierHeartRateVariabilitySDNN',
+  'HKQuantityTypeIdentifierHeartRate',
   'HKCategoryTypeIdentifierSleepAnalysis',
   'HKQuantityTypeIdentifierStepCount',
   'HKQuantityTypeIdentifierActiveEnergyBurned',
@@ -237,7 +252,7 @@ export const DEFAULT_READ_TYPES: HealthKitDataType[] = [
 ];
 
 /** Mapping from HealthKit type to AppleHealthData field name. */
-const TYPE_TO_FIELD: Record<HealthKitDataType, keyof Omit<AppleHealthData, 'recordedAt'>> = {
+const TYPE_TO_FIELD: Partial<Record<HealthKitDataType, keyof Omit<AppleHealthData, 'recordedAt' | 'rrIntervals'>>> = {
   HKQuantityTypeIdentifierRestingHeartRate: 'restingHeartRate',
   HKQuantityTypeIdentifierHeartRateVariabilitySDNN: 'hrvMs',
   HKCategoryTypeIdentifierSleepAnalysis: 'sleepHours',
@@ -245,6 +260,8 @@ const TYPE_TO_FIELD: Record<HealthKitDataType, keyof Omit<AppleHealthData, 'reco
   HKQuantityTypeIdentifierActiveEnergyBurned: 'activeEnergyKcal',
   HKQuantityTypeIdentifierRespiratoryRate: 'respiratoryRate',
   HKQuantityTypeIdentifierOxygenSaturation: 'bloodOxygen',
+  // HKQuantityTypeIdentifierHeartRate — RR intervals are handled separately
+  // via rrIntervals array, not as a simple daily aggregate.
 };
 
 /**
@@ -254,6 +271,7 @@ const TYPE_TO_FIELD: Record<HealthKitDataType, keyof Omit<AppleHealthData, 'reco
 const RECOGNISED_TYPES = new Set<string>([
   'HKQuantityTypeIdentifierRestingHeartRate',
   'HKQuantityTypeIdentifierHeartRateVariabilitySDNN',
+  'HKQuantityTypeIdentifierHeartRate',
   'HKCategoryTypeIdentifierSleepAnalysis',
   'HKQuantityTypeIdentifierStepCount',
   'HKQuantityTypeIdentifierActiveEnergyBurned',
