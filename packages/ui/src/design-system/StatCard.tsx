@@ -1,5 +1,6 @@
-/** @deprecated Use StatCard from '../components/StatCard' instead */
 'use client';
+
+/** @deprecated Use StatCard from '../components/StatCard' instead */
 
 interface StatCardProps {
   label: string;

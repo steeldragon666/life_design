@@ -22,12 +22,12 @@ interface ScenarioComparisonProps {
   pathways: PathwaySummary[];
 }
 
-// Token-aligned colors: sage-500, warm-400, accent-500, destructive
+// Raw hex required — Recharts SVG fill/stroke attributes don't resolve CSS variables
 const PATHWAY_COLORS = [
-  'var(--color-sage-500)',
-  'var(--color-warm-400)',
-  'var(--color-accent-500)',
-  'var(--color-destructive)',
+  '#5A7F5A', // sage-500
+  '#D4864A', // warm-400
+  '#5E9BC4', // accent-500
+  '#CC3333', // destructive
 ];
 
 export default function ScenarioComparison({ pathways }: ScenarioComparisonProps) {
@@ -69,8 +69,8 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <XAxis dataKey="dimension" tick={{ fontSize: 9, fill: 'var(--color-stone-500)' }} />
-            <YAxis domain={[-5, 5]} tick={{ fontSize: 10, fill: 'var(--color-stone-500)' }} />
+            <XAxis dataKey="dimension" tick={{ fontSize: 9, fill: '#6B6459' /* stone-500 */ }} />
+            <YAxis domain={[-5, 5]} tick={{ fontSize: 10, fill: '#6B6459' /* stone-500 */ }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--color-surface-default)',
@@ -79,7 +79,7 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
                 fontSize: 12,
               }}
             />
-            <ReferenceLine y={0} stroke="var(--color-stone-200)" />
+            <ReferenceLine y={0} stroke="#E8E4DD" /* stone-200 */ />
             <Legend wrapperStyle={{ fontSize: 11, color: 'var(--color-stone-600)' }} />
             {pathways.map((pw, i) => (
               <Bar

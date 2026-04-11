@@ -17,9 +17,10 @@ interface DimensionImpactChartProps {
 }
 
 function getBarColor(impact: number): string {
-  if (impact >= 3) return 'var(--color-sage-600)';
-  if (impact >= 1) return 'var(--color-sage-500)';
-  if (impact > -1) return 'var(--color-stone-400)';
+  // Raw hex required — Recharts SVG attributes don't resolve CSS variables
+  if (impact >= 3) return '#476447'; // sage-600
+  if (impact >= 1) return '#5A7F5A'; // sage-500
+  if (impact > -1) return '#A8A198'; // stone-400
   if (impact > -3) return '#ea580c';  // orange-600
   return '#dc2626';                    // red-600
 }

@@ -42,7 +42,7 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="var(--color-stone-200)"
+        stroke="#E8E4DD" /* stone-200 — raw hex required for SVG attribute */
         strokeWidth={strokeWidth}
       />
       {/* Progress */}
@@ -60,8 +60,8 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
       />
       <defs>
         <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="var(--color-sage-500)" />
-          <stop offset="100%" stopColor="var(--color-sage-600)" />
+          <stop offset="0%" stopColor="#5A7F5A" /> {/* sage-500 — raw hex required for SVG stopColor */}
+          <stop offset="100%" stopColor="#476447" /> {/* sage-600 */}
         </linearGradient>
       </defs>
     </svg>

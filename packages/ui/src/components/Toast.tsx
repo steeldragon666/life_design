@@ -45,7 +45,7 @@ export function Toast({ variant, message, description, emoji, onDismiss, classNa
   return (
     <div
       className={cn(toastVariants({ variant }), className)}
-      role={isError ? 'alert' : undefined}
+      role={isError ? 'alert' : 'status'}
       aria-live={isError ? 'assertive' : 'polite'}
     >
       {variant === 'achievement' && emoji ? (

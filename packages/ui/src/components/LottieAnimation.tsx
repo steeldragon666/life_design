@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { cn } from '../utils/cn';
 
 const LottieReact = lazy(() => import('lottie-react'));
@@ -18,8 +18,15 @@ export function LottieAnimation({
   autoplay = true,
   className,
 }: LottieAnimationProps) {
-  if (typeof window === 'undefined') return null;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null;
+  const [mounted, setMounted] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    setMounted(true);
+  }, []);
+
+  if (!mounted || reducedMotion) return null;
 
   return (
     <Suspense fallback={null}>

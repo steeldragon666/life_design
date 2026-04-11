@@ -25,10 +25,10 @@ describe('Toast', () => {
     expect(el.getAttribute('aria-live')).toBe('polite');
   });
 
-  it('does not use role="alert" for non-error variants', () => {
+  it('uses role="status" for non-error variants', () => {
     const { container } = render(<Toast {...defaultProps} variant="info" />);
     const el = container.firstElementChild!;
-    expect(el.getAttribute('role')).toBeNull();
+    expect(el.getAttribute('role')).toBe('status');
   });
 
   it('uses token class instead of hardcoded hex for error border', () => {

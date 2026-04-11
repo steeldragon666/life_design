@@ -15,12 +15,12 @@ import type { Challenge } from '@/lib/challenges/types';
 const DIMENSION_COLORS: Record<Dimension, string> = {
   [Dimension.Career]:  'var(--color-dim-career)',
   [Dimension.Finance]: 'var(--color-dim-finance)',
-  [Dimension.Health]:  'var(--color-sage-300)',
-  [Dimension.Fitness]: 'var(--color-sage-400)',
-  [Dimension.Family]:  'var(--color-warm-300)',
-  [Dimension.Social]:  'var(--color-accent-400)',
-  [Dimension.Romance]: 'var(--color-dim-social)',
-  [Dimension.Growth]:  'var(--color-dim-health)',
+  [Dimension.Health]:  'var(--color-dim-health)',
+  [Dimension.Fitness]: 'var(--color-dim-fitness)',
+  [Dimension.Family]:  'var(--color-dim-family)',
+  [Dimension.Social]:  'var(--color-dim-social)',
+  [Dimension.Romance]: 'var(--color-dim-romance)',
+  [Dimension.Growth]:  'var(--color-dim-growth)',
 };
 
 const DIFFICULTY_CONFIG = {

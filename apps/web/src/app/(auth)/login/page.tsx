@@ -107,7 +107,7 @@ export default function LoginPage() {
                 onClick={startGuestMode}
                 className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-sage-500/20 hover:shadow-xl hover:shadow-sage-500/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Microphone size={18} />
+                <Mic size={18} />
                 {hasOnboardingProgress || profile ? 'Resume Your Journey' : 'Start Your Journey'}
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
@@ -116,7 +116,7 @@ export default function LoginPage() {
                 onClick={continueAsGuest}
                 className="group flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-2xl text-[15px] font-medium shadow-lg shadow-sage-500/20 hover:shadow-xl hover:shadow-sage-500/30 transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Sparkle size={18} />
+                <Sparkles size={18} />
                 Continue to Dashboard
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
