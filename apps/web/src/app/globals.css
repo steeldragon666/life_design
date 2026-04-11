@@ -60,6 +60,8 @@
   /* ── Semantic: Interactive ── */
   --color-interactive-primary: #5A7F5A;
   --color-interactive-hover: #476447;
+  --color-interactive-active: #3D5A3D;
+  --color-focus-ring: #9BB89B;
   --color-destructive: #CC3333;
 
   /* ── Dimension Accent Colors ── */
@@ -152,6 +154,12 @@
   h1, h2, h3, h4 {
     font-family: var(--font-serif);
   }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-surface-page), 0 0 0 4px var(--color-focus-ring);
+    border-radius: var(--radius-sm);
+  }
 }
 
 /* Glass utilities (updated for light theme) */
@@ -163,10 +171,25 @@
   box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.04);
 }
 
-@utility glass-dark {
+@utility glass-opaque {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(232, 228, 221, 0.4);
+}
+
+@utility hover-lift {
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  }
+}
+
+@utility press-depth {
+  &:active {
+    transform: scale(0.98);
+    transition: transform 100ms ease-out;
+  }
 }
 
 .glass-card {
@@ -231,11 +254,16 @@
 .animate-breathe { animation: breathe 4s ease-in-out infinite; }
 .animate-confetti-fall { animation: confettiFall 3s ease-in forwards; }
 .animate-badge-reveal { animation: badgeReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.stagger-1 { animation-delay: 0.1s; opacity: 0; }
-.stagger-2 { animation-delay: 0.2s; opacity: 0; }
-.stagger-3 { animation-delay: 0.3s; opacity: 0; }
-.stagger-4 { animation-delay: 0.4s; opacity: 0; }
-.stagger-5 { animation-delay: 0.5s; opacity: 0; }
+.stagger-1 { animation-delay: 0.06s; opacity: 0; }
+.stagger-2 { animation-delay: 0.12s; opacity: 0; }
+.stagger-3 { animation-delay: 0.18s; opacity: 0; }
+.stagger-4 { animation-delay: 0.24s; opacity: 0; }
+.stagger-5 { animation-delay: 0.30s; opacity: 0; }
+.stagger-6 { animation-delay: 0.36s; opacity: 0; }
+.stagger-7 { animation-delay: 0.42s; opacity: 0; }
+.stagger-8 { animation-delay: 0.48s; opacity: 0; }
+.stagger-9 { animation-delay: 0.54s; opacity: 0; }
+.stagger-10 { animation-delay: 0.60s; opacity: 0; }
 
 /* Onboarding card transitions */
 .card-enter-active {
@@ -261,8 +289,8 @@
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D4CFC5; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #A8A198; }
+::-webkit-scrollbar-thumb { background: var(--color-stone-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-stone-400); }
 
 /* Noise texture overlay */
 .noise-bg::before {
@@ -273,4 +301,13 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
+}
+
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

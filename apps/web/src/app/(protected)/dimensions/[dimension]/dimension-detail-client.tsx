@@ -672,7 +672,7 @@ function generateMockCausalInsights(dimension: Dimension): CausalInsight[] {
 function SectionSkeleton({ height = 200 }: { height?: number }) {
   return (
     <div
-      className="glass-dark rounded-3xl border border-white/5 animate-pulse"
+      className="glass-opaque rounded-3xl border border-white/5 animate-pulse"
       style={{ height }}
     />
   );
@@ -931,7 +931,7 @@ export default function DimensionDetailClient({
           }
         />
 
-        <div className="glass-dark rounded-3xl border border-white/5 p-6">
+        <div className="glass-opaque rounded-3xl border border-white/5 p-6">
           {combinedChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart
@@ -1035,7 +1035,7 @@ export default function DimensionDetailClient({
           level="h2"
         />
 
-        <div className="glass-dark rounded-3xl border border-white/5 p-6">
+        <div className="glass-opaque rounded-3xl border border-white/5 p-6">
           {featureImportance.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
@@ -1117,7 +1117,7 @@ export default function DimensionDetailClient({
           }
         />
 
-        <div className="glass-dark rounded-3xl border border-white/5 p-6">
+        <div className="glass-opaque rounded-3xl border border-white/5 p-6">
           {crossDimCorrelations.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
@@ -1213,7 +1213,7 @@ export default function DimensionDetailClient({
         />
 
         {isColdStart ? (
-          <div className="glass-dark rounded-3xl border border-amber-500/20 p-8 flex items-start gap-4">
+          <div className="glass-opaque rounded-3xl border border-amber-500/20 p-8 flex items-start gap-4">
             <div className="h-10 w-10 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
               <Warning className="h-5 w-5 text-amber-400" weight="regular" />
             </div>
@@ -1249,7 +1249,7 @@ export default function DimensionDetailClient({
             </div>
           </div>
         ) : (
-          <div className="glass-dark rounded-3xl border border-white/5 p-6">
+          <div className="glass-opaque rounded-3xl border border-white/5 p-6">
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart
                 data={forecastData}
@@ -1329,7 +1329,7 @@ export default function DimensionDetailClient({
           {recommendedActions.map((action) => (
             <div
               key={action.id}
-              className="glass-dark rounded-3xl border border-white/5 p-6 space-y-4 group hover:border-white/10 transition-all duration-300"
+              className="glass-opaque rounded-3xl border border-white/5 p-6 space-y-4 group hover:border-white/10 transition-all duration-300"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-2">
@@ -1400,7 +1400,7 @@ export default function DimensionDetailClient({
             {causalInsights.map((insight) => (
               <div
                 key={insight.id}
-                className="glass-dark rounded-3xl border border-white/5 p-6"
+                className="glass-opaque rounded-3xl border border-white/5 p-6"
               >
                 <div className="flex items-start gap-4">
                   <div

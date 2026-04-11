@@ -163,7 +163,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
   }
 
   return (
-    <div className="glass-dark rounded-3xl border border-white/5 overflow-hidden">
+    <div className="glass-opaque rounded-3xl border border-white/5 overflow-hidden">
       {/* Header row */}
       <button
         onClick={() => setExpanded((v) => !v)}
@@ -420,7 +420,7 @@ function MatrixView({ correlations }: MatrixViewProps) {
       {/* Detail panel */}
       {selected && selected.data.best && (
         <div
-          className="mt-4 glass-dark rounded-3xl p-6 border border-white/5 animate-in slide-in-from-bottom-4 duration-300"
+          className="mt-4 glass-opaque rounded-3xl p-6 border border-white/5 animate-in slide-in-from-bottom-4 duration-300"
           style={{ borderColor: `${dimensionColor(selected.d1)}30` }}
         >
           <div className="flex items-start justify-between gap-4 mb-4">
@@ -514,7 +514,7 @@ interface ListViewProps {
 function ListView({ correlations }: ListViewProps) {
   if (correlations.length === 0) {
     return (
-      <div className="glass-dark rounded-3xl p-12 text-center border border-white/5">
+      <div className="glass-opaque rounded-3xl p-12 text-center border border-white/5">
         <p className="text-stone-500 font-medium">No correlations match your current filters.</p>
         <p className="text-stone-600 text-sm mt-1">Try lowering the confidence threshold.</p>
       </div>
@@ -711,7 +711,7 @@ function NetworkView({ correlations }: NetworkViewProps) {
       </div>
 
       {/* SVG Network */}
-      <div className="glass-dark rounded-3xl border border-white/5 overflow-hidden flex items-center justify-center p-4">
+      <div className="glass-opaque rounded-3xl border border-white/5 overflow-hidden flex items-center justify-center p-4">
         <svg
           width={SVG_SIZE}
           height={SVG_SIZE}
@@ -805,7 +805,7 @@ function NetworkView({ correlations }: NetworkViewProps) {
       {/* Fixed-position tooltip (rendered outside SVG) */}
       {tooltip && (
         <div
-          className="fixed z-50 pointer-events-none px-3 py-1.5 glass-dark rounded-xl border border-white/10 text-xs font-bold text-white whitespace-nowrap"
+          className="fixed z-50 pointer-events-none px-3 py-1.5 glass-opaque rounded-xl border border-white/10 text-xs font-bold text-white whitespace-nowrap"
           style={{ left: tooltip.x, top: tooltip.y, transform: 'translate(-50%, -100%)' }}
         >
           {tooltip.content}
@@ -862,7 +862,7 @@ function CorrelationSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="glass-dark rounded-3xl border border-white/5 h-28"
+          className="glass-opaque rounded-3xl border border-white/5 h-28"
           style={{ opacity: 1 - i * 0.15 }}
         />
       ))}
@@ -943,7 +943,7 @@ export default function CorrelationsClient() {
               color: '#06b6d4',
             },
           ].map(({ label, value, color }) => (
-            <div key={label} className="glass-dark rounded-3xl p-5 border border-white/5">
+            <div key={label} className="glass-opaque rounded-3xl p-5 border border-white/5">
               <p className="text-[11px] font-black uppercase tracking-[0.15em] text-stone-500 mb-2">
                 {label}
               </p>
@@ -967,7 +967,7 @@ export default function CorrelationsClient() {
 
       {/* View toggle */}
       <div className="flex items-center gap-2">
-        <div className="glass-dark rounded-2xl p-1.5 flex items-center gap-1 border border-white/5">
+        <div className="glass-opaque rounded-2xl p-1.5 flex items-center gap-1 border border-white/5">
           {VIEW_TABS.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -996,7 +996,7 @@ export default function CorrelationsClient() {
 
       {/* Error state */}
       {error && (
-        <div className="glass-dark rounded-3xl p-6 border border-red-500/20 flex items-center gap-3">
+        <div className="glass-opaque rounded-3xl p-6 border border-red-500/20 flex items-center gap-3">
           <WarningCircle size={20} className="text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-300 font-medium">{error}</p>
         </div>
