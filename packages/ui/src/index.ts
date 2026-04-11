@@ -13,5 +13,14 @@ export * from './components';
 // Onboarding
 export * from './onboarding';
 
+// Dashboard
+export * from './dashboard';
+
+// Mentor
+export * from './mentor';
+
+// Shared
+export * from './shared';
+
 // Legacy design system (deprecated — remove after migration)
 export * from './design-system';
