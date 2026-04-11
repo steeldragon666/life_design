@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within, userEvent } from '@storybook/test';
 import { Button } from '../components/Button';
 
 const meta: Meta<typeof Button> = {
@@ -15,7 +16,16 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = { args: { children: 'Primary Button', variant: 'primary' } };
+export const Primary: Story = {
+  args: { children: 'Primary Button', variant: 'primary' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button');
+    await expect(button).toHaveClass('cursor-pointer');
+    await userEvent.click(button);
+    await expect(button).toBeVisible();
+  },
+};
 export const Secondary: Story = { args: { children: 'Secondary', variant: 'secondary' } };
 export const Ghost: Story = { args: { children: 'Ghost', variant: 'ghost' } };
 export const Destructive: Story = { args: { children: 'Delete', variant: 'destructive' } };

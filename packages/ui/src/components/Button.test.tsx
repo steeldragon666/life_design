@@ -28,7 +28,7 @@ describe('Button', () => {
   it('applies destructive variant classes', () => {
     render(<Button variant="destructive">Delete</Button>);
     const btn = screen.getByRole('button');
-    expect(btn.className).toContain('bg-[#CC3333]');
+    expect(btn.className).toContain('bg-destructive');
   });
 
   it('applies size classes', () => {
@@ -66,5 +66,16 @@ describe('Button', () => {
   it('merges custom className', () => {
     render(<Button className="mt-4">Styled</Button>);
     expect(screen.getByRole('button').className).toContain('mt-4');
+  });
+
+  it('has cursor-pointer class', () => {
+    render(<Button>Click</Button>);
+    expect(screen.getByRole('button')).toHaveClass('cursor-pointer');
+  });
+
+  it('has focus-visible ring classes', () => {
+    render(<Button>Click</Button>);
+    const btn = screen.getByRole('button');
+    expect(btn.className).toContain('focus-visible:ring');
   });
 });
