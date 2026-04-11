@@ -24,25 +24,47 @@ export default function OnboardingFlow() {
 
   useEffect(() => {
     async function init() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.push('/login');
-        return;
+        if (!user) {
+          router.push('/login');
+          return;
+        }
+
+        // Start or resume onboarding session
+        const statusRes = await fetch('/api/onboarding/status');
+        if (!statusRes.ok) {
+          // If status check fails, try starting a session
+          const startRes = await fetch('/api/onboarding/start', { method: 'POST' });
+          if (!startRes.ok) {
+            console.error('Failed to start onboarding session:', startRes.status);
+          }
+          setLoading(false);
+          return;
+        }
+
+        const data = await statusRes.json();
+
+        if (data.status === 'completed') {
+          router.push('/dashboard');
+          return;
+        }
+
+        // If no session exists yet, create one
+        if (data.status === 'not_started') {
+          await fetch('/api/onboarding/start', { method: 'POST' }).catch(() => {});
+        }
+
+        if (data.current_card) setCurrentCard(data.current_card);
+        if (data.raw_answers) setSavedAnswers(data.raw_answers);
+        setLoading(false);
+      } catch (error) {
+        console.error('Onboarding init error:', error);
+        // Still show the flow even if there was an error — better than infinite loading
+        setLoading(false);
       }
-
-      const res = await fetch('/api/onboarding/status');
-      const data = await res.json();
-
-      if (data.status === 'completed') {
-        router.push('/dashboard');
-        return;
-      }
-
-      if (data.current_card) setCurrentCard(data.current_card);
-      if (data.raw_answers) setSavedAnswers(data.raw_answers);
-      setLoading(false);
     }
     init();
   }, [router]);
