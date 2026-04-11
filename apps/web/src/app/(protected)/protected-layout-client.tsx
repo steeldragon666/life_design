@@ -100,7 +100,7 @@ export default function ProtectedLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-[260px] pb-24 lg:pb-8">
+      <main id="main" className="flex-1 lg:ml-[260px] pb-24 lg:pb-8">
         <div className="animate-fade-up">
           {children}
         </div>
