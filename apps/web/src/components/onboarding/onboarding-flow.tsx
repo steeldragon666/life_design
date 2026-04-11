@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useGuest } from '@/lib/guest-context';
 import type { RawAnswers } from '@life-design/core';
 import WelcomeCard from './cards/welcome-card';
 import ExpectationsCard from './cards/expectations-card';
@@ -18,9 +19,11 @@ const TOTAL_CARDS = 9;
 
 export default function OnboardingFlow() {
   const router = useRouter();
+  const { setProfile, profile } = useGuest();
   const [currentCard, setCurrentCard] = useState(1);
   const [loading, setLoading] = useState(true);
   const [savedAnswers, setSavedAnswers] = useState<RawAnswers>({});
+  const isAuthenticated = useRef(false);
 
   useEffect(() => {
     async function init() {
@@ -28,37 +31,41 @@ export default function OnboardingFlow() {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
-          router.push('/login');
-          return;
-        }
+        if (user) {
+          // Authenticated user: use server-side onboarding state
+          isAuthenticated.current = true;
 
-        // Start or resume onboarding session
-        const statusRes = await fetch('/api/onboarding/status');
-        if (!statusRes.ok) {
-          // If status check fails, try starting a session
-          const startRes = await fetch('/api/onboarding/start', { method: 'POST' });
-          if (!startRes.ok) {
-            console.error('Failed to start onboarding session:', startRes.status);
+          const statusRes = await fetch('/api/onboarding/status');
+          if (!statusRes.ok) {
+            await fetch('/api/onboarding/start', { method: 'POST' }).catch(() => {});
+            setLoading(false);
+            return;
           }
-          setLoading(false);
-          return;
+
+          const data = await statusRes.json();
+
+          if (data.status === 'completed') {
+            router.push('/dashboard');
+            return;
+          }
+
+          if (data.status === 'not_started') {
+            await fetch('/api/onboarding/start', { method: 'POST' }).catch(() => {});
+          }
+
+          if (data.current_card) setCurrentCard(data.current_card);
+          if (data.raw_answers) setSavedAnswers(data.raw_answers);
+        } else {
+          // Guest user: resume from localStorage
+          const savedCard = localStorage.getItem('opt-in-onboarding-card');
+          if (savedCard) {
+            const parsed = parseInt(savedCard, 10);
+            if (parsed >= 1 && parsed <= TOTAL_CARDS) {
+              setCurrentCard(parsed);
+            }
+          }
         }
 
-        const data = await statusRes.json();
-
-        if (data.status === 'completed') {
-          router.push('/dashboard');
-          return;
-        }
-
-        // If no session exists yet, create one
-        if (data.status === 'not_started') {
-          await fetch('/api/onboarding/start', { method: 'POST' }).catch(() => {});
-        }
-
-        if (data.current_card) setCurrentCard(data.current_card);
-        if (data.raw_answers) setSavedAnswers(data.raw_answers);
         setLoading(false);
       } catch (error) {
         console.error('Onboarding init error:', error);
@@ -74,18 +81,24 @@ export default function OnboardingFlow() {
     setCurrentCard(next);
 
     localStorage.setItem('opt-in-onboarding-card', String(next));
-    await fetch('/api/onboarding/card', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ current_card: next }),
-    }).catch(() => {});
+    if (isAuthenticated.current) {
+      await fetch('/api/onboarding/card', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_card: next }),
+      }).catch(() => {});
+    }
   }, [currentCard]);
 
   const handleComplete = useCallback(async () => {
-    await fetch('/api/onboarding/complete', { method: 'POST' }).catch(() => {});
+    if (isAuthenticated.current) {
+      await fetch('/api/onboarding/complete', { method: 'POST' }).catch(() => {});
+    }
+    // Mark guest profile as onboarded so middleware allows dashboard access
+    setProfile({ id: profile?.id ?? 'guest-user', onboarded: true });
     localStorage.removeItem('opt-in-onboarding-card');
     router.push('/dashboard');
-  }, [router]);
+  }, [router, setProfile, profile?.id]);
 
   if (loading) {
     return (
