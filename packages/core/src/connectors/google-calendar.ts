@@ -418,7 +418,7 @@ function mapRawEvent(raw: GoogleCalendarEventRaw): CalendarEvent {
     summary: raw.summary ?? '(no title)',
     start: new Date(startRaw),
     end: new Date(endRaw),
-    attendees: raw.attendees?.length,
+    attendees: raw.attendees?.length ?? 0,
     isRecurring: Array.isArray(raw.recurrence) && raw.recurrence.length > 0,
   };
 }
