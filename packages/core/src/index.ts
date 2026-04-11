@@ -12,3 +12,4 @@ export * from './connectors/strava';
 export * from './connectors/google-calendar';
 export * from './connectors/oauth-manager';
 export * from './profiling';
+export * from './privacy';
