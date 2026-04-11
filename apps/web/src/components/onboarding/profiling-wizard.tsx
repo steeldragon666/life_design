@@ -41,14 +41,8 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
   // Initialise session
   useEffect(() => {
     async function init() {
-      let user = null;
-      try {
-        const supabase = createClient();
-        const { data } = await supabase.auth.getUser();
-        user = data?.user ?? null;
-      } catch {
-        // Supabase not configured — fall through to guest mode
-      }
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       const isGuest = !user;
 
       // Try to get user's name for personalized summary

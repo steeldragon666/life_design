@@ -24,19 +24,11 @@ export default function OnboardingFlow() {
 
   useEffect(() => {
     async function init() {
-      let user = null;
-      try {
-        const supabase = createClient();
-        const { data } = await supabase.auth.getUser();
-        user = data?.user ?? null;
-      } catch {
-        // Supabase not configured — fall through to guest mode
-      }
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        const saved = localStorage.getItem('opt-in-onboarding-card');
-        if (saved) setCurrentCard(Number(saved));
-        setLoading(false);
+        router.push('/login');
         return;
       }
 
