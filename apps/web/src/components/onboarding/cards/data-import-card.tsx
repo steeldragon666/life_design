@@ -11,8 +11,6 @@ const INTEGRATIONS = [
   { id: 'strava', name: 'Strava', description: 'Running, cycling & fitness', icon: '\u{1F3C3}', authUrl: '/api/auth/strava' },
   { id: 'spotify', name: 'Spotify', description: 'Music & listening habits', icon: '\u{1F3B5}', authUrl: '/api/auth/spotify' },
   { id: 'google_calendar', name: 'Google Calendar', description: 'Events & time management', icon: '\u{1F4C5}', authUrl: '/api/auth/google' },
-  { id: 'slack', name: 'Slack', description: 'Communication patterns', icon: '\u{1F4AC}', authUrl: '/api/auth/slack' },
-  { id: 'notion', name: 'Notion', description: 'Notes & productivity', icon: '\u{1F4DD}', authUrl: '/api/auth/notion' },
 ];
 
 export default function DataImportCard({ onNext }: DataImportCardProps) {
@@ -45,7 +43,7 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
           <p className="text-stone-500 mt-3">Connecting apps lets our AI find deeper patterns in your life. You can always add more later.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
           {INTEGRATIONS.map((integration) => {
             const isConnected = connected.includes(integration.id);
             return (
