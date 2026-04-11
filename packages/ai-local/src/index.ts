@@ -20,6 +20,9 @@ export type { VoiceSession, VoiceCheckInResult } from './voice-processor';
 export type { LocalJITAIInput } from './jitai-inference';
 export { runLocalJITAI, getTimeOfDay } from './jitai-inference';
 export { PersonalModel } from './personal-model';
+export { LocalTrainer } from './federated/local-trainer';
+export type { TrainingData, GradientUpdate } from './federated/local-trainer';
+export { GradientEncoder } from './federated/gradient-encoder';
 
 export interface AILocalProgress {
   task: string;
