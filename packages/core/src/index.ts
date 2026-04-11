@@ -17,3 +17,6 @@ export * from './jitai';
 export * from './health';
 export * from './integrations';
 export * from './ema';
+export * from './ml';
+export * from './cbt';
+export * from './nlp';

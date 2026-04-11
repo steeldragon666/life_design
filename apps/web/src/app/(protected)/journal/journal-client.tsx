@@ -11,8 +11,10 @@ import {
   FileEdit,
   MessageSquare,
   Sparkles,
+  Lightbulb,
 } from 'lucide-react';
 import { Card, Button, Textarea } from '@life-design/ui';
+import { detectLinguisticBiomarkers, type BiomarkerResult } from '@life-design/core';
 import { db } from '@/lib/db';
 import type { DBJournalEntry } from '@/lib/db/schema';
 import { analyzeJournalEntryLocal } from '@/lib/services/journal-analysis-service';
@@ -115,6 +117,66 @@ function SmartPromptBar({
         </button>
       ))}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Distortion type labels for educational framing
+// ---------------------------------------------------------------------------
+
+const DISTORTION_EXPLANATIONS: Record<string, string> = {
+  all_or_nothing:
+    'We noticed some all-or-nothing thinking patterns ("always", "never"). This is a common cognitive pattern — noticing it is the first step.',
+  catastrophising:
+    'We noticed some catastrophising language ("worst", "ruined"). Our minds sometimes jump to worst-case scenarios — awareness helps.',
+  personalisation:
+    'We noticed some self-blame patterns ("my fault", "I caused"). Taking excessive responsibility is a common thinking trap — be gentle with yourself.',
+  mind_reading:
+    'We noticed some mind-reading patterns. Assuming what others think is a common habit — checking in with them can help.',
+  fortune_telling:
+    'We noticed some fortune-telling patterns. Predicting negative outcomes is common — reality often turns out differently.',
+};
+
+function InsightBanner({
+  biomarkers,
+  onDismiss,
+}: {
+  biomarkers: BiomarkerResult;
+  onDismiss: () => void;
+}) {
+  if (biomarkers.distortions.length === 0) return null;
+
+  // Deduplicate distortion types
+  const uniqueTypes = [...new Set(biomarkers.distortions.map((d) => d.type))];
+
+  return (
+    <Card className="mb-4 p-4 rounded-2xl border border-sage-100 bg-sage-50/50 animate-fade-up">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full bg-sage-100 flex items-center justify-center">
+          <Lightbulb size={14} className="text-sage-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-sage-700 mb-1.5">Thinking Pattern Insights</p>
+          <div className="space-y-1.5">
+            {uniqueTypes.map((type) => (
+              <p key={type} className="text-xs text-stone-600 leading-relaxed">
+                {DISTORTION_EXPLANATIONS[type] ?? `Detected pattern: ${type}`}
+              </p>
+            ))}
+          </div>
+          <p className="text-[11px] text-stone-400 mt-2 italic">
+            These are educational observations, not diagnoses. Everyone has thinking patterns.
+          </p>
+        </div>
+        <button
+          onClick={onDismiss}
+          className="flex-shrink-0 p-1 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+          aria-label="Dismiss insight"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    </Card>
   );
 }
 
@@ -287,6 +349,7 @@ export default function JournalClient() {
   const [filter, setFilter] = useState<SourceFilter>('all');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [latestBiomarkers, setLatestBiomarkers] = useState<BiomarkerResult | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // --- Smart prompts (from most recent check-in scores) ---
@@ -352,6 +415,13 @@ export default function JournalClient() {
           dimensions: analysis.dimensions,
           createdAt: new Date(),
         });
+      }
+      // Run linguistic biomarker analysis and show educational insights
+      const biomarkers = detectLinguisticBiomarkers(content);
+      if (biomarkers.distortions.length > 0) {
+        setLatestBiomarkers(biomarkers);
+      } else {
+        setLatestBiomarkers(null);
       }
       setDraft('');
       setShowEditor(false);
@@ -449,6 +519,16 @@ export default function JournalClient() {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Linguistic biomarker insights (educational, dismissible) */}
+      {/* ------------------------------------------------------------------ */}
+      {latestBiomarkers && (
+        <InsightBanner
+          biomarkers={latestBiomarkers}
+          onDismiss={() => setLatestBiomarkers(null)}
+        />
       )}
 
       {/* ------------------------------------------------------------------ */}
