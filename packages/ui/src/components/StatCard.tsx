@@ -22,7 +22,7 @@ const statCardVariants = cva(
 export interface StatCardProps extends VariantProps<typeof statCardVariants> {
   label: string;
   value: string | number;
-  trend?: 'up' | 'down' | 'flat';
+  trend?: 'up' | 'down' | 'flat' | 'neutral';
   changePercent?: number;
   sparkline?: React.ReactNode;
   className?: string;
@@ -32,6 +32,7 @@ const trendConfig = {
   up: { icon: TrendingUp, color: 'text-sage-500', label: 'Trending up' },
   down: { icon: TrendingDown, color: 'text-destructive', label: 'Trending down' },
   flat: { icon: Minus, color: 'text-stone-400', label: 'No change' },
+  neutral: { icon: Minus, color: 'text-stone-400', label: 'No change' },
 };
 
 export function StatCard({ label, value, trend, changePercent, sparkline, variant, className }: StatCardProps) {

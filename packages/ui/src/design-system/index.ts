@@ -3,7 +3,8 @@ export type { GlassIntensity, SizeVariant } from './tokens';
 
 export { default as GlassCard } from './GlassCard';
 export { default as DimensionBadge } from './DimensionBadge';
-export { default as StatCard } from './StatCard';
+/** @deprecated Use StatCard from '../components/StatCard' instead */
+export { default as StatCardDS } from './StatCard';
 export { default as TrendIndicator } from './TrendIndicator';
 export { default as ScoreRing } from './ScoreRing';
 export { default as InsightCardDS } from './InsightCard';
