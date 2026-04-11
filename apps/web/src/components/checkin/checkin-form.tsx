@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { ALL_DIMENSIONS, Dimension, DurationType } from '@life-design/core';
+import { ALL_DIMENSIONS, Dimension, DurationType, selectQuestions } from '@life-design/core';
 import { Button } from '@life-design/ui';
 import MoodSlider from './mood-slider';
 import MoodSegment from './mood-segment';
@@ -28,7 +28,13 @@ interface CheckInFormProps {
   prediction?: PredictionResult | null;
 }
 
-const QUICK_DIMENSIONS = ALL_DIMENSIONS.slice(0, 3);
+function getQuickDimensions(): Dimension[] {
+  const selected = selectQuestions([], 10, 5);
+  const dims = [...new Set(selected.map((q) => q.dimension))];
+  return dims.length > 0 ? dims : ALL_DIMENSIONS.slice(0, 3);
+}
+
+const QUICK_DIMENSIONS = getQuickDimensions();
 
 export default function CheckInForm({ onSubmit, loading, initialValues, prediction }: CheckInFormProps) {
   const [mood, setMood] = useState(initialValues?.mood ?? 3);
@@ -153,7 +159,7 @@ export default function CheckInForm({ onSubmit, loading, initialValues, predicti
       {!isDeep && !hasPrediction ? <MoodSegment value={mood} onChange={setMood} /> : !hasPrediction ? <MoodSlider value={mood} onChange={setMood} /> : null}
 
       {!isDeep && !hasPrediction && (
-        <p className="text-sm text-stone-500">Quick mode focuses on your top 3 dimensions. Switch to deep mode for full detail.</p>
+        <p className="text-sm text-stone-500">Quick mode focuses on your most informative dimensions. Switch to deep mode for full detail.</p>
       )}
 
       {/* Conditional: Predictive slider group OR traditional DimensionCards */}

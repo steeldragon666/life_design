@@ -15,3 +15,5 @@ export * from './profiling';
 export * from './privacy';
 export * from './jitai';
 export * from './health';
+export * from './integrations';
+export * from './ema';
