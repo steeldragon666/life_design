@@ -22,12 +22,12 @@ const FEATURE_LABELS: Record<string, string> = {
   audio_energy: 'music energy',
 };
 
-// Design tokens
-const SAGE = '#5A7F5A';
+// Design tokens (CSS variables from @theme)
+const SAGE = 'var(--color-sage-500)';
 const MUTED = '#7D756A';
-const BG = '#F5F3EF';
-const BORDER = '#E8E4DD';
-const DARK = '#1A1816';
+const BG = 'var(--color-stone-100)';
+const BORDER = 'var(--color-stone-200)';
+const DARK = 'var(--color-stone-900)';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -102,13 +102,13 @@ export default function ExplainabilityTooltip({ weights }: ExplainabilityTooltip
                   <span
                     className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{
-                      backgroundColor: isPositive ? SAGE : '#D4864A',
+                      backgroundColor: isPositive ? SAGE : 'var(--color-warm-400)',
                     }}
                   />
                   <span style={{ color: DARK }}>{humanLabel}</span>
                   <span
                     className="ml-auto font-mono text-[10px]"
-                    style={{ color: isPositive ? SAGE : '#D4864A' }}
+                    style={{ color: isPositive ? SAGE : 'var(--color-warm-400)' }}
                   >
                     {isPositive ? '+' : ''}
                     {(w.weight * 100).toFixed(0)}%

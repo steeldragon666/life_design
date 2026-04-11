@@ -24,9 +24,9 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
         {/* Life Orb visual */}
         <div className="flex justify-center">
           <div className="relative w-32 h-32">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#9BB89B] to-[#5A8F5A] opacity-20 animate-ping" />
-            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#9BB89B] to-[#5A8F5A] opacity-30 animate-pulse" />
-            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-[#B5D0B5] to-[#739A73] shadow-lg flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 opacity-20 animate-ping" />
+            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-sage-300 to-sage-500 opacity-30 animate-pulse" />
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-sage-200 to-sage-400 shadow-lg flex items-center justify-center">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3V6a4 4 0 0 1 4-4z" />
                 <path d="M12 14c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4z" />
@@ -86,7 +86,7 @@ export default function AIMentorCard({ onComplete }: AIMentorCardProps) {
 
         <button
           onClick={onComplete}
-          className={`w-full py-4 rounded-2xl bg-gradient-to-r from-[#739A73] to-[#5A8F5A] text-white font-medium text-lg hover:opacity-90 transition-all duration-500 ${
+          className={`w-full py-4 rounded-2xl bg-gradient-to-r from-sage-400 to-sage-500 text-white font-medium text-lg hover:opacity-90 transition-all duration-500 ${
             visibleBlocks >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >

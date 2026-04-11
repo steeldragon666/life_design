@@ -80,7 +80,7 @@ export default function OnboardingFlow() {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-stone-200">
         <div
-          className="h-full bg-gradient-to-r from-[#739A73] to-[#5A8F5A] transition-all duration-500 ease-out"
+          className="h-full bg-gradient-to-r from-sage-400 to-sage-500 transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>

@@ -180,6 +180,7 @@ export function LoadingScreen({
       aria-label="Loading Opt In"
     >
       {/* Background with theme-aware gradient */}
+      {/* These colors are intentional per-theme decorative values, not design tokens. */}
       <div
         className={cn(
           'absolute inset-0 transition-opacity duration-500',

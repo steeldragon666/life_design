@@ -23,7 +23,12 @@ interface ScenarioComparisonProps {
 }
 
 // Token-aligned colors: sage-500, warm-400, accent-500, destructive
-const PATHWAY_COLORS = ['#5A7F5A', '#D4864A', '#5E9BC4', '#CC3333'];
+const PATHWAY_COLORS = [
+  'var(--color-sage-500)',
+  'var(--color-warm-400)',
+  'var(--color-accent-500)',
+  'var(--color-destructive)',
+];
 
 export default function ScenarioComparison({ pathways }: ScenarioComparisonProps) {
   if (pathways.length < 2) return null;
@@ -64,18 +69,18 @@ export default function ScenarioComparison({ pathways }: ScenarioComparisonProps
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <XAxis dataKey="dimension" tick={{ fontSize: 9, fill: '#6B6459' }} />
-            <YAxis domain={[-5, 5]} tick={{ fontSize: 10, fill: '#6B6459' }} />
+            <XAxis dataKey="dimension" tick={{ fontSize: 9, fill: 'var(--color-stone-500)' }} />
+            <YAxis domain={[-5, 5]} tick={{ fontSize: 10, fill: 'var(--color-stone-500)' }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E8E4DD',
+                backgroundColor: 'var(--color-surface-default)',
+                border: '1px solid var(--color-stone-200)',
                 borderRadius: '8px',
                 fontSize: 12,
               }}
             />
-            <ReferenceLine y={0} stroke="#E8E4DD" />
-            <Legend wrapperStyle={{ fontSize: 11, color: '#5C554C' }} />
+            <ReferenceLine y={0} stroke="var(--color-stone-200)" />
+            <Legend wrapperStyle={{ fontSize: 11, color: 'var(--color-stone-600)' }} />
             {pathways.map((pw, i) => (
               <Bar
                 key={i}

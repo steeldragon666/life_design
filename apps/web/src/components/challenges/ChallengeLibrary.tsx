@@ -13,14 +13,14 @@ import type { Challenge } from '@/lib/challenges/types';
 // ---------------------------------------------------------------------------
 
 const DIMENSION_COLORS: Record<Dimension, string> = {
-  [Dimension.Career]:  '#5E9BC4',
-  [Dimension.Finance]: '#D4864A',
-  [Dimension.Health]:  '#9BB89B',
-  [Dimension.Fitness]: '#739A73',
-  [Dimension.Family]:  '#E8A46D',
-  [Dimension.Social]:  '#85B8D8',
-  [Dimension.Romance]: '#8B7BA8',
-  [Dimension.Growth]:  '#5A7F5A',
+  [Dimension.Career]:  'var(--color-dim-career)',
+  [Dimension.Finance]: 'var(--color-dim-finance)',
+  [Dimension.Health]:  'var(--color-sage-300)',
+  [Dimension.Fitness]: 'var(--color-sage-400)',
+  [Dimension.Family]:  'var(--color-warm-300)',
+  [Dimension.Social]:  'var(--color-accent-400)',
+  [Dimension.Romance]: 'var(--color-dim-social)',
+  [Dimension.Growth]:  'var(--color-dim-health)',
 };
 
 const DIFFICULTY_CONFIG = {
@@ -70,7 +70,7 @@ function ActiveChallengeRow({ challengeId, activeId, taskCompletion }: ActiveCha
   if (!challenge) return null;
 
   const pct = progressPercent(challengeId, taskCompletion);
-  const primaryColor = DIMENSION_COLORS[challenge.dimensions[0]] ?? '#5A7F5A';
+  const primaryColor = DIMENSION_COLORS[challenge.dimensions[0]] ?? 'var(--color-sage-500)';
 
   return (
     <div
@@ -115,7 +115,7 @@ interface ChallengeCardProps {
 }
 
 function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCardProps) {
-  const primaryColor = DIMENSION_COLORS[challenge.dimensions[0]] ?? '#5A7F5A';
+  const primaryColor = DIMENSION_COLORS[challenge.dimensions[0]] ?? 'var(--color-sage-500)';
   const diff = DIFFICULTY_CONFIG[challenge.difficulty];
 
   return (
@@ -190,7 +190,7 @@ function ChallengeCard({ challenge, isActive, onStart, starting }: ChallengeCard
             onClick={() => onStart(challenge.id)}
             className="w-full rounded-xl py-2.5 text-sm font-medium text-white transition-opacity disabled:opacity-60"
             style={{
-              background: `linear-gradient(135deg, #5A7F5A, #476447)`,
+              background: `linear-gradient(135deg, var(--color-sage-500), var(--color-sage-600))`,
             }}
           >
             {starting ? 'Starting…' : 'Start Challenge'}
@@ -319,7 +319,7 @@ export default function ChallengeLibrary() {
                   style={
                     active
                       ? { backgroundColor: color, borderColor: color }
-                      : { borderColor: '#E8E4DD' }
+                      : { borderColor: 'var(--color-stone-200)' }
                   }
                 >
                   {DIMENSION_LABELS[dim]}

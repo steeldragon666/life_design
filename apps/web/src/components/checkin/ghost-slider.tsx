@@ -27,14 +27,14 @@ const HANDLE_SIZE = 24;
 const GHOST_SIZE = 20;
 const HIGH_CONFIDENCE_THRESHOLD = 0.5;
 
-// Design tokens
-const SAGE = '#5A7F5A';
-const SAGE_LIGHT = '#5A7F5A40';
-const SAGE_GLOW = '#5A7F5A60';
+// Design tokens (CSS variables from @theme)
+const SAGE = 'var(--color-sage-500)';
+const SAGE_LIGHT = 'color-mix(in srgb, var(--color-sage-500) 25%, transparent)';
+const SAGE_GLOW = 'color-mix(in srgb, var(--color-sage-500) 38%, transparent)';
 const MUTED = '#7D756A';
-const BORDER = '#E8E4DD';
-const BG = '#F5F3EF';
-const DARK = '#1A1816';
+const BORDER = 'var(--color-stone-200)';
+const BG = 'var(--color-stone-100)';
+const DARK = 'var(--color-stone-900)';
 
 // ---------------------------------------------------------------------------
 // Helpers

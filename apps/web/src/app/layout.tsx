@@ -57,6 +57,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
 
         {/* Theme colour for browser chrome and mobile status bar */}
+        {/* Token: surface-page */}
         <meta name="theme-color" content="#FAFAF8" />
 
         {/* iOS PWA support */}

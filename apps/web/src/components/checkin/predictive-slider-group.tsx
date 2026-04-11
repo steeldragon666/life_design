@@ -11,10 +11,10 @@ import { Card } from '@life-design/ui';
 // Design tokens
 // ---------------------------------------------------------------------------
 
-const SAGE = '#5A7F5A';
+const SAGE = 'var(--color-sage-500)';
 const MUTED = '#7D756A';
-const BG = '#F5F3EF';
-const BORDER = '#E8E4DD';
+const BG = 'var(--color-stone-100)';
+const BORDER = 'var(--color-stone-200)';
 
 // Minimum delta from predicted score to count as a "real" user adjustment
 const DELTA_THRESHOLD = 1;
@@ -100,7 +100,7 @@ export default function PredictiveSliderGroup({
     <div className="space-y-6">
       <Card>
         <div className="mb-4">
-          <h2 className="font-serif text-xl" style={{ color: '#1A1816' }}>
+          <h2 className="font-serif text-xl" style={{ color: 'var(--color-stone-900)' }}>
             AI Predictions
           </h2>
           <p className="text-xs mt-1" style={{ color: MUTED }}>

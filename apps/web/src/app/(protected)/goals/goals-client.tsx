@@ -81,11 +81,11 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
       ?.map(ci => ci.dimensionScores[dimension as Dimension])
       .filter((s): s is number => s !== undefined)
       .reverse() ?? []; // reverse to chronological order
-    if (scores.length < 3) return { slope: 0, label: 'New', color: '#A8A198' };
+    if (scores.length < 3) return { slope: 0, label: 'New', color: 'var(--color-stone-400)' };
     const slope = computeTrend(scores);
-    if (slope > 0.05) return { slope, label: 'Rising', color: '#5A7F5A' };
-    if (slope < -0.05) return { slope, label: 'Falling', color: '#D4864A' };
-    return { slope, label: 'Stable', color: '#A8A198' };
+    if (slope > 0.05) return { slope, label: 'Rising', color: 'var(--color-sage-500)' };
+    if (slope < -0.05) return { slope, label: 'Falling', color: 'var(--color-warm-400)' };
+    return { slope, label: 'Stable', color: 'var(--color-stone-400)' };
   }
 
   const filtered = useMemo(() => {

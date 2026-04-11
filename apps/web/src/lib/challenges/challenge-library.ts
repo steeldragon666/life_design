@@ -155,7 +155,7 @@ export const CHALLENGE_LIBRARY: Challenge[] = [
       name: 'Balance Seeker',
       icon: '\u2696\uFE0F',
       description: 'Completed the Balance Reset challenge',
-      color: '#5A7F5A',
+      color: 'var(--color-sage-500)',
     },
   },
   {
@@ -268,7 +268,7 @@ export const CHALLENGE_LIBRARY: Challenge[] = [
       name: 'Fitness Starter',
       icon: '\u{1F4AA}',
       description: 'Completed the Fitness Kickstart challenge',
-      color: '#739A73',
+      color: 'var(--color-sage-400)',
     },
   },
   {
@@ -307,7 +307,7 @@ export const CHALLENGE_LIBRARY: Challenge[] = [
       name: 'Mindful Explorer',
       icon: '\u{1F9D8}',
       description: 'Completed the Mindful Week challenge',
-      color: '#8B7BA8',
+      color: 'var(--color-dim-social)',
     },
   },
 ];

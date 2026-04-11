@@ -36,8 +36,8 @@ export default function DimensionCard({
             className="w-8 h-8 rounded text-sm font-medium transition-all"
             style={
               n === score
-                ? { backgroundColor: palette.accent, color: '#FFFFFF' }
-                : { backgroundColor: '#F5F3EF', color: '#5C554C' }
+                ? { backgroundColor: palette.accent, color: 'var(--color-text-inverse)' }
+                : { backgroundColor: 'var(--color-stone-100)', color: 'var(--color-stone-600)' }
             }
           >
             {n}

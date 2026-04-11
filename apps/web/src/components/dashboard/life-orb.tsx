@@ -98,7 +98,7 @@ function StarField({ count = 300 }: { count?: number }) {
     <points geometry={geometry}>
       {/* @ts-ignore */}
       <pointsMaterial
-        color="#ffffff"
+        color="#ffffff" // Token: text-inverse — R3F requires raw hex
         size={0.04}
         transparent
         opacity={0.6}
@@ -403,7 +403,7 @@ function ConnectionLines({ dims }: { dims: LifeOrbDimension[] }) {
           <bufferGeometry ref={(el) => { lineRefs.current[idx] = el; }} />
           {/* @ts-ignore */}
           <lineBasicMaterial
-            color="#ffffff"
+            color="#ffffff" // Token: text-inverse — R3F requires raw hex
             transparent
             opacity={pair.strength * 0.35}
             linewidth={1}

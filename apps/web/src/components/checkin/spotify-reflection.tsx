@@ -8,11 +8,11 @@ import { Card, Textarea } from '@life-design/ui';
 // Design tokens
 // ---------------------------------------------------------------------------
 
-const SAGE = '#5A7F5A';
+const SAGE = 'var(--color-sage-500)';
 const MUTED = '#7D756A';
-const BORDER = '#E8E4DD';
-const BG = '#F5F3EF';
-const DARK = '#1A1816';
+const BORDER = 'var(--color-stone-200)';
+const BG = 'var(--color-stone-100)';
+const DARK = 'var(--color-stone-900)';
 
 // ---------------------------------------------------------------------------
 // Mood options
