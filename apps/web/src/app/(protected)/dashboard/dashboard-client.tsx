@@ -23,8 +23,6 @@ import {
   ChevronUp,
   TrendingUp,
   Activity,
-  Trophy,
-  Route,
   BookOpen,
 } from 'lucide-react';
 import useDashboardData from '@/hooks/useDashboardData';
@@ -33,7 +31,6 @@ import type { StoredDigest } from '@/lib/digest/digest-generator';
 import { useNudges } from '@/providers/LifeDesignProvider';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { ScheduleWidget } from '@/components/schedule/ScheduleWidget';
 
 // ---------------------------------------------------------------------------
 // Dynamic recharts imports (SSR-safe)
@@ -289,12 +286,6 @@ export default function DashboardClient({
     } catch { return undefined; }
   }) as StoredDigest | undefined;
 
-  // Live query for unseen badge count
-  const unseenBadgeCount = useLiveQuery(async () => {
-    const all = await db.badges.toArray();
-    return all.filter(b => !b.context?.includes('seen')).length;
-  }) ?? 0;
-
   // Active nudge from scheduler
   const activeNudge = useLiveQuery(async () => {
     const nudge = await nudgeScheduler.getActiveNudge();
@@ -379,12 +370,6 @@ export default function DashboardClient({
               {getGreeting()}
               {firstName ? <>, <span className="text-sage-500">{firstName}</span></> : null}
             </h1>
-            {unseenBadgeCount > 0 && (
-              <Link href="/achievements" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warm-50 text-warm-500 text-xs font-medium">
-                <Trophy size={14} />
-                {unseenBadgeCount} new
-              </Link>
-            )}
           </div>
           <p className="text-sm text-stone-500 mt-1">{formatToday()} — Here&apos;s your life at a glance</p>
         </div>
@@ -598,22 +583,9 @@ export default function DashboardClient({
                 </div>
                 Journal Entry
               </Link>
-              <Link
-                href="/journey"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/70 hover:bg-white text-sm text-stone-700 transition-colors"
-              >
-                <div className="w-7 h-7 rounded-lg bg-stone-100 flex items-center justify-center">
-                  <Route size={14} className="text-stone-500" />
-                </div>
-                My Journey
-              </Link>
             </div>
           </div>
 
-          {/* Schedule Widget */}
-          <Card className="p-0 overflow-hidden">
-            <ScheduleWidget />
-          </Card>
         </div>
       </div>
 
