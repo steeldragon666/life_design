@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { getGoalById } from '@/lib/services/goal-service';
-import { getPathways } from '@/lib/services/pathway-service';
 import { ALL_DIMENSIONS, computeDimensionAverage } from '@life-design/core';
 import GoalDetailClient from './goal-detail-client';
 
@@ -19,10 +18,7 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
   if (!user) redirect('/login');
 
   const { goalId } = await params;
-  const [goalResult, pathwaysResult] = await Promise.all([
-    getGoalById(goalId),
-    getPathways(goalId),
-  ]);
+  const goalResult = await getGoalById(goalId);
 
   if (goalResult.error || !goalResult.data) notFound();
 
@@ -48,7 +44,7 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
   return (
     <GoalDetailClient
       goal={goalResult.data}
-      pathways={pathwaysResult.data ?? []}
+      pathways={[]}
       currentScores={currentScores}
     />
   );

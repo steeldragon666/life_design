@@ -3,10 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GoalProgress from '@/components/goals/goal-progress';
-import PathwayCard from '@/components/goals/pathway-card';
-import PathwayBuilder from '@/components/goals/pathway-builder';
-import TradeoffDashboard from '@/components/goals/tradeoff-dashboard';
-import ScenarioComparison from '@/components/goals/scenario-comparison';
 import { DIMENSION_LABELS, GOAL_HORIZON_LABELS, GoalStatus, type Dimension, type GoalHorizon } from '@life-design/core';
 import { Button, Badge, Select, Card } from '@life-design/ui';
 import { ArrowLeft } from 'lucide-react';
@@ -17,11 +13,6 @@ import {
   toggleMilestoneAction,
   logProgressAction,
 } from '../actions';
-import {
-  generatePathwayAction,
-  toggleStepAction,
-  deletePathwayAction,
-} from './pathway-actions';
 
 interface GoalDetailData {
   id: string;
@@ -178,49 +169,6 @@ export default function GoalDetailClient({ goal, pathways, currentScores = {} }:
           onLogProgress={goal.tracking_type === 'metric' ? handleLogProgress : undefined}
         />
       </Card>
-
-      {/* Pathways section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-stone-800">Pathways</h2>
-
-        {pathways.map((pw) => (
-          <PathwayCard
-            key={pw.id}
-            pathway={pw}
-            onToggleStep={(stepId) => toggleStepAction(stepId, goal.id)}
-            onDelete={(pathwayId) => {
-              if (confirm('Remove this pathway?')) {
-                deletePathwayAction(pathwayId, goal.id);
-              }
-            }}
-          />
-        ))}
-
-        <PathwayBuilder
-          goalId={goal.id}
-          onGenerate={generatePathwayAction}
-        />
-      </div>
-
-      {/* Trade-off dashboard */}
-      {pathways.length > 0 && pathways[0].dimension_impacts?.length > 0 && (
-        <Card className="p-4 space-y-6">
-          <TradeoffDashboard
-            currentScores={currentScores}
-            dimensionImpacts={pathways[0].dimension_impacts}
-            goalTitle={goal.title}
-          />
-
-          {pathways.length >= 2 && (
-            <ScenarioComparison
-              pathways={pathways.map((pw) => ({
-                title: pw.title,
-                dimensionImpacts: pw.dimension_impacts,
-              }))}
-            />
-          )}
-        </Card>
-      )}
 
       {/* Back link */}
       <button
