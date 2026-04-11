@@ -11,6 +11,15 @@ const preview: Preview = {
         { name: 'white', value: '#FFFFFF' },
       ],
     },
+    a11y: {
+      config: {
+        rules: [
+          { id: 'color-contrast', enabled: true },
+          { id: 'label', enabled: true },
+          { id: 'button-name', enabled: true },
+        ],
+      },
+    },
   },
 };
 
