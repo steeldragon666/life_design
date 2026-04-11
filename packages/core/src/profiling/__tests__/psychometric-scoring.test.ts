@@ -73,7 +73,7 @@ describe('PSYCHOMETRIC_ITEMS', () => {
     const prefixMap: Record<string, string> = {
       perma: 'perma', tipi: 'tipi', grit: 'grit', swls: 'swls', bpns: 'bpns',
       chronotype: 'chrono', sleep: 'sleep', stress: 'stress',
-      selfCompassion: 'sc', locusOfControl: 'loc',
+      selfCompassion: 'sc', locusOfControl: 'loc', phq9: 'phq9',
     };
     PSYCHOMETRIC_ITEMS.forEach((item) => {
       const prefix = prefixMap[item.instrument] ?? item.instrument;

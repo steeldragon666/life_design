@@ -27,6 +27,8 @@ describe('scorePHQ9', () => {
     expect(result.score).toBe(0);
     expect(result.severity).toBe('minimal');
     expect(result.criticalItem9).toBe(false);
+    expect(result.item9Answered).toBe(true);
+    expect(result.itemsAnswered).toBe(9);
   });
 
   it('scores 4 (upper bound of minimal) correctly', () => {
@@ -148,6 +150,8 @@ describe('scorePHQ9', () => {
     expect(result.score).toBe(0);
     expect(result.severity).toBe('minimal');
     expect(result.criticalItem9).toBe(false);
+    expect(result.item9Answered).toBe(false);
+    expect(result.itemsAnswered).toBe(0);
   });
 
   it('handles partial responses (only some items answered)', () => {
@@ -159,6 +163,8 @@ describe('scorePHQ9', () => {
     expect(result.score).toBe(5);
     expect(result.severity).toBe('mild');
     expect(result.criticalItem9).toBe(false);
+    expect(result.item9Answered).toBe(false);
+    expect(result.itemsAnswered).toBe(2);
   });
 
   it('treats missing item 9 as non-flagged', () => {
@@ -167,6 +173,56 @@ describe('scorePHQ9', () => {
     };
     const result = scorePHQ9(responses);
     expect(result.criticalItem9).toBe(false);
+    expect(result.item9Answered).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // item9Answered distinction (CRITICAL 2)
+  // -------------------------------------------------------------------------
+
+  it('distinguishes item9 answered as 0 from item9 missing', () => {
+    const answeredZero = scorePHQ9({ ...uniformResponses(0), phq9_9: 0 });
+    expect(answeredZero.item9Answered).toBe(true);
+    expect(answeredZero.criticalItem9).toBe(false);
+
+    const missing = scorePHQ9({ phq9_1: 0 });
+    expect(missing.item9Answered).toBe(false);
+    expect(missing.criticalItem9).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // Input clamping (CRITICAL 1)
+  // -------------------------------------------------------------------------
+
+  it('clamps values above 3 to 3', () => {
+    const responses: Record<string, number> = {
+      phq9_1: 5, phq9_2: 0, phq9_3: 0, phq9_4: 0,
+      phq9_5: 0, phq9_6: 0, phq9_7: 0, phq9_8: 0, phq9_9: 0,
+    };
+    const result = scorePHQ9(responses);
+    expect(result.score).toBe(3); // clamped from 5 to 3
+  });
+
+  it('clamps negative values to 0', () => {
+    const responses: Record<string, number> = {
+      phq9_1: -2, phq9_2: 0, phq9_3: 0, phq9_4: 0,
+      phq9_5: 0, phq9_6: 0, phq9_7: 0, phq9_8: 0, phq9_9: 0,
+    };
+    const result = scorePHQ9(responses);
+    expect(result.score).toBe(0); // clamped from -2 to 0
+  });
+
+  it('clamps all out-of-range values so max score is 27', () => {
+    const result = scorePHQ9(uniformResponses(10)); // all 10s → clamped to 3 each
+    expect(result.score).toBe(27);
+    expect(result.severity).toBe('severe');
+  });
+
+  it('clamps item 9 for criticalItem9 flag', () => {
+    const responses = { ...uniformResponses(0), phq9_9: 5 };
+    const result = scorePHQ9(responses);
+    expect(result.criticalItem9).toBe(true);
+    expect(result.score).toBe(3); // clamped
   });
 });
 

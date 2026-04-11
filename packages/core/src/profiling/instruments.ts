@@ -718,6 +718,8 @@ const LOCUS_OF_CONTROL_ITEMS: PsychometricItem[] = [
 // 9 items, 0-3 scale (0=Not at all, 3=Nearly every day)
 // ---------------------------------------------------------------------------
 
+// Exported separately (unlike other instrument arrays) because clinical instruments
+// need independent access for the screening UI (Task 10) and clinical pathway.
 export const PHQ9_ITEMS: PsychometricItem[] = [
   {
     id: 'phq9_1',

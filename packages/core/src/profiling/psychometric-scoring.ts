@@ -278,11 +278,20 @@ export function scoreLocusOfControl(responses: Record<string, number>): LocusOfC
 // ---------------------------------------------------------------------------
 
 export function scorePHQ9(responses: Record<string, number>): PHQ9Score {
-  const score = (responses['phq9_1'] ?? 0) + (responses['phq9_2'] ?? 0)
-    + (responses['phq9_3'] ?? 0) + (responses['phq9_4'] ?? 0)
-    + (responses['phq9_5'] ?? 0) + (responses['phq9_6'] ?? 0)
-    + (responses['phq9_7'] ?? 0) + (responses['phq9_8'] ?? 0)
-    + (responses['phq9_9'] ?? 0);
+  const clamp = (v: number) => Math.max(0, Math.min(3, v));
+
+  const itemKeys = [
+    'phq9_1', 'phq9_2', 'phq9_3', 'phq9_4', 'phq9_5',
+    'phq9_6', 'phq9_7', 'phq9_8', 'phq9_9',
+  ] as const;
+
+  let score = 0;
+  let itemsAnswered = 0;
+  for (const key of itemKeys) {
+    const raw = responses[key];
+    score += clamp(raw ?? 0);
+    if (raw !== undefined) itemsAnswered++;
+  }
 
   let severity: PHQ9Score['severity'];
   if (score <= 4) severity = 'minimal';
@@ -291,9 +300,10 @@ export function scorePHQ9(responses: Record<string, number>): PHQ9Score {
   else if (score <= 19) severity = 'moderately_severe';
   else severity = 'severe';
 
-  const criticalItem9 = (responses['phq9_9'] ?? 0) > 0;
+  const criticalItem9 = clamp(responses['phq9_9'] ?? 0) > 0;
+  const item9Answered = responses['phq9_9'] !== undefined;
 
-  return { score, severity, criticalItem9 };
+  return { score, severity, criticalItem9, item9Answered, itemsAnswered };
 }
 
 // ---------------------------------------------------------------------------
@@ -317,6 +327,11 @@ export function computePsychometricProfile(responses: Record<string, number>): P
 
 /**
  * Computes the extended psychometric profile including baseline instruments.
+ *
+ * NOTE: Clinical instruments (PHQ-9, GAD-7) are intentionally excluded from
+ * the psychometric profile. They follow a separate clinical screening pathway
+ * with their own storage (clinical_screenings table), consent flow, and
+ * scoring — see Task 10 (onboarding baseline) for the integration point.
  *
  * TODO: Wire into onboarding completion flow (Phase 2) — currently exported
  * but not called from any code path. The /api/onboarding/complete route and

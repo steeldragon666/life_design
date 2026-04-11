@@ -92,6 +92,8 @@ export interface PHQ9Score {
   score: number;
   severity: 'minimal' | 'mild' | 'moderate' | 'moderately_severe' | 'severe';
   criticalItem9: boolean; // CRITICAL: Item 9 = suicidal ideation, any non-zero value is flagged
+  item9Answered: boolean; // Distinguishes "answered 0" from "not answered" for clinical safety
+  itemsAnswered: number;  // Count of items actually present (0-9); incomplete screenings should be flagged
 }
 
 /** Extended psychometric profile including baseline instruments */
