@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { Home, Target, Sun, MessageCircle, FlaskConical, Flame, Trophy, Settings, MoreVertical, Leaf, Calendar, BookOpen, Route, type LucideIcon } from 'lucide-react';
+import { Home, Target, Sun, MessageCircle, Sparkles, Settings, MoreVertical, Leaf, BookOpen, type LucideIcon } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Nav config
@@ -18,15 +18,11 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/goals', label: 'Goals', icon: Target },
   { href: '/checkin', label: 'Check-in', icon: Sun },
   { href: '/journal', label: 'Journal', icon: BookOpen },
-  { href: '/journey', label: 'My Journey', icon: Route },
+  { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/insights', label: 'Insights', icon: Sparkles },
   { href: '/mentor', label: 'Mentor', icon: MessageCircle },
-  { href: '/schedule', label: 'Schedule', icon: Calendar },
-  { href: '/simulator', label: 'Simulate', icon: FlaskConical },
-  { href: '/challenges', label: 'Challenges', icon: Flame },
-  { href: '/achievements', label: 'Badges', icon: Trophy },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -44,8 +40,8 @@ export default function ProtectedLayout({
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-  const mobileMainItems = navItems.slice(0, 5); // Home, Goals, Check-in, Journal, My Journey
-  const mobileMoreItems = navItems.slice(5); // Mentor, Schedule, Simulate, Challenges, Badges, Settings
+  const mobileMainItems = navItems.slice(0, 5); // Home, Check-in, Journal, Goals, Insights
+  const mobileMoreItems = navItems.slice(5); // Mentor, Settings
   const isMoreActive = mobileMoreItems.some(i => isActive(i.href));
   const [moreOpen, setMoreOpen] = useState(false);
 
