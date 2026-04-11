@@ -17,6 +17,9 @@ export { EMBEDDING_DIM, DIMENSION_LABELS, MODEL_REGISTRY } from './models';
 export type { GoalClassification, JournalClassification, MoodEstimate } from './classify';
 export type { ScoredCheckIn, Cluster } from './similarity';
 export type { VoiceSession, VoiceCheckInResult } from './voice-processor';
+export type { LocalJITAIInput } from './jitai-inference';
+export { runLocalJITAI, getTimeOfDay } from './jitai-inference';
+export { PersonalModel } from './personal-model';
 
 export interface AILocalProgress {
   task: string;
