@@ -1,0 +1,130 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+interface SleepSample {
+  startDate: string;
+  endDate: string;
+  value: string; // 'InBed', 'Asleep', 'Deep', 'REM', 'Core', 'Awake'
+}
+
+interface SleepMetrics {
+  totalSleepMinutes: number;
+  deepSleepMinutes: number;
+  remSleepMinutes: number;
+  lightSleepMinutes: number;
+  awakeMinutes: number;
+  sleepLatencyMinutes: number;
+  sleepEfficiency: number;
+  wakeAfterSleepOnset: number;
+  sleepQualityScore: number;
+}
+
+function computeSleepMetrics(samples: SleepSample[]): SleepMetrics {
+  let deep = 0, rem = 0, light = 0, awake = 0, inBed = 0;
+
+  for (const s of samples) {
+    const dur = (new Date(s.endDate).getTime() - new Date(s.startDate).getTime()) / 60000;
+    switch (s.value) {
+      case 'Deep': deep += dur; break;
+      case 'REM': rem += dur; break;
+      case 'Core':
+      case 'Asleep': light += dur; break;
+      case 'Awake': awake += dur; break;
+      case 'InBed': inBed += dur; break;
+    }
+  }
+
+  const totalSleep = deep + rem + light;
+  const totalInBed = inBed > 0 ? inBed : totalSleep + awake;
+  const efficiency = totalInBed > 0 ? (totalSleep / totalInBed) * 100 : 0;
+
+  // Sleep latency = time in bed before first sleep (simplified)
+  const latency = Math.max(0, totalInBed - totalSleep - awake);
+
+  // Quality score (1-5): weighted combination
+  // Duration: 8h (480min) = perfect score
+  // Efficiency: 85%+ = perfect score
+  // Deep sleep: 20% of total = good
+  // REM sleep: 25% of total = good
+  const durationScore = Math.min(totalSleep / 480, 1);
+  const efficiencyScore = Math.min(efficiency / 85, 1);
+  const deepScore = totalSleep > 0 ? Math.min(deep / (totalSleep * 0.2), 1) : 0;
+  const remScore = totalSleep > 0 ? Math.min(rem / (totalSleep * 0.25), 1) : 0;
+
+  const quality = 1 + 4 * (
+    durationScore * 0.3 +
+    efficiencyScore * 0.3 +
+    deepScore * 0.2 +
+    remScore * 0.2
+  );
+
+  return {
+    totalSleepMinutes: Math.round(totalSleep),
+    deepSleepMinutes: Math.round(deep),
+    remSleepMinutes: Math.round(rem),
+    lightSleepMinutes: Math.round(light),
+    awakeMinutes: Math.round(awake),
+    sleepLatencyMinutes: Math.round(latency),
+    sleepEfficiency: Math.round(efficiency * 100) / 100,
+    wakeAfterSleepOnset: Math.round(awake),
+    sleepQualityScore: Math.round(quality * 10) / 10,
+  };
+}
+
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
+    const { user_id, date, samples } = await req.json();
+
+    if (!user_id || !date || !Array.isArray(samples)) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const metrics = computeSleepMetrics(samples);
+
+    const { error } = await supabase.from('sleep_analysis').upsert({
+      user_id,
+      date,
+      total_sleep_minutes: metrics.totalSleepMinutes,
+      deep_sleep_minutes: metrics.deepSleepMinutes,
+      rem_sleep_minutes: metrics.remSleepMinutes,
+      light_sleep_minutes: metrics.lightSleepMinutes,
+      awake_minutes: metrics.awakeMinutes,
+      sleep_latency_minutes: metrics.sleepLatencyMinutes,
+      sleep_efficiency: metrics.sleepEfficiency,
+      wake_after_sleep_onset: metrics.wakeAfterSleepOnset,
+      sleep_quality_score: metrics.sleepQualityScore,
+      raw_data: { samples },
+    }, { onConflict: 'user_id,date' });
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, metrics }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+});
