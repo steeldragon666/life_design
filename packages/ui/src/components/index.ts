@@ -39,3 +39,7 @@ export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
+export { StatCard, statCardVariants } from './StatCard';
+export type { StatCardProps } from './StatCard';
+export { DimensionCard } from './DimensionCard';
+export type { DimensionCardProps, DimensionName } from './DimensionCard';

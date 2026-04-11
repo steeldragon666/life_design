@@ -1,3 +1,4 @@
+/** @deprecated Use StatCard from '../components/StatCard' instead */
 'use client';
 
 interface StatCardProps {
