@@ -10,7 +10,7 @@
 | Provider | File | Status | Auth Method | Data Returns | Issues Found |
 |---|---|---|---|---|---|
 | Spotify | `apps/web/src/lib/integrations/spotify.ts` | Functional | OAuth2 (client credentials + refresh token) | Recent tracks, top genres, listening hours, AI context string | Tokens stored as plaintext in legacy `integrations` table (TODO in code to migrate to AES-256-GCM). `currentlyPlaying` always returns `null` (needs `/me/player` endpoint). No rate limit handling. |
-| Apple Health | `apps/web/src/lib/integrations/apple-health.ts` | Partial — data reader only | None (push model via mobile bridge) | Sleep hours/quality, steps, active minutes, heart rate avg, HRV | No ingest endpoint exists in this file — only reads from `health_metrics` table. Assumes an iOS app pushes data, but no iOS app exists in the repo. No data validation on inbound records. |
+| Apple Health | `packages/core/src/connectors/apple-health.ts` (831 lines — primary), `apps/web/src/lib/integrations/apple-health.ts` (data reader) | Functional — core connector production-ready; web layer is read-only | HealthKit native permissions via expo-health (iOS); XML import for web | Resting HR, HRV (SDNN), sleep hours + stage-level quality, steps, active energy, respiratory rate, SpO2; normalised features with dimension mapping; Supabase upsert | Core connector has full HealthKit sync (`syncHealthKitData`), background delivery with 1-hour debounce (`setupBackgroundSync`), permission negotiation (`requestHealthKitPermissions`), XML export parser (`parseAppleHealthExport`), daily aggregation pipeline, and feature extraction to `feature_store`. Web layer only reads from `health_metrics` table — the two files target different tables and are not yet wired together. |
 | Open Banking | `apps/web/src/lib/integrations/banking.ts` | Partial — placeholder URLs | OAuth2 (client credentials + refresh token) | Spending summary (daily/weekly/monthly), top categories, unusual spending flag | Token URL defaults to `https://ob.example.com/token` — not a real endpoint. API URL also defaults to example domain. Requires AISP registration with a real UK Open Banking provider. Tokens stored as plaintext (same TODO as Spotify). |
 | Weather | `apps/web/src/lib/integrations/weather.ts` | Functional | API key (`OPENWEATHER_API_KEY`) | Current conditions (temp, humidity, wind, rain/cold/hot flags), 3-day forecast | Hardcoded to `GB` country code. No rate limit handling. Uses Next.js `revalidate` caching (30 min current, 60 min forecast). No error differentiation (invalid key vs network error vs bad postcode). |
 | Strava | `packages/core/src/connectors/strava.ts` | Functional | OAuth2 (code exchange + refresh token) | Activities with type, distance, time, heart rate, suffer score; normalised features via extraction pipeline; full sync with Supabase logging | Most robust connector. Proactive token refresh (5-min buffer). Exponential backoff retry for 429/5xx (3 attempts). Pagination support. Full sync pipeline with `connector_sync_log`. |
@@ -36,11 +36,18 @@
 - **Security concern:** Tokens stored as plaintext in `integrations` table despite column name `access_token_encrypted`.
 - Missing: `currentlyPlaying` field is hardcoded to `null`.
 
-### Apple Health — PARTIAL (data reader only)
-- Reads from a `health_metrics` Supabase table but has no mechanism to populate it.
-- Designed as a push model (iOS app sends data to API), but no iOS app or ingest API route exists.
-- Sleep quality derivation logic is duplicated between `getLatestHealthMetrics` and `getHealthTrend`.
-- Effectively non-functional until a data source is established.
+### Apple Health — FUNCTIONAL (core connector production-ready; web layer partial)
+- **Core connector** (`packages/core/src/connectors/apple-health.ts`, 831 lines) provides a complete HealthKit integration:
+  - `requestHealthKitPermissions` — iOS native permission negotiation via expo-health (read-only; never writes).
+  - `syncHealthKitData` — Queries HealthKit for 7 data types (resting HR, HRV, sleep, steps, active energy, respiratory rate, SpO2), aggregates to daily values, and runs feature extraction. Returns `HealthKitSyncResult` with normalised features.
+  - `setupBackgroundSync` — Registers HealthKit background delivery observers with a 1-hour debounce per user. Auto-syncs the last 24 hours and upserts features to `feature_store` via Supabase.
+  - `parseAppleHealthExport` — Dependency-free regex-based XML parser for Apple Health export files. Handles sleep analysis category values correctly.
+  - `extractAppleHealthFeatures` — Maps raw biometric data to `NormalisedFeature` objects across Health, Growth, and Fitness dimensions.
+  - `storeFeatures` — Upserts normalised features into the `feature_store` table with dedup on `(user_id, feature, recorded_at)`.
+  - Platform-guarded: dynamic import of expo-health with clear error messages on unsupported platforms.
+- **Web layer** (`apps/web/src/lib/integrations/apple-health.ts`) is a separate, simpler data reader that queries a `health_metrics` table (not `feature_store`). It is not wired to the core connector.
+- Sleep quality derivation logic is duplicated between `getLatestHealthMetrics` and `getHealthTrend` in the web layer.
+- **Gap:** The web layer and core connector target different Supabase tables and are not integrated. The web dashboard cannot yet surface data ingested by the core connector.
 
 ### Open Banking — PARTIAL (placeholder URLs)
 - Full implementation of transaction fetching, spending aggregation, and category analysis.
@@ -73,7 +80,7 @@
 ## Repair Needed
 
 ### Critical (blocks Phase 2)
-- [ ] **Apple Health: Build data ingest pathway** — Either create an API route for mobile push, or implement a manual CSV import, or integrate with Apple HealthKit via a React Native bridge. Without this, health correlation features cannot work. **Estimate: 3-5 days**
+- [ ] **Apple Health: Wire web layer to core connector** — A full HealthKit integration already exists in `packages/core/src/connectors/apple-health.ts` (sync, background delivery, XML import, feature extraction, Supabase upsert to `feature_store`). The web dashboard layer (`apps/web/src/lib/integrations/apple-health.ts`) reads from a separate `health_metrics` table and is unaware of the core connector. Remaining work: either update the web layer to read from `feature_store`, or unify the two tables, and surface the core connector's richer data (SpO2, respiratory rate, sleep stages) in the dashboard. **Estimate: 1-2 days**
 - [ ] **Open Banking: Register with a real AISP provider** — Replace `ob.example.com` placeholder URLs with a real provider (TrueLayer, Yapily, or Plaid). Requires business registration and FCA compliance review. **Estimate: 5-10 days** (includes provider onboarding)
 
 ### High Priority (security / reliability)
@@ -96,10 +103,10 @@
 
 | Priority | Items | Estimated Days |
 |---|---|---|
-| Critical | 2 | 8-15 days |
+| Critical | 2 | 6-12 days |
 | High | 3 | 3-4 days |
 | Medium | 4 | 2.25-3.25 days |
 | Low | 4 | 8-12 days |
-| **Total** | **13** | **21.25-34.25 days** |
+| **Total** | **13** | **19.25-31.25 days** |
 
 **Recommendation:** Address Critical and High priority items before starting Phase 2 analysis work. Medium items can be tackled in parallel. Low priority items (new connectors) should be scheduled as their respective Phase 2 features approach.
