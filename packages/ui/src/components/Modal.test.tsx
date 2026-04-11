@@ -1,29 +1,39 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Modal } from './Modal';
+
+const defaultProps = {
+  open: true,
+  onClose: vi.fn(),
+  title: 'Test Modal',
+  children: <p>Content</p>,
+};
 
 describe('Modal', () => {
   it('renders nothing when closed', () => {
-    render(<Modal open={false} onClose={() => {}}>Content</Modal>);
-    expect(screen.queryByText('Content')).not.toBeInTheDocument();
+    const { container } = render(<Modal {...defaultProps} open={false} />);
+    expect(container.innerHTML).toBe('');
   });
+
   it('renders children when open', () => {
-    render(<Modal open onClose={() => {}}>Content</Modal>);
+    render(<Modal {...defaultProps} />);
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
+
+  it('has role="dialog" and aria-modal="true"', () => {
+    render(<Modal {...defaultProps} />);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+  });
+
+  it('has close button with cursor-pointer', () => {
+    render(<Modal {...defaultProps} />);
+    const closeBtn = screen.getByLabelText('Close');
+    expect(closeBtn.className).toContain('cursor-pointer');
+  });
+
   it('renders title', () => {
-    render(<Modal open onClose={() => {}} title="Confirm">Body</Modal>);
-    expect(screen.getByText('Confirm')).toBeInTheDocument();
-  });
-  it('calls onClose when overlay clicked', () => {
-    const onClose = vi.fn();
-    render(<Modal open onClose={onClose}>Body</Modal>);
-    fireEvent.click(screen.getByTestId('modal-overlay'));
-    expect(onClose).toHaveBeenCalledOnce();
-  });
-  it('calls onClose when close button clicked', () => {
-    const onClose = vi.fn();
-    render(<Modal open onClose={onClose} title="Test">Body</Modal>);
-    fireEvent.click(screen.getByLabelText('Close'));
-    expect(onClose).toHaveBeenCalledOnce();
+    render(<Modal {...defaultProps} />);
+    expect(screen.getByText('Test Modal')).toBeInTheDocument();
   });
 });

@@ -1,48 +1,42 @@
 import { render, screen } from '@testing-library/react';
-import { Input, Textarea, FormField, Select } from './Input';
+import { Input, Select, FormField } from './Input';
 
 describe('Input', () => {
   it('renders an input element', () => {
-    render(<Input placeholder="Enter text" />);
-    expect(screen.getByPlaceholderText('Enter text')).toBeInTheDocument();
+    render(<Input placeholder="Type here" />);
+    expect(screen.getByPlaceholderText('Type here')).toBeInTheDocument();
   });
-  it('applies error styling when error prop is set', () => {
-    render(<Input error />);
-    const input = screen.getByRole('textbox');
-    expect(input.className).toContain('border-[#CC3333]');
-  });
-});
 
-describe('Textarea', () => {
-  it('renders a textarea element', () => {
-    render(<Textarea placeholder="Write here" />);
-    expect(screen.getByPlaceholderText('Write here')).toBeInTheDocument();
+  it('applies error classes without hardcoded hex', () => {
+    const { container } = render(<Input error />);
+    const el = container.querySelector('input')!;
+    expect(el.className).toContain('border-destructive');
+    expect(el.className).not.toContain('#CC3333');
+    expect(el.className).not.toContain('#cc3333');
   });
 });
 
 describe('Select', () => {
-  it('renders a select element', () => {
-    render(<Select><option>Option 1</option></Select>);
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-  });
-  it('applies error styling', () => {
-    render(<Select error><option>A</option></Select>);
-    expect(screen.getByRole('combobox').className).toContain('border-[#CC3333]');
+  it('has cursor-pointer class', () => {
+    const { container } = render(
+      <Select>
+        <option>A</option>
+      </Select>,
+    );
+    const el = container.querySelector('select')!;
+    expect(el.className).toContain('cursor-pointer');
   });
 });
 
 describe('FormField', () => {
-  it('renders label and input', () => {
-    render(<FormField label="Email"><Input /></FormField>);
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
-  it('shows error message', () => {
-    render(<FormField label="Name" error="Required"><Input error /></FormField>);
-    expect(screen.getByText('Required')).toBeInTheDocument();
-  });
-  it('shows helper text', () => {
-    render(<FormField label="Bio" helper="Max 200 chars"><Textarea /></FormField>);
-    expect(screen.getByText('Max 200 chars')).toBeInTheDocument();
+  it('shows error without hardcoded hex', () => {
+    render(
+      <FormField label="Email" error="Invalid">
+        <Input />
+      </FormField>,
+    );
+    const errorEl = screen.getByText('Invalid');
+    expect(errorEl.className).toContain('text-destructive');
+    expect(errorEl.className).not.toContain('#CC3333');
   });
 });

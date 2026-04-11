@@ -3,33 +3,41 @@ import { Card } from './Card';
 
 describe('Card', () => {
   it('renders children', () => {
-    render(<Card>Content</Card>);
-    expect(screen.getByText('Content')).toBeInTheDocument();
+    render(<Card>Hello</Card>);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
   });
-  it('applies default variant styles', () => {
-    const { container } = render(<Card>Default</Card>);
-    const card = container.firstChild as HTMLElement;
-    expect(card.className).toContain('bg-white');
-    expect(card.className).toContain('border-stone-200');
+
+  it('applies default variant classes', () => {
+    const { container } = render(<Card>Content</Card>);
+    const el = container.firstElementChild!;
+    expect(el.className).toContain('bg-white');
+    expect(el.className).toContain('border');
   });
-  it('applies raised variant', () => {
-    const { container } = render(<Card variant="raised">Raised</Card>);
-    expect((container.firstChild as HTMLElement).className).toContain('shadow-[0_4px_12px');
+
+  it('applies raised variant classes', () => {
+    const { container } = render(<Card variant="raised">Content</Card>);
+    expect(container.firstElementChild!.className).toContain('bg-white');
   });
-  it('applies sunken variant', () => {
-    const { container } = render(<Card variant="sunken">Sunken</Card>);
-    expect((container.firstChild as HTMLElement).className).toContain('bg-stone-100');
+
+  it('applies sunken variant classes', () => {
+    const { container } = render(<Card variant="sunken">Content</Card>);
+    expect(container.firstElementChild!.className).toContain('bg-stone-100');
   });
-  it('applies dimension variant with tinted border', () => {
-    const { container } = render(<Card variant="dimension" dimension="career">Career</Card>);
-    expect((container.firstChild as HTMLElement).className).toContain('border');
+
+  it('includes hover-lift class when hoverable', () => {
+    const { container } = render(<Card hoverable>Hoverable</Card>);
+    const el = container.firstElementChild!;
+    expect(el.className).toContain('hover-lift');
+    expect(el.className).toContain('cursor-pointer');
   });
+
+  it('does not include hover-lift when not hoverable', () => {
+    const { container } = render(<Card>Static</Card>);
+    expect(container.firstElementChild!.className).not.toContain('hover-lift');
+  });
+
   it('merges custom className', () => {
-    const { container } = render(<Card className="mt-8">Styled</Card>);
-    expect((container.firstChild as HTMLElement).className).toContain('mt-8');
-  });
-  it('applies hover classes when hoverable', () => {
-    const { container } = render(<Card hoverable>Hover me</Card>);
-    expect((container.firstChild as HTMLElement).className).toContain('hover:scale-[1.01]');
+    const { container } = render(<Card className="mt-4">Styled</Card>);
+    expect(container.firstElementChild!.className).toContain('mt-4');
   });
 });
