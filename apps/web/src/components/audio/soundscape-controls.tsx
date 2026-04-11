@@ -51,6 +51,7 @@ export default function SoundscapeControls() {
           value={soundscape.volume}
           onChange={(e) => setSoundscape({ volume: Number(e.target.value) })}
           className="w-full"
+          aria-label="Soundscape volume"
         />
       </div>
 

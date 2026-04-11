@@ -59,7 +59,7 @@ export default function MentorIntro({ onContinue }: MentorIntroProps) {
                   {mentor.name[0]}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-stone-900">{mentor.name}</h3>
+                  <h2 className="font-semibold text-stone-900">{mentor.name}</h2>
                   <p className="text-xs text-stone-400">{mentor.archetype}</p>
                 </div>
               </div>

@@ -60,6 +60,7 @@ export default function PathwayBuilder({ goalId, onGenerate }: PathwayBuilderPro
         placeholder="e.g. I plan to study 30 minutes each morning, take a weekly conversation class, and find a language exchange partner..."
         className="w-full rounded-lg border p-3 text-sm"
         rows={4}
+        aria-label="Pathway plan description"
       />
 
       <button

@@ -295,6 +295,7 @@ export default function SimulatorPage() {
                         value={adj}
                         onChange={e => handleSliderChange(dim, Number(e.target.value))}
                         className="w-full h-1.5 bg-stone-200 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sage-500 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer"
+                        aria-label={`${dim} adjustment`}
                       />
                       {/* Center tick */}
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-3 bg-stone-300 rounded-full pointer-events-none" />

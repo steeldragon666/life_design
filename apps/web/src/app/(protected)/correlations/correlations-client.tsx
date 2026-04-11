@@ -243,6 +243,7 @@ function FilterBar({ filters, availableDimensions, onChange }: FilterBarProps) {
                 onChange({ ...filters, minConfidence: parseInt(e.target.value) / 100 })
               }
               className="w-full h-1.5 rounded-full appearance-none bg-white/10 accent-primary-500 cursor-pointer"
+              aria-label="Minimum confidence threshold"
             />
           </div>
 

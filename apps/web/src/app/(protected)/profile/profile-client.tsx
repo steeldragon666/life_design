@@ -65,6 +65,7 @@ function TagInput({
           onKeyDown={handleKeyDown}
           placeholder={values.length === 0 ? placeholder : ''}
           className="flex-1 min-w-[120px] border-none outline-none text-sm text-stone-800"
+          aria-label={label}
         />
       </div>
       <p className="text-xs text-stone-500">Press Enter or comma to add</p>

@@ -165,6 +165,7 @@ Respond in two sections:
             onChange={(e) => setUserInput(e.target.value)}
             placeholder="Speak or type your goal intention..."
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-stone-500"
+            aria-label="Goal intention"
           />
           <button
             onClick={processInput}

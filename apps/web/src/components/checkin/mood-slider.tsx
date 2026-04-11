@@ -28,6 +28,7 @@ export default function MoodSlider({ value, onChange }: MoodSliderProps) {
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-sage-500"
+        aria-label="Mood score"
       />
     </div>
   );

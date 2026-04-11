@@ -485,6 +485,7 @@ export default function JournalClient() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-stone-200 bg-white text-stone-700 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-sage-200 focus:border-sage-300 transition-all"
+            aria-label="Search journal entries"
           />
           {search && (
             <button

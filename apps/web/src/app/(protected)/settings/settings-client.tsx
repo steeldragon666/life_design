@@ -156,6 +156,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
                 nudgeScheduler.updateSchedule({ [slot]: { hour: h, minute: m } });
               }}
               className="text-sm font-mono text-sage-500 bg-stone-100 rounded-lg px-3 py-1.5 border border-stone-200"
+              aria-label={`${slot} nudge time`}
             />
           </div>
         ))}

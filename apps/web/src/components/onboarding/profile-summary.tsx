@@ -54,7 +54,7 @@ export default function ProfileSummary({
         <div className="bg-white rounded-2xl border border-stone-200 p-6 space-y-5 mb-6">
           {SUMMARY_LABELS.map(({ key, label, icon }) => (
             <div key={key}>
-              <h3 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
+              <h2 className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">
                 {icon} {label}
               </h3>
               <p className="text-sm text-stone-900">{summary[key]}</p>
