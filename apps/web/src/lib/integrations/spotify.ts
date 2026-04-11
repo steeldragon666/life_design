@@ -13,6 +13,12 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  type SpotifyAudioFeatures,
+  type MoodClassification,
+  classifyMoodFromAudioFeatures,
+  aggregateTrackMoods,
+} from '@life-design/core';
 
 export interface SpotifyListeningData {
   recentTracks: Array<{
@@ -124,6 +130,65 @@ export async function getRecentListening(userId: string): Promise<SpotifyListeni
       currentlyPlaying: null, // Would need /me/player endpoint
       listeningHoursToday,
     };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch audio features for track IDs and classify mood.
+ */
+export async function getRecentMoodClassification(userId: string): Promise<{
+  mood: MoodClassification;
+  trackCount: number;
+} | null> {
+  const token = await getAccessToken(userId);
+  if (!token) return null;
+
+  try {
+    // Get recently played tracks
+    const recentRes = await fetch(
+      'https://api.spotify.com/v1/me/player/recently-played?limit=10',
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!recentRes.ok) return null;
+
+    const recentData = await recentRes.json();
+    const items = recentData.items ?? [];
+    if (items.length === 0) return null;
+
+    // Extract track IDs
+    const trackIds = items
+      .map((item: Record<string, unknown>) => (item.track as Record<string, string>)?.id)
+      .filter(Boolean) as string[];
+
+    if (trackIds.length === 0) return null;
+
+    // Fetch audio features for all tracks
+    const featuresRes = await fetch(
+      `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!featuresRes.ok) return null;
+
+    const featuresData = await featuresRes.json();
+    const audioFeatures: SpotifyAudioFeatures[] = (featuresData.audio_features ?? [])
+      .filter(Boolean)
+      .map((f: Record<string, number>) => ({
+        valence: f.valence ?? 0,
+        energy: f.energy ?? 0,
+        danceability: f.danceability ?? 0,
+        tempo: f.tempo ?? 0,
+        acousticness: f.acousticness ?? 0,
+        instrumentalness: f.instrumentalness ?? 0,
+      }));
+
+    if (audioFeatures.length === 0) return null;
+
+    const mood = aggregateTrackMoods(audioFeatures);
+    if (!mood) return null;
+
+    return { mood, trackCount: audioFeatures.length };
   } catch {
     return null;
   }

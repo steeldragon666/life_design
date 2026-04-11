@@ -6,7 +6,14 @@
  * - Warn about bad weather for outdoor calendar events
  * - Suggest indoor alternatives (local movie screenings, etc.)
  * - Track weather impact on mood patterns
+ * - Extract mood-relevant weather features (SAD risk, mood impact)
  */
+
+import {
+  extractWeatherFeatures,
+  type WeatherData as CoreWeatherData,
+  type WeatherFeatures,
+} from '@life-design/core/integrations';
 
 export interface WeatherData {
   temperature: number;
@@ -95,6 +102,44 @@ export async function getForecast(postcode: string, days: number = 3): Promise<W
     return [];
   }
 }
+
+/**
+ * Convert API weather data to core WeatherData for feature extraction.
+ * Estimates sunlight hours from cloud cover (simplified).
+ */
+function toCoreWeatherData(data: WeatherData, apiData?: { clouds?: number; pressure?: number; uvi?: number; rain?: number }): CoreWeatherData {
+  const cloudCover = apiData?.clouds ?? 50;
+  // Estimate sunlight hours: max 14h reduced by cloud cover
+  const sunlightHours = Math.round((1 - cloudCover / 100) * 14 * 10) / 10;
+  return {
+    temperature: data.temperature,
+    humidity: data.humidity,
+    cloudCover,
+    sunlightHours,
+    barometricPressure: apiData?.pressure ?? 1013,
+    uvIndex: apiData?.uvi ?? 5,
+    precipitationMm: apiData?.rain ?? 0,
+    windSpeedKmh: data.windSpeed * 3.6, // m/s to km/h
+  };
+}
+
+/**
+ * Extract mood-relevant weather features from current conditions.
+ * Returns features useful for JITAI triggers and mood correlation.
+ */
+export function getWeatherFeatures(
+  currentData: WeatherData,
+  apiExtras?: { clouds?: number; pressure?: number; uvi?: number; rain?: number },
+  previousData?: { weatherData: WeatherData; apiExtras?: { clouds?: number; pressure?: number; uvi?: number; rain?: number } },
+): WeatherFeatures {
+  const current = toCoreWeatherData(currentData, apiExtras);
+  const previous = previousData
+    ? toCoreWeatherData(previousData.weatherData, previousData.apiExtras)
+    : undefined;
+  return extractWeatherFeatures(current, previous);
+}
+
+export type { WeatherFeatures };
 
 /**
  * Build weather context string for AI mentor system prompt.

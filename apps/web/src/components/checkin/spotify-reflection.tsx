@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { db } from '@/lib/db';
 import { Card, Textarea } from '@life-design/ui';
+import { classifyMoodFromAudioFeatures } from '@life-design/core';
 
 // ---------------------------------------------------------------------------
 // Design tokens
@@ -62,6 +63,18 @@ export default function SpotifyReflection({
   const [saving, setSaving] = useState(false);
 
   const { artistName, trackNames, listeningMinutes, audioValence, audioEnergy } = spotifyData;
+
+  const inferredMood = useMemo(() => {
+    if (audioValence == null || audioEnergy == null) return null;
+    return classifyMoodFromAudioFeatures({
+      valence: audioValence,
+      energy: audioEnergy,
+      danceability: 0,
+      tempo: 0,
+      acousticness: 0,
+      instrumentalness: 0,
+    });
+  }, [audioValence, audioEnergy]);
 
   async function handleComplete() {
     if (!selectedMood || saving) return;
@@ -135,6 +148,26 @@ export default function SpotifyReflection({
             )}
           </div>
         </div>
+
+        {/* Inferred mood from audio features */}
+        {inferredMood && (
+          <div
+            className="rounded-xl p-3 mb-5"
+            style={{ backgroundColor: BG, border: `1px solid ${BORDER}` }}
+          >
+            <p className="text-xs font-medium mb-1" style={{ color: MUTED }}>
+              AI-detected mood
+            </p>
+            <p className="text-sm font-medium capitalize" style={{ color: DARK }}>
+              {inferredMood.primaryMood}
+            </p>
+            {inferredMood.confidence >= 0.3 && (
+              <p className="text-xs mt-1" style={{ color: MUTED }}>
+                {Math.round(inferredMood.confidence * 100)}% confidence
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Reflective question */}
         <div className="mb-4">
