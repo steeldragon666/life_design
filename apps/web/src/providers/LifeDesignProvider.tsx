@@ -13,8 +13,6 @@ import { db } from '@/lib/db';
 import type { LifeDesignDB } from '@/lib/db/schema';
 import { AnalysisPipeline } from '@/lib/analysis/analysis-pipeline';
 import { NudgeScheduler } from '@/lib/nudge/nudge-scheduler';
-import { ChallengeEngine } from '@/lib/challenges/challenge-engine';
-import { BadgeSystem } from '@/lib/achievements/badge-system';
 
 // Type-only import to avoid pulling Transformers.js into the client bundle.
 // AILocalClient is loaded dynamically at runtime.
@@ -28,8 +26,6 @@ interface LifeDesignContextValue {
   db: LifeDesignDB;
   analysisPipeline: AnalysisPipeline;
   nudgeScheduler: NudgeScheduler;
-  challengeEngine: ChallengeEngine;
-  badgeSystem: BadgeSystem;
   aiLocal: AILocalClient | null;
   aiReady: boolean;
   aiProgress: number;
@@ -53,15 +49,13 @@ export function LifeDesignProvider({ children }: { children: ReactNode }) {
 
   // Non-AI engine instances are created once — stable reference.
   const [engines] = useState(() => {
-    const badgeSystem = new BadgeSystem(db);
-    const challengeEngine = new ChallengeEngine(db);
     const nudgeScheduler = new NudgeScheduler(db);
-    return { db, nudgeScheduler, challengeEngine, badgeSystem };
+    return { db, nudgeScheduler };
   });
 
   // Lazily create AnalysisPipeline once aiLocal is ready.
   const [analysisPipeline, setAnalysisPipeline] = useState<AnalysisPipeline>(
-    () => new AnalysisPipeline(db, null, engines.badgeSystem),
+    () => new AnalysisPipeline(db, null),
   );
 
   // Dynamic import of AILocalClient to avoid bundling Transformers.js/onnxruntime-node.
@@ -75,7 +69,7 @@ export function LifeDesignProvider({ children }: { children: ReactNode }) {
     import('@life-design/ai-local').then(({ AILocalClient: Client }) => {
       const client = new Client({ onProgress: handleProgress });
       setAiLocal(client);
-      setAnalysisPipeline(new AnalysisPipeline(db, client, engines.badgeSystem));
+      setAnalysisPipeline(new AnalysisPipeline(db, client));
       // Warm up model.
       client.embed('').then(() => setAiReady(true)).catch(() => {});
     }).catch(() => {
@@ -127,14 +121,6 @@ export function useAnalysisPipeline(): AnalysisPipeline {
 
 export function useNudges(): NudgeScheduler {
   return useLifeDesignContext('useNudges').nudgeScheduler;
-}
-
-export function useChallenges(): ChallengeEngine {
-  return useLifeDesignContext('useChallenges').challengeEngine;
-}
-
-export function useBadges(): BadgeSystem {
-  return useLifeDesignContext('useBadges').badgeSystem;
 }
 
 export function useAIStatus(): { ready: boolean; progress: number } {
