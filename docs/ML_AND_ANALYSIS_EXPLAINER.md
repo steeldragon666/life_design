@@ -16,6 +16,14 @@ A comprehensive guide to every analytical technique, ML model, and data processi
 8. [Supporting Systems](#supporting-systems)
 9. [Complete Data Flow Diagram](#data-flow)
 10. [File Index](#file-index)
+11. [N-of-1 Personalised Prediction Models](#nof1-models)
+12. [SHAP Explainability](#shap-explainability)
+13. [Federated Learning](#federated-learning)
+14. [Spotify Mood Classification](#spotify-mood)
+15. [Exercise-Mood Lag Analysis](#exercise-mood-lag)
+16. [HRV Stress Computation](#hrv-stress)
+17. [Linguistic Biomarker Detection](#linguistic-biomarkers)
+18. [Financial Stress Index](#financial-stress)
 
 ---
 
@@ -766,3 +774,239 @@ This enables:
 | `onboarding-extraction.ts` | Regex-based NLP, profile merging | `extractProfileDeterministically`, `mergeExtractedProfiles` |
 | `onboarding-session.ts` | FNV-1a hashing, checksum validation, payload budgeting | `buildOnboardingSession`, `parseOnboardingSession` |
 | `use-ai-local.ts` | React hook lifecycle for ML client | `useAILocal` |
+
+### Research-Backed Redesign Additions (`packages/core/src/`)
+| File | Techniques | Key Functions |
+|------|-----------|---------------|
+| `health/hrv-analysis.ts` | RMSSD, SDNN, stress classification from RR intervals | `computeHRVMetrics` |
+| `integrations/spotify-mood.ts` | Russell's Circumplex Model mood classification from audio features | `classifyMoodFromAudioFeatures`, `aggregateTrackMoods` |
+| `integrations/strava-mood.ts` | Exercise-mood lagged correlation (0 to maxLag days) | `computeExerciseMoodLag` |
+| `integrations/financial-stress.ts` | Financial stress index (spending deviation, income stability, impulse detection) | `computeFinancialStressIndex`, `computeSpendingBaseline` |
+| `nlp/linguistic-biomarkers.ts` | Cognitive distortion detection (all-or-nothing, catastrophising, personalisation) | `detectLinguisticBiomarkers` |
+| `federated/aggregation.ts` | Sample-count-weighted FedAvg gradient aggregation | `aggregateGradients` |
+| `ml/model-types.ts` | Ridge regression model artifact types | `ModelArtifact`, `TrainingRequest`, `TrainingResult` |
+| `jitai/rules.ts` | Context-aware intervention rule engine | `evaluateJITAIRules` |
+| `privacy/opt-in-tiers.ts` | Tiered data sharing and feature gating | `isFeatureAvailable` |
+| `ema/question-selector.ts` | Adaptive EMA question selection with burden budgeting | `selectQuestions` |
+| `safety/crisis-detection.ts` | Two-tier regex crisis pattern matching with false-positive suppression | `detectCrisisIndicators` |
+| `profiling/psychometric-scoring.ts` | PHQ-9 and GAD-7 clinical instrument scoring with input clamping | `scorePHQ9`, `scoreGAD7` |
+
+---
+
+<a name="nof1-models"></a>
+## 11. N-of-1 Personalised Prediction Models
+
+**What it does**: Trains a per-user ridge regression model to predict dimension scores from feature vectors. Each user gets their own model, trained only on their data.
+
+**Model**: Ridge regression (L2-regularised linear model)
+- Input features: extracted from `feature_store` (mood history, sleep, exercise, HRV, etc.)
+- Target: a specific dimension score (e.g., predict tomorrow's Health score)
+- Output: `ModelArtifact` containing weights, intercept, feature importance, and training metrics (MSE, R²)
+
+**Why ridge regression?** With 30-100 data points per user, complex models (neural nets, gradient boosting) overfit badly. Ridge regression is stable with small n, interpretable (each weight maps to a feature), and fast to train on-device or server-side. The L2 penalty prevents any single feature from dominating.
+
+**Storage**: `model_artifacts` table (migration `00036`) — one row per user per dimension per model version.
+
+**Minimum samples**: 30 data points required before training (configurable via `TrainingRequest.minSamples`).
+
+**Source**: `packages/core/src/ml/model-types.ts`
+
+---
+
+<a name="shap-explainability"></a>
+## 12. SHAP Explainability
+
+**What it does**: Computes SHAP (SHapley Additive exPlanations) values for each prediction to explain why the model made a specific prediction.
+
+**For linear models**, SHAP values have a closed-form solution:
+```
+shap_value[i] = weight[i] * (feature_value[i] - mean_feature_value[i])
+```
+
+Each SHAP explanation contains:
+- `base_value`: the model intercept (average prediction)
+- `predicted_value`: the actual prediction
+- `feature_contributions`: array of `{feature, value, shap_value}` — how much each feature pushed the prediction above or below the base value
+
+**Why SHAP?** Users seeing "predicted Health: 3.2" is useless without context. SHAP enables explanations like: "Your predicted Health is 3.2 — sleep quality (-1.1) and exercise (-0.5) are pulling it down, while social activity (+0.8) is helping."
+
+**Storage**: `shap_explanations` table (migration `00037`).
+
+---
+
+<a name="federated-learning"></a>
+## 13. Federated Learning
+
+**What it does**: Enables population-level model improvement without any user sharing raw data.
+
+**Pipeline**:
+```
+1. Local training: Each user trains a ridge regression model locally
+2. Gradient encoding: Model weights + bias + sample count are packaged
+3. Submission: Encoded gradients submitted to a federated round (gradient_submissions)
+4. Round management: Coordinator opens rounds, waits for min_participants (default 5)
+5. Aggregation: Sample-count-weighted FedAvg
+     avgWeight[i] = Σ (weight[i] * sampleCount / totalSamples) for each participant
+6. Distribution: Aggregate weights distributed as initialisation for next local training cycle
+```
+
+**Aggregation formula (FedAvg)**:
+```
+For each weight dimension i:
+  avgWeight[i] = Σ_k (n_k / N) * w_k[i]
+
+Where n_k = samples from participant k, N = total samples, w_k = participant k's weights
+```
+
+**Privacy guarantees**:
+- Server never sees raw user data — only model gradients
+- Minimum participant threshold prevents de-anonymisation from small rounds
+- Opt-in only (requires `Full` privacy tier)
+
+**Storage**: `federated_rounds` + `gradient_submissions` (migration `00041`).
+
+**Source**: `packages/core/src/federated/aggregation.ts`
+
+---
+
+<a name="spotify-mood"></a>
+## 14. Spotify Mood Classification
+
+**What it does**: Classifies listening mood from Spotify audio features using Russell's Circumplex Model of Affect.
+
+**Model**: Russell's Circumplex maps emotions on two axes:
+- **Valence** (x-axis): negative ← → positive emotion (Spotify `valence` feature, 0-1)
+- **Energy** (y-axis): low ← → high arousal (Spotify `energy` feature, 0-1)
+
+**Quadrant classification**:
+| Valence | Energy | Mood |
+|---------|--------|------|
+| High (≥0.5) | High (≥0.5) | `energetic` (if both ≥0.7) or `happy` |
+| High (≥0.5) | Low (<0.5) | `calm` |
+| Low (<0.5) | High (≥0.5) | `tense` |
+| Low (<0.5) | Low (<0.5) | `melancholic` |
+
+**Confidence**: Based on distance from center point (0.5, 0.5). Points near the center are ambiguous (low confidence); points near the edges are clear (high confidence).
+```
+confidence = min(1, sqrt((valence - 0.5)² + (energy - 0.5)²) * 2)
+```
+
+**Multi-track aggregation**: `aggregateTrackMoods()` averages audio features across recently played tracks before classifying.
+
+**Why this matters**: Sudden shifts from high-valence to low-valence listening patterns can indicate mood changes. The mentor system can detect "your listening has shifted toward more melancholic music this week" and probe gently.
+
+**Source**: `packages/core/src/integrations/spotify-mood.ts`
+
+---
+
+<a name="exercise-mood-lag"></a>
+## 15. Exercise-Mood Lag Analysis
+
+**What it does**: Computes the correlation between exercise intensity and mood at different time lags (0 to N days).
+
+**Algorithm**:
+```
+For each lag in [0, maxLag]:
+  Pair exercise intensity on date D with mood on date D+lag
+  Compute Pearson correlation over all matched pairs
+  Assess significance: |r| > 2/√n (rough p<0.05 threshold)
+```
+
+**What it surfaces**:
+- Lag 0: "Exercise today correlates with better mood today"
+- Lag 1: "Exercise today correlates with better mood tomorrow"
+- The optimal lag reveals whether exercise effects are immediate or delayed
+
+**Significance threshold**: Uses the simple approximation `|r| > 2/√n` for p<0.05, requiring at least 4 paired observations.
+
+**Source**: `packages/core/src/integrations/strava-mood.ts`
+
+---
+
+<a name="hrv-stress"></a>
+## 16. HRV Stress Computation
+
+**What it does**: Computes standard time-domain HRV metrics from raw RR interval data (inter-beat intervals in milliseconds).
+
+**Metrics computed**:
+
+| Metric | Formula | Meaning |
+|--------|---------|---------|
+| **RMSSD** | √(mean(successive_differences²)) | Parasympathetic (vagal) tone — higher = more relaxed |
+| **SDNN** | σ(all_intervals) | Overall HRV — higher = more adaptive |
+| **Mean RR** | mean(all_intervals) | Average time between heartbeats |
+| **Mean HR** | 60000 / meanRR | Heart rate in BPM |
+
+**Stress classification** (based on RMSSD):
+| RMSSD | Stress Level | Score Range |
+|-------|-------------|-------------|
+| ≥ 50ms | Low | 0-50 |
+| 20-49ms | Moderate | 51-80 |
+| < 20ms | High | 81-100 |
+
+**Stress score formula**: `score = max(0, min(100, round(100 * (1 - rmssd/100))))`
+
+**Why RMSSD?** RMSSD is the gold-standard short-term HRV metric for assessing parasympathetic nervous system activity. It's robust against slow trends in heart rate and can be reliably computed from as few as 60 seconds of RR interval data.
+
+**Source**: `packages/core/src/health/hrv-analysis.ts`, storage in `hrv_metrics` table (migration `00034`)
+
+---
+
+<a name="linguistic-biomarkers"></a>
+## 17. Linguistic Biomarker Detection
+
+**What it does**: Scans journal text for cognitive distortions and sentiment indicators that may signal psychological distress.
+
+**Cognitive distortions detected**:
+
+| Distortion | Pattern Examples | Confidence |
+|-----------|------------------|------------|
+| All-or-nothing thinking | "always", "never", "everything", "completely" | 0.70 |
+| Catastrophising | "worst", "terrible", "disaster", "unbearable" | 0.75 |
+| Personalisation | "my fault", "because of me", "I caused" | 0.80 |
+
+**Sentiment indicators** (word counts):
+- Negative words: sad, hopeless, worthless, anxious, overwhelmed, etc.
+- Positive words: happy, grateful, proud, confident, inspired, etc.
+- First-person singular pronouns (I, me, my) — elevated usage correlates with depression
+- Absolute terms (always, never, everything) — correlates with cognitive rigidity
+
+**Risk classification**:
+| Condition | Risk Level |
+|-----------|-----------|
+| ≥3 distortions OR negative words exceed positive by 3+ | `elevated` |
+| ≥1 distortion | `moderate` |
+| Otherwise | `low` |
+
+**Why regex over ML?** Deterministic, instant, zero-cost, interpretable. Each detected distortion includes the exact trigger word and position for audit. ML-based approaches (BERT fine-tuning) could improve accuracy but add latency and require labelled training data.
+
+**Source**: `packages/core/src/nlp/linguistic-biomarkers.ts`, results stored in `journal_analysis` table (migration `00040`)
+
+---
+
+<a name="financial-stress"></a>
+## 18. Financial Stress Index
+
+**What it does**: Computes a 0-100 financial stress index from transaction data against a spending baseline.
+
+**Four factors** (weighted combination):
+
+| Factor | Weight | What it measures |
+|--------|--------|-----------------|
+| Spending deviation | 40% | % above/below daily spending baseline |
+| Income stability | 20% | Coefficient of variation of weekly income (lower CV = more stable) |
+| Late-night purchases | 20% | Transactions after 22:00 (impulse spending indicator) |
+| Discretionary ratio shift | 20% | Change in essential vs discretionary spending ratio |
+
+**Stress score formula**:
+```
+stressIndex = spendingScore * 0.4 + incomeInstabilityScore * 0.2 + lateNightScore * 0.2 + ratioScore * 0.2
+```
+
+**Stress levels**: 0-30 = low, 31-60 = moderate, 61-100 = high
+
+**Triggers**: Human-readable explanations generated for each contributing factor (e.g., "Spending 40% above baseline", "Late-night purchases detected").
+
+**Baseline computation**: `computeSpendingBaseline()` calculates average daily spend, weekly income, and per-category averages from historical transactions over a configurable window.
+
+**Source**: `packages/core/src/integrations/financial-stress.ts`

@@ -20,8 +20,8 @@ Life Design is a personal analytics platform that tracks 8 life dimensions (care
          │  Supabase (PG)   │                                │   External Services  │
          │  ─────────────── │                                │  ─────────────────── │
          │  Auth + RLS      │                                │  Gemini 1.5 Flash    │
-         │  15 migrations   │                                │  Stripe              │
-         │  23+ tables      │                                │  Strava / Spotify    │
+         │  41 migrations   │                                │  Stripe              │
+         │  35+ tables      │                                │  Strava / Spotify    │
          │  2 RPC functions │                                │  Google Calendar     │
          └──────────────────┘                                │  Apple Health (iOS)  │
                                                              │  Notion / Slack      │
@@ -56,7 +56,7 @@ life-design/
 │   │                           zero-shot classification, summarisation)
 │   └── ui/                     Design tokens + shared React components
 ├── supabase/
-│   └── migrations/             15 SQL migrations (00001–00015)
+│   └── migrations/             41 SQL migrations (00001–00041)
 ├── turbo.json                  Task pipeline (build → test → lint → type-check)
 ├── pnpm-workspace.yaml         Workspace globs: packages/*, apps/*
 └── vercel.json                 Deployment config (syd1 region, security headers)
@@ -93,7 +93,18 @@ Zero-dependency foundation. All pure functions, types, and enums.
 | `correlation.ts` | `pearsonCorrelation()`, `laggedCorrelation()` (0-3 day window), Fisher Z p-value, confidence scoring, `computeAllPairCorrelations()`, `detectSignificantPatterns()` |
 | `feature-extraction.ts` | `normalizeSignal()`, `extractFeatures()` — transforms raw data into ML-ready feature vectors |
 | `holistic.ts` | `synthesizeHolisticState()` — combines world context, performance data, and intent into unified analytical output |
-| `connectors/` | `LifeConnector` interface + implementations: Strava, Google Calendar, Apple Health, OAuth manager |
+| `connectors/` | `LifeConnector` interface + implementations: Strava, Google Calendar, Apple Health, Screen Time, OAuth manager |
+| `safety/` | Crisis detection (regex pattern matching), crisis response (tiered messaging + resources), types |
+| `jitai/` | JITAI rule engine, context/decision types |
+| `privacy/` | `OptInTier` enum, tier benefits, `isFeatureAvailable()` feature gating |
+| `ema/` | Adaptive EMA question pool, `selectQuestions()` with burden-aware selection |
+| `health/` | `computeHRVMetrics()` — RMSSD, SDNN, stress classification from RR intervals |
+| `nlp/` | `detectLinguisticBiomarkers()` — cognitive distortion detection, sentiment indicators |
+| `integrations/` | Spotify mood classification, exercise-mood lag analysis, financial stress index, social density, weather context, screen time features |
+| `federated/` | `aggregateGradients()` — sample-count-weighted FedAvg for federated learning |
+| `ml/` | `ModelArtifact`, `TrainingRequest`, `TrainingResult` types for per-user ridge regression |
+| `cbt/` | CBT technique library, mood-technique matcher |
+| `profiling/` | Psychometric instruments (PERMA, TIPI, Grit, SWLS, BPNS, PHQ-9, GAD-7), scoring functions |
 
 ### `@life-design/ai`
 
@@ -185,7 +196,7 @@ OAuth providers:
 
 ### Security Layers
 
-1. **Row Level Security (RLS)** on all 23+ tables — users only access their own data
+1. **Row Level Security (RLS)** on all 35+ tables — users only access their own data
 2. **AES-256-GCM encryption** for OAuth tokens in `user_connections.encrypted_tokens` (bytea)
 3. **Service role isolation** — admin operations (webhooks, sync, batch) bypass RLS via service key
 4. **Security headers** — CSP, HSTS, X-Frame-Options: DENY, nosniff, strict referrer policy
@@ -345,6 +356,99 @@ The dashboard displays up to 6 insights, ordered by priority:
 | `apps/web` | Vitest | `pnpm test` |
 | Type checking | TypeScript | `tsc --noEmit` |
 | Turbo orchestration | — | `turbo test` runs all in dependency order |
+
+---
+
+## Research-Backed Redesign Components
+
+### JITAI Engine (Just-In-Time Adaptive Interventions)
+
+Rule-based intervention system that evaluates real-time user context and delivers contextually appropriate nudges.
+
+```
+Context signals (HRV stress, mood, activity, calendar, check-in recency)
+  → evaluateJITAIRules()
+  → JITAIDecision { shouldIntervene, interventionType, urgency, content, reasoning }
+  → jitai_decisions table (audit + delivery tracking)
+```
+
+Four intervention rules (priority order):
+1. **High stress + evening** → breathing exercise (`urgency: high`)
+2. **No check-in 24h+ + evening** → check-in prompt (`urgency: medium`)
+3. **Low mood + sedentary** → activity suggestion (`urgency: medium`)
+4. **Packed calendar + no check-in** → gentle nudge (`urgency: low`)
+
+**Source**: `packages/core/src/jitai/rules.ts`, migration `00033`
+
+### Clinical Screening Module
+
+Validated clinical instruments (PHQ-9, GAD-7) with crisis de-escalation.
+
+```
+Screening flow:
+  User responses → input clamping (0-3) → scoring → severity classification
+                                                       ↓
+                                            Item 9 check (PHQ-9 suicidal ideation)
+                                                       ↓
+                                            Crisis detection (pattern matching)
+                                                       ↓
+                                            Crisis response (resources + audit log)
+```
+
+- **PHQ-9**: 9 items, 0-27 score range, 5 severity bands (minimal → severe). Item 9 (suicidal ideation) flagged independently — any non-zero value triggers crisis pathway.
+- **GAD-7**: 7 items, 0-21 score range, 4 severity bands (minimal → severe).
+- **Crisis detection**: Two-tier regex pattern matching (HIGH: active ideation/self-harm, MEDIUM: hopelessness/passive ideation) with false-positive suppression.
+- **Crisis response**: Tiered messaging + crisis resources (Lifeline, Beyond Blue, Emergency, 13YARN).
+
+**Source**: `packages/core/src/profiling/psychometric-scoring.ts`, `packages/core/src/safety/`, migration `00029`
+
+### Federated Learning Pipeline
+
+Privacy-preserving model improvement across users without sharing raw data.
+
+```
+Local training (per-user ridge regression)
+  → Gradient encoding (weights + bias + sample count)
+  → Submission to coordination server (gradient_submissions)
+  → Federated round management (federated_rounds: open → aggregating → complete)
+  → Weighted averaging (sample-count-weighted FedAvg)
+  → Aggregate model distribution
+```
+
+- Minimum 5 participants per round
+- Server never sees raw data — only noisy gradient vectors
+- Aggregation uses sample-count-weighted FedAvg
+
+**Source**: `packages/core/src/federated/aggregation.ts`, migration `00041`
+
+### Tiered Opt-In Privacy System
+
+Three-tier progressive data sharing model. Users choose how much data to share and what features they unlock.
+
+| Tier | Shares | Unlocks |
+|------|--------|---------|
+| **Basic** | Mood check-ins, journal entries | Mood trends, basic insights, AI mentor |
+| **Enhanced** | Health data (sleep, HRV, steps), calendar, music, exercise | Sleep analysis, exercise-mood correlations, JITAI timing, weather-mood patterns |
+| **Full** | Screen time, financial patterns, federated contributions | N-of-1 predictions, financial stress detection, digital wellness, clinical data export |
+
+Stored as `profiles.opt_in_tier` column (migration `00032`). Feature gating via `isFeatureAvailable(userTier, requiredTier)`.
+
+**Source**: `packages/core/src/privacy/opt-in-tiers.ts`
+
+### Adaptive EMA Question Selection
+
+Ecological Momentary Assessment with adaptive question selection to minimise respondent burden.
+
+```
+selectQuestions(recentHistory, maxBurden=10, maxQuestions=5)
+  1. Score each question: informationValue * recencyBonus * dimensionCoverage
+  2. recencyBonus: exponential decay — questions not asked recently get priority
+  3. dimensionCoverage: prioritise dimensions with fewer recent data points
+  4. Respect burden budget: total burden of selected questions <= maxBurden
+  5. Return top N questions sorted by composite score
+```
+
+**Source**: `packages/core/src/ema/question-selector.ts`
 
 ---
 

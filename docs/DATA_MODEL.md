@@ -2,15 +2,17 @@
 
 ## Overview
 
-The Life Design data model is built on Supabase (PostgreSQL) with 23+ tables across 15 migrations. Every table has Row Level Security (RLS) enabled — users can only access their own data.
+The Life Design data model is built on Supabase (PostgreSQL) with 35+ tables across 41 migrations. Every table has Row Level Security (RLS) enabled — users can only access their own data.
 
-The schema divides into six domains:
+The schema divides into eight domains:
 1. **Identity** — user profiles and onboarding state
 2. **Check-ins** — daily mood and dimension tracking
 3. **Goals** — planning, milestones, pathways
 4. **Mentoring** — AI mentor conversations and memory
 5. **Integrations** — external data sources and sync pipeline
 6. **Platform** — subscriptions, gamification, entitlements
+7. **Clinical** — screening instruments, crisis events, journal analysis
+8. **ML Pipeline** — model artifacts, SHAP explanations, JITAI decisions, federated learning
 
 ---
 
@@ -577,6 +579,242 @@ Static lookup table: which features are enabled per subscription plan. Public re
 
 ---
 
+## Domain 7: Clinical
+
+### clinical_screenings
+
+Validated clinical instrument administrations (PHQ-9, GAD-7). Migration `00029`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `instrument` | TEXT | NOT NULL, CHECK ('phq9', 'gad7') | |
+| `responses` | JSONB | NOT NULL, DEFAULT '{}' | Raw item responses |
+| `total_score` | INTEGER | NOT NULL | Computed total |
+| `severity` | TEXT | NOT NULL | Severity band label |
+| `critical_flags` | JSONB | DEFAULT '{}' | e.g., PHQ-9 item 9 flag |
+| `context` | TEXT | DEFAULT 'routine' | 'onboarding', 'routine', 'followup' |
+| `administered_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Indexes**: `(user_id, administered_at DESC)`, `(instrument, severity)`
+**RLS**: Users can SELECT and INSERT own rows.
+
+### crisis_events
+
+Clinical-grade audit log for crisis pathway activations. Migration `00029`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `trigger_type` | TEXT | NOT NULL | 'phq9_item9', 'mentor_keyword', 'manual' |
+| `trigger_detail` | JSONB | DEFAULT '{}' | Pattern match details |
+| `response_shown` | JSONB | NOT NULL | Safety resources displayed |
+| `acknowledged_at` | TIMESTAMPTZ | | When user acknowledged |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Index**: `(user_id, created_at DESC)`
+**RLS**: Users can SELECT own rows. INSERT restricted to service_role.
+
+### journal_analysis
+
+NLP analysis results for journal entries — cognitive distortion detection and sentiment. Migration `00040`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `journal_entry_id` | UUID | FK → journal_entries, CASCADE | |
+| `distortions` | JSONB | DEFAULT '[]' | Detected cognitive distortions |
+| `sentiment_indicators` | JSONB | DEFAULT '{}' | Word counts: negative, positive, first-person, absolute |
+| `overall_risk` | TEXT | CHECK ('low', 'moderate', 'elevated') | |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Index**: `(user_id, created_at DESC)`
+
+### sleep_analysis
+
+Detailed sleep stage data from wearable integrations. Migration `00031`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `date` | DATE | NOT NULL | |
+| `total_sleep_minutes` | INTEGER | | |
+| `deep_sleep_minutes` | INTEGER | | |
+| `rem_sleep_minutes` | INTEGER | | |
+| `light_sleep_minutes` | INTEGER | | |
+| `awake_minutes` | INTEGER | | |
+| `sleep_latency_minutes` | INTEGER | | |
+| `sleep_efficiency` | NUMERIC(5,2) | | Percentage |
+| `wake_after_sleep_onset` | INTEGER | | WASO in minutes |
+| `sleep_quality_score` | NUMERIC(3,1) | | Computed 1-5 score |
+| `raw_data` | JSONB | DEFAULT '{}' | |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Unique**: `(user_id, date)`
+**Index**: `(user_id, date DESC)`
+
+### hrv_metrics
+
+Heart rate variability measurements from wearable devices. Migration `00034`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `measured_at` | TIMESTAMPTZ | NOT NULL | |
+| `rmssd` | NUMERIC(8,2) | | Root mean square successive differences (ms) |
+| `sdnn` | NUMERIC(8,2) | | Standard deviation of NN intervals (ms) |
+| `mean_rr` | NUMERIC(8,2) | | Mean RR interval (ms) |
+| `mean_hr` | NUMERIC(8,2) | | Mean heart rate (bpm) |
+| `stress_level` | TEXT | CHECK ('low', 'moderate', 'high') | |
+| `stress_score` | INTEGER | CHECK (0-100) | Higher = more stressed |
+| `rr_intervals` | JSONB | DEFAULT '[]' | Raw RR interval data |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Index**: `(user_id, measured_at DESC)`
+
+### screen_time_daily
+
+Daily screen time and digital wellness metrics. Migration `00038`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `date` | DATE | NOT NULL | |
+| `total_minutes` | INTEGER | | |
+| `category_breakdown` | JSONB | DEFAULT '{}' | Per-app-category minutes |
+| `pickup_count` | INTEGER | | Device pickups |
+| `late_night_minutes` | INTEGER | | Minutes after 22:00 |
+| `productivity_ratio` | NUMERIC(3,2) | | Productive / total |
+| `social_media_minutes` | INTEGER | | |
+| `digital_wellness_score` | NUMERIC(2,1) | | Computed score |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Unique**: `(user_id, date)`
+
+### export_audit_log
+
+Audit trail for clinical data exports (therapist integration). Migration `00039`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `export_type` | TEXT | NOT NULL, CHECK ('clinical_pdf', 'clinical_json', 'clinical_csv') | |
+| `data_included` | JSONB | NOT NULL, DEFAULT '[]' | List of data types |
+| `share_token` | TEXT | UNIQUE | For shareable links |
+| `share_expires_at` | TIMESTAMPTZ | | |
+| `downloaded_at` | TIMESTAMPTZ | | |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Indexes**: `(user_id, created_at DESC)`, `(share_token) WHERE share_token IS NOT NULL`
+
+---
+
+## Domain 8: ML Pipeline
+
+### jitai_decisions
+
+JITAI intervention decision log — tracks what was decided, why, and whether it was acted on. Migration `00033`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `decision_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+| `context` | JSONB | NOT NULL | Input context snapshot |
+| `should_intervene` | BOOLEAN | NOT NULL | |
+| `intervention_type` | TEXT | NOT NULL | 'nudge', 'checkin_prompt', 'breathing_exercise', 'activity_suggestion', 'none' |
+| `urgency` | TEXT | NOT NULL | 'low', 'medium', 'high' |
+| `content` | JSONB | | Intervention payload |
+| `reasoning` | TEXT | | Why this decision was made |
+| `delivered` | BOOLEAN | DEFAULT false | |
+| `dismissed_at` | TIMESTAMPTZ | | |
+| `acted_at` | TIMESTAMPTZ | | |
+
+**Index**: `(user_id, decision_at DESC)`
+
+### model_artifacts
+
+Per-user trained model weights (ridge regression). Migration `00036`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `model_version` | INTEGER | NOT NULL, DEFAULT 1 | |
+| `target_dimension` | TEXT | NOT NULL | Which dimension this model predicts |
+| `feature_names` | JSONB | NOT NULL, DEFAULT '[]' | Ordered feature list |
+| `weights` | JSONB | NOT NULL, DEFAULT '[]' | Model coefficients |
+| `intercept` | NUMERIC | NOT NULL, DEFAULT 0 | Bias term |
+| `training_metrics` | JSONB | NOT NULL, DEFAULT '{}' | MSE, R², sample count |
+| `feature_importance` | JSONB | NOT NULL, DEFAULT '{}' | Feature → importance |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Unique**: `(user_id, target_dimension, model_version)`
+
+### shap_explanations
+
+SHAP value explanations for per-user model predictions. Migration `00037`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `prediction_date` | DATE | NOT NULL | |
+| `target_dimension` | TEXT | NOT NULL | |
+| `predicted_value` | NUMERIC(3,1) | | |
+| `base_value` | NUMERIC(3,1) | | Model intercept / average |
+| `feature_contributions` | JSONB | NOT NULL, DEFAULT '[]' | [{feature, value, shap_value}] |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Index**: `(user_id, prediction_date DESC)`
+
+### federated_rounds
+
+Federated learning round coordination. Migration `00041`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `round_number` | INTEGER | NOT NULL | |
+| `target_dimension` | TEXT | NOT NULL | |
+| `status` | TEXT | NOT NULL, DEFAULT 'open', CHECK ('open', 'aggregating', 'complete') | |
+| `min_participants` | INTEGER | NOT NULL, DEFAULT 5 | |
+| `aggregate_weights` | JSONB | | Result of FedAvg |
+| `aggregate_bias` | NUMERIC | | |
+| `total_samples` | INTEGER | DEFAULT 0 | |
+| `participant_count` | INTEGER | DEFAULT 0 | |
+| `opened_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+| `closed_at` | TIMESTAMPTZ | | |
+
+**RLS**: Anyone can read round status. Service role manages rounds.
+
+### gradient_submissions
+
+Per-user gradient submissions to federated learning rounds. Migration `00041`.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PK | |
+| `round_id` | UUID | NOT NULL, FK → federated_rounds, CASCADE | |
+| `user_id` | UUID | NOT NULL, FK → auth.users, CASCADE | |
+| `weights` | JSONB | NOT NULL | Gradient vector |
+| `bias` | NUMERIC | NOT NULL | |
+| `sample_count` | INTEGER | NOT NULL | |
+| `submitted_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+**Unique**: `(round_id, user_id)` — one submission per user per round.
+**RLS**: Users can INSERT own submissions and SELECT own rows.
+
+---
+
 ## Database Functions
 
 ### get_user_dashboard_data(p_user_id UUID) → JSONB
@@ -638,6 +876,31 @@ Nightly maintenance. Called via pg_cron or Edge Function scheduler.
 | `00014` | Rebuilt connector_sync_log with richer schema |
 | `00015` | Performance indexes, get_user_dashboard_data() RPC, expire_stale_sessions() |
 | `00016` | pgvector extension, `vector(384)` columns on checkins/goals/daily_checkins, IVFFlat indexes, `find_similar_journal_entries()` RPC |
+| `00017` | Enable RLS on mentors table |
+| `00018` | Profiling onboarding flow |
+| `00019` | Add first_name to profiles |
+| `00020` | TTS rate limits |
+| `00021` | Tighten profiles INSERT policy |
+| `00022` | Psychometric profiles (PERMA, TIPI, Grit, SWLS, BPNS) |
+| `00023` | Journal enhancements |
+| `00024` | Onboarding card tracking |
+| `00025` | Custom streaks |
+| `00026` | Restrict integration token columns |
+| `00027` | Remove Instagram provider |
+| `00028` | Remove volume badges |
+| `00029` | Clinical screenings (PHQ-9, GAD-7) + crisis_events audit table |
+| `00030` | Five-point scale migration (mood values 1-10 → 1-5) |
+| `00031` | sleep_analysis table (detailed sleep stage data) |
+| `00032` | Opt-in tiers (profiles.opt_in_tier column) |
+| `00033` | jitai_decisions table (JITAI intervention log) |
+| `00034` | hrv_metrics table (HRV stress tracking) |
+| `00035` | Remove LinkedIn provider |
+| `00036` | model_artifacts table (per-user ridge regression weights) |
+| `00037` | shap_explanations table (SHAP value storage) |
+| `00038` | screen_time_daily table (digital wellness) |
+| `00039` | export_audit_log table (clinical data export audit) |
+| `00040` | journal_analysis table (cognitive distortion detection) |
+| `00041` | Federated learning: federated_rounds + gradient_submissions |
 
 ---
 
