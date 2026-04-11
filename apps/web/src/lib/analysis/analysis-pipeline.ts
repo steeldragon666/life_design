@@ -2,12 +2,9 @@ import { computeAllPairCorrelations, Dimension } from '@life-design/core';
 import type { LifeDesignDB, DBCheckIn } from '@/lib/db/schema';
 import { InsightGenerator, type Insight } from '@/lib/insights/insight-generator';
 import type { AILocalClient } from '@life-design/ai-local';
-import type { BadgeSystem } from '@/lib/achievements/badge-system';
-
 export interface AnalysisSummary {
   insightCount: number;
   correlationCount: number;
-  badgeCount: number;
   lastAnalysisAt: Date;
 }
 
@@ -17,7 +14,6 @@ export class AnalysisPipeline {
   constructor(
     private db: LifeDesignDB,
     private aiLocal?: AILocalClient | null,
-    private badgeSystem?: BadgeSystem,
   ) {
     this.insightGenerator = new InsightGenerator(db);
   }
@@ -25,7 +21,6 @@ export class AnalysisPipeline {
   async runIncrementalAnalysis(checkIn: DBCheckIn): Promise<{
     newInsights: Insight[];
     newCorrelations: number;
-    newBadges: string[];
     embeddingStored: boolean;
   }> {
     // 1. Generate insights
@@ -72,14 +67,7 @@ export class AnalysisPipeline {
       } catch { /* AI not ready, skip */ }
     }
 
-    // 4. Badges
-    const newBadges: string[] = [];
-    if (this.badgeSystem) {
-      const earned = await this.badgeSystem.checkAfterCheckIn(checkIn);
-      newBadges.push(...earned.map(b => b.id));
-    }
-
-    return { newInsights, newCorrelations, newBadges, embeddingStored };
+    return { newInsights, newCorrelations, embeddingStored };
   }
 
   async runFullReanalysis(): Promise<void> {
@@ -126,15 +114,13 @@ export class AnalysisPipeline {
   }
 
   async getLatestAnalysis(): Promise<AnalysisSummary> {
-    const [insightCount, correlationCount, badgeCount] = await Promise.all([
+    const [insightCount, correlationCount] = await Promise.all([
       this.db.insights.count(),
       this.db.correlations.count(),
-      this.db.badges.count(),
     ]);
     return {
       insightCount,
       correlationCount,
-      badgeCount,
       lastAnalysisAt: new Date(),
     };
   }
