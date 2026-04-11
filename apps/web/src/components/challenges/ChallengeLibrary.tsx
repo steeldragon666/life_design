@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dimension, DIMENSION_LABELS } from '@life-design/core';
+import { EmptyState } from '@life-design/ui';
 import { useActiveChallenges } from '@/lib/db/hooks';
 import { useChallenges } from '@/providers/LifeDesignProvider';
 import { CHALLENGE_LIBRARY } from '@/lib/challenges/challenge-library';
@@ -332,9 +333,10 @@ export default function ChallengeLibrary() {
         {/* Challenge grid */}
         <section aria-label="Challenge library">
           {filteredChallenges.length === 0 ? (
-            <p className="py-12 text-center text-sm text-stone-500">
-              No challenges found for this dimension yet.
-            </p>
+            <EmptyState
+              heading="No challenges found"
+              description="No challenges found for this dimension yet."
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {filteredChallenges.map((challenge) => (

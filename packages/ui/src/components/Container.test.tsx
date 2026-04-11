@@ -9,16 +9,28 @@ describe('Container', () => {
     expect(wrapper.className).toContain('max-w-6xl');
   });
 
+  it('applies xs size variant', () => {
+    const { container } = render(<Container size="xs">Content</Container>);
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain('max-w-xl');
+  });
+
   it('applies sm size variant', () => {
     const { container } = render(<Container size="sm">Content</Container>);
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain('max-w-lg');
+    expect(wrapper.className).toContain('max-w-2xl');
   });
 
   it('applies md size variant', () => {
     const { container } = render(<Container size="md">Content</Container>);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('max-w-4xl');
+  });
+
+  it('applies xl size variant', () => {
+    const { container } = render(<Container size="xl">Content</Container>);
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain('max-w-7xl');
   });
 
   it('applies full size variant', () => {

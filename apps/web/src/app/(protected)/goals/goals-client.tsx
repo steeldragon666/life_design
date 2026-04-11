@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { DIMENSION_LABELS, type Dimension, computeTrend } from '@life-design/core';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { Button, Badge, dimensionPalettes } from '@life-design/ui';
-import { Plus, Check, AlertTriangle } from 'lucide-react';
+import { Button, Badge, EmptyState, dimensionPalettes } from '@life-design/ui';
+import { Plus, Check, AlertTriangle, Target } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types & config
@@ -160,18 +160,21 @@ export default function GoalsClient({ goals }: GoalsClientProps) {
 
       {/* Goals List */}
       {sorted.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-stone-200 bg-white p-16 text-center">
-          <p className="text-stone-500 text-lg mb-4 font-serif italic">
-            No goals found. Start designing your future.
-          </p>
-          <Link
-            href="/goals/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-[13px] font-semibold bg-sage-600 text-white shadow-[0_2px_8px_rgba(90,127,90,0.3)] hover:bg-sage-600/90 transition-all"
-          >
-            <Plus weight="regular" className="w-4 h-4" />
-            Create your first goal
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Target size={32} />}
+          heading="No goals found"
+          description="Start designing your future by creating your first goal."
+          action={
+            <Link
+              href="/goals/new"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[8px] text-[13px] font-semibold bg-sage-600 text-white shadow-[0_2px_8px_rgba(90,127,90,0.3)] hover:bg-sage-600/90 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Create your first goal
+            </Link>
+          }
+          className="rounded-2xl border-2 border-dashed border-stone-200 bg-white p-16"
+        />
       ) : (
         <div className="space-y-3">
           {sorted.map((goal) => {

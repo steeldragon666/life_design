@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { Card, Button } from '@life-design/ui';
+import { Card, Button, Separator, Avatar } from '@life-design/ui';
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -61,7 +61,7 @@ function ActionRow({ label, description, action, destructive, onClick }: {
 }
 
 function Divider() {
-  return <div className="border-t border-stone-100" />;
+  return <Separator className="border-stone-100" />;
 }
 
 // ---------------------------------------------------------------------------
@@ -108,9 +108,7 @@ export default function SettingsPage() {
       {/* Profile */}
       <Card className="mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sage-200 to-sage-300 flex items-center justify-center text-white text-xl font-serif">
-            {initial}
-          </div>
+          <Avatar alt={displayName} size="lg" />
           <div className="flex-1">
             <h2 className="text-lg font-medium text-stone-800">{displayName}</h2>
             <p className="text-sm text-stone-400">Guest mode</p>

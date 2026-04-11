@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Lightbulb } from 'lucide-react';
+import { EmptyState } from '@life-design/ui';
 import InsightCard from '@/components/insights/insight-card';
 import { dismissInsightAction } from './actions';
 
@@ -26,9 +28,11 @@ export default function InsightsClient({ insights }: InsightsClientProps) {
 
   if (insights.length === 0) {
     return (
-      <p className="py-12 text-center text-stone-500">
-        No insights yet. Keep checking in to get personalized analysis.
-      </p>
+      <EmptyState
+        icon={<Lightbulb size={32} />}
+        heading="No insights yet"
+        description="Keep checking in to get personalized analysis."
+      />
     );
   }
 
