@@ -78,7 +78,14 @@ export default function OnboardingFlow() {
   return (
     <div className="relative overflow-hidden">
       {/* Progress bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-stone-200">
+      <div
+        className="fixed top-0 left-0 right-0 z-50 h-1 bg-stone-200"
+        role="progressbar"
+        aria-valuenow={currentCard}
+        aria-valuemin={1}
+        aria-valuemax={TOTAL_CARDS}
+        aria-label={`Step ${currentCard} of ${TOTAL_CARDS}`}
+      >
         <div
           className="h-full bg-gradient-to-r from-sage-400 to-sage-500 transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
