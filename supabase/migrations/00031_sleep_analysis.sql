@@ -26,3 +26,6 @@ CREATE POLICY "Users can read own sleep analysis"
 
 CREATE POLICY "Service role inserts sleep analysis"
   ON sleep_analysis FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Service role updates sleep analysis"
+  ON sleep_analysis FOR UPDATE USING (true) WITH CHECK (true);

@@ -1,5 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 interface SleepSample {
   startDate: string;
   endDate: string;
@@ -22,7 +27,11 @@ function computeSleepMetrics(samples: SleepSample[]): SleepMetrics {
   let deep = 0, rem = 0, light = 0, awake = 0, inBed = 0;
 
   for (const s of samples) {
-    const dur = (new Date(s.endDate).getTime() - new Date(s.startDate).getTime()) / 60000;
+    const start = new Date(s.startDate).getTime();
+    const end = new Date(s.endDate).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    const dur = (end - start) / 60000;
+    if (dur <= 0) continue;
     switch (s.value) {
       case 'Deep': deep += dur; break;
       case 'REM': rem += dur; break;
@@ -71,10 +80,14 @@ function computeSleepMetrics(samples: SleepSample[]): SleepMetrics {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders });
+  }
+
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -86,11 +99,20 @@ Deno.serve(async (req) => {
 
     const { user_id, date, samples } = await req.json();
 
-    if (!user_id || !date || !Array.isArray(samples)) {
+    if (!user_id || !date || !Array.isArray(samples) || samples.length === 0) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
+    }
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (authError || !user || user.id !== user_id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
     const metrics = computeSleepMetrics(samples);
@@ -113,18 +135,18 @@ Deno.serve(async (req) => {
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
     return new Response(JSON.stringify({ success: true, metrics }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 });
