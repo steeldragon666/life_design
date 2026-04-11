@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getSelectedVoice } from '@/components/voice/voice-selector';
-
 interface PreviewVoiceOption {
   id: string;
   previewText: string;
@@ -49,9 +47,18 @@ export function useSpeechSynthesis({ voicePreference }: UseSpeechSynthesisOption
       const utterance = new SpeechSynthesisUtterance(text);
       synthesisRef.current = utterance;
 
-      const voice = getSelectedVoice(voicePreference, availableVoices);
-      if (voice) {
-        utterance.voice = voice;
+      // Pick a voice matching the preference from available browser voices
+      const voiceMap: Record<string, string[]> = {
+        'calm-british-female': ['Google UK English Female', 'Samantha', 'Victoria'],
+        'warm-american-male': ['Google US English Male', 'Daniel', 'Alex'],
+        'soft-australian-female': ['Karen', 'Google UK English Female'],
+      };
+      const preferredVoices = voiceMap[voicePreference];
+      const matchedVoice = availableVoices.find((v) =>
+        preferredVoices?.some((p) => v.name.includes(p) || v.lang.includes(p))
+      );
+      if (matchedVoice) {
+        utterance.voice = matchedVoice;
       }
 
       utterance.rate = 0.88;
