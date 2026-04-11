@@ -15,8 +15,6 @@ import {
   type AssetLoadProgress,
   type AssetLoaderOptions,
 } from './asset-loader';
-import { getDeviceCapabilities, estimateBandwidth, type DeviceCapabilities } from './video-optimizer';
-import { type VoiceSample } from '@/config/assets';
 
 interface UseAssetLoadingOptions {
   autoStart?: boolean;
@@ -188,37 +186,6 @@ export function useCriticalLoading(options: Omit<UseAssetLoadingOptions, 'priori
     ...options,
     priority: 'critical',
   });
-}
-
-/**
- * Hook for device capability detection
- *
- * @example
- * ```tsx
- * const { capabilities, isMobile, bandwidth } = useDeviceCapabilities();
- * ```
- */
-export function useDeviceCapabilities() {
-  const [capabilities, setCapabilities] = useState<DeviceCapabilities | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    getDeviceCapabilities().then((caps) => {
-      setCapabilities(caps);
-      setIsLoading(false);
-    });
-  }, []);
-
-  const bandwidth = useMemo(() => estimateBandwidth(), []);
-
-  return {
-    capabilities,
-    isLoading,
-    isMobile: capabilities?.isMobile ?? false,
-    isLowPower: capabilities?.isLowPower ?? false,
-    supportsWebM: capabilities?.supportsWebM ?? false,
-    bandwidth,
-  };
 }
 
 /**
