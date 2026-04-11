@@ -15,7 +15,7 @@ const RESPONSE_OPTIONS = [
 interface ClinicalScreeningFormProps {
   instrument: 'phq9' | 'gad7';
   onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void;
-  onCriticalFlag: () => void;
+  onCriticalFlag?: () => void;
   className?: string;
 }
 
@@ -31,12 +31,13 @@ export function ClinicalScreeningForm({
   const allAnswered = items.every((item) => responses[item.id] !== undefined);
 
   const handleChange = useCallback(
-    (itemId: string, value: number, index: number) => {
+    (itemId: string, value: number) => {
       setResponses((prev) => ({ ...prev, [itemId]: value }));
 
-      // PHQ-9 item 9 (index 8, 0-based) critical flag for suicidal ideation
-      if (instrument === 'phq9' && index === 8 && value > 0) {
-        onCriticalFlag();
+      // CRITICAL: PHQ-9 item 9 = suicidal ideation — any non-zero triggers safety flag
+      // Match on item ID (not array index) to be resilient to data reordering
+      if (instrument === 'phq9' && itemId === 'phq9_9' && value > 0) {
+        onCriticalFlag?.();
       }
     },
     [instrument, onCriticalFlag],
@@ -92,7 +93,7 @@ export function ClinicalScreeningForm({
                         name={item.id}
                         value={option.value}
                         checked={isSelected}
-                        onChange={() => handleChange(item.id, option.value, index)}
+                        onChange={() => handleChange(item.id, option.value)}
                         aria-label={option.label}
                         className="sr-only"
                       />

@@ -1,5 +1,3 @@
-'use client';
-
 export function ScreeningDisclaimer() {
   return (
     <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 text-sm text-stone-600">

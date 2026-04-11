@@ -74,13 +74,50 @@ describe('ClinicalScreeningForm', () => {
       />
     );
 
-    // Find item 9's radio group (last one) and select "Several days" (value 1)
-    const radioGroups = screen.getAllByRole('radiogroup');
-    const lastGroup = radioGroups[radioGroups.length - 1];
-    const severalDaysOption = lastGroup.querySelectorAll('input[type="radio"]')[1]; // index 1 = "Several days"
-    if (severalDaysOption) fireEvent.click(severalDaysOption);
+    // Find item 9 by its text content (suicidal ideation question)
+    const item9Legend = screen.getByText(/better off dead/i);
+    const item9Group = item9Legend.closest('fieldset')!;
+    const severalDaysOption = item9Group.querySelectorAll('input[type="radio"]')[1]; // index 1 = "Several days"
+    fireEvent.click(severalDaysOption);
 
     expect(onCriticalFlag).toHaveBeenCalled();
+  });
+
+  it('does NOT call onCriticalFlag for non-item-9 PHQ-9 responses', () => {
+    const onCriticalFlag = vi.fn();
+    render(
+      <ClinicalScreeningForm
+        instrument="phq9"
+        onComplete={vi.fn()}
+        onCriticalFlag={onCriticalFlag}
+      />
+    );
+
+    // Answer item 1 with "Nearly every day" (value 3) — should NOT trigger
+    const item1Legend = screen.getByText(/Little interest or pleasure/i);
+    const item1Group = item1Legend.closest('fieldset')!;
+    const nearlyEveryDay = item1Group.querySelectorAll('input[type="radio"]')[3];
+    fireEvent.click(nearlyEveryDay);
+
+    expect(onCriticalFlag).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call onCriticalFlag for GAD-7 responses', () => {
+    const onCriticalFlag = vi.fn();
+    render(
+      <ClinicalScreeningForm
+        instrument="gad7"
+        onComplete={vi.fn()}
+        onCriticalFlag={onCriticalFlag}
+      />
+    );
+
+    // Answer a GAD-7 item with max value — should never trigger critical flag
+    const radioGroups = screen.getAllByRole('radiogroup');
+    const nearlyEveryDay = radioGroups[0].querySelectorAll('input[type="radio"]')[3];
+    fireEvent.click(nearlyEveryDay);
+
+    expect(onCriticalFlag).not.toHaveBeenCalled();
   });
 
   it('disables submit button when not all questions answered', () => {
