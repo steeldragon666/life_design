@@ -88,7 +88,6 @@ export function requiresBillingGate(pathname: string): boolean {
     '/goals',
     '/meditations',
     '/rituals',
-    '/future-self',
     '/checkin',
     '/insights',
     '/profile',

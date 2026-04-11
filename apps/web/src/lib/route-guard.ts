@@ -9,7 +9,6 @@ const PROTECTED_GUEST_PREFIXES = [
   '/profile',
   '/settings',
   '/meditations',
-  '/future-self',
   '/rituals',
   '/journal',
   '/journey',

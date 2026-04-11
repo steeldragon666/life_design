@@ -17,7 +17,6 @@ describe('route-guard', () => {
     expect(isGuestProtectedPath('/goals/new')).toBe(true);
     expect(isGuestProtectedPath('/settings')).toBe(true);
     expect(isGuestProtectedPath('/meditations')).toBe(true);
-    expect(isGuestProtectedPath('/future-self')).toBe(true);
     expect(isGuestProtectedPath('/rituals/morning')).toBe(true);
   });
 
