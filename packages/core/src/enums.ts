@@ -69,11 +69,9 @@ export enum IntegrationProvider {
   Strava = 'strava',
   GoogleCalendar = 'google_calendar',
   Gmail = 'gmail',
-  Slack = 'slack',
   Weather = 'weather',
   Spotify = 'spotify',
   AppleHealth = 'apple_health',
-  Notion = 'notion',
   OpenBanking = 'banking',
 }
 

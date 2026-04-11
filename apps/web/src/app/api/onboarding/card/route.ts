@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const VALID_PROVIDERS = [
-  'strava', 'spotify', 'google_calendar', 'slack',
-  'notion', 'apple_health', 'banking',
+  'strava', 'spotify', 'google_calendar',
+  'apple_health', 'banking',
   'google_fit', 'samsung_health', 'screen_time',
 ];
 

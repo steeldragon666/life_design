@@ -285,78 +285,6 @@ function mapSpotify(payload: unknown): NormalizedSignal[] {
   return [withSignal(Dimension.Growth, score, confidence, payload)];
 }
 
-function mapNotion(payload: unknown): NormalizedSignal[] {
-  const record = toRecord(payload);
-  const results = toArray(record?.results ?? payload);
-  if (results.length === 0) return [];
-
-  let pageCount = 0;
-  let dbCount = 0;
-  let recentlyEdited = 0;
-  const now = Date.now();
-
-  for (const item of results) {
-    const itemRecord = toRecord(item);
-    if (!itemRecord) continue;
-    if (itemRecord.object === 'page') pageCount += 1;
-    if (itemRecord.object === 'database') dbCount += 1;
-
-    const editedTime =
-      typeof itemRecord.last_edited_time === 'string'
-        ? Date.parse(itemRecord.last_edited_time)
-        : Number.NaN;
-    if (!Number.isNaN(editedTime) && now - editedTime <= 7 * 24 * 60 * 60 * 1000) {
-      recentlyEdited += 1;
-    }
-  }
-
-  const activityScore = scoreFromRatio(pageCount, 30);
-  const structureScore = scoreFromRatio(dbCount, 8);
-  const recencyScore = scoreFromRatio(recentlyEdited, Math.max(1, pageCount / 2));
-  const score = activityScore * 0.45 + structureScore * 0.2 + recencyScore * 0.35;
-  const confidence = clamp(results.length / 40, 0.25, 1);
-
-  return [withSignal(Dimension.Growth, score, confidence, payload)];
-}
-
-function mapSlack(payload: unknown): NormalizedSignal[] {
-  const record = toRecord(payload);
-  const channels = toArray(record?.channels ?? record?.data ?? payload);
-  if (channels.length === 0) return [];
-
-  let activeChannelCount = 0;
-  let publicChannelCount = 0;
-  let privateChannelCount = 0;
-
-  for (const channel of channels) {
-    const channelRecord = toRecord(channel);
-    if (!channelRecord) continue;
-    if (channelRecord.is_channel === true || channelRecord.is_group === true) {
-      activeChannelCount += 1;
-    }
-    if (channelRecord.is_private === true) {
-      privateChannelCount += 1;
-    } else {
-      publicChannelCount += 1;
-    }
-  }
-
-  const collaborationScore = scoreFromRatio(activeChannelCount, 20);
-  const networkBreadthScore = scoreFromRatio(publicChannelCount, 15);
-  const focusedCoordinationScore = scoreFromRatio(privateChannelCount, 10);
-
-  const careerScore =
-    collaborationScore * 0.5 + networkBreadthScore * 0.25 + focusedCoordinationScore * 0.25;
-  const socialScore =
-    networkBreadthScore * 0.5 + collaborationScore * 0.3 + focusedCoordinationScore * 0.2;
-  const confidence = clamp(channels.length / 30, 0.2, 1);
-
-  return [
-    withSignal(Dimension.Career, careerScore, confidence, payload),
-    withSignal(Dimension.Social, socialScore, confidence, payload),
-  ];
-}
-
 function mapFallback(dimension: Dimension, payload: unknown): NormalizedSignal[] {
   return [withSignal(dimension, 5, 0.2, payload)];
 }
@@ -376,10 +304,6 @@ export function normalizeProviderPayload(
         return mapGoogleCalendar(payload);
       case IntegrationProvider.Spotify:
         return mapSpotify(payload);
-      case IntegrationProvider.Notion:
-        return mapNotion(payload);
-      case IntegrationProvider.Slack:
-        return mapSlack(payload);
       default:
         return [];
     }

@@ -129,7 +129,6 @@ describe('IntegrationProvider', () => {
     expect(IntegrationProvider.Strava).toBe('strava');
     expect(IntegrationProvider.GoogleCalendar).toBe('google_calendar');
     expect(IntegrationProvider.Gmail).toBe('gmail');
-    expect(IntegrationProvider.Slack).toBe('slack');
     expect(IntegrationProvider.Weather).toBe('weather');
   });
 });
