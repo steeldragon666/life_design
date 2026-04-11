@@ -31,7 +31,7 @@ interface CheckInFormProps {
 const QUICK_DIMENSIONS = ALL_DIMENSIONS.slice(0, 3);
 
 export default function CheckInForm({ onSubmit, loading, initialValues, prediction }: CheckInFormProps) {
-  const [mood, setMood] = useState(initialValues?.mood ?? 5);
+  const [mood, setMood] = useState(initialValues?.mood ?? 3);
   const [durationType, setDurationType] = useState<DurationType>(DurationType.Quick);
   const [scores, setScores] = useState<Record<string, number>>(() => {
     if (!initialValues?.scores) {
@@ -39,7 +39,7 @@ export default function CheckInForm({ onSubmit, loading, initialValues, predicti
     }
 
     return Object.fromEntries(
-      Object.entries(initialValues.scores).filter(([, score]) => typeof score === 'number' && score >= 1 && score <= 10),
+      Object.entries(initialValues.scores).filter(([, score]) => typeof score === 'number' && score >= 1 && score <= 5),
     );
   });
   const [notes, setNotes] = useState<Record<string, string>>({});

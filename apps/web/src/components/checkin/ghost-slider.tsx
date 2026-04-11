@@ -21,7 +21,7 @@ export interface GhostSliderProps {
 // ---------------------------------------------------------------------------
 
 const MIN = 1;
-const MAX = 10;
+const MAX = 5;
 const TRACK_HEIGHT = 6;
 const HANDLE_SIZE = 24;
 const GHOST_SIZE = 20;

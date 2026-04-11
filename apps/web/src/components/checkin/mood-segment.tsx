@@ -1,11 +1,11 @@
 'use client';
 
 const QUICK_MOOD_OPTIONS = [
-  { value: 2, emoji: '😞', label: 'Low' },
-  { value: 4, emoji: '🙂', label: 'Okay' },
-  { value: 6, emoji: '😌', label: 'Steady' },
-  { value: 8, emoji: '😊', label: 'Good' },
-  { value: 10, emoji: '😁', label: 'Great' },
+  { value: 1, emoji: '😞', label: 'Low' },
+  { value: 2, emoji: '🙂', label: 'Okay' },
+  { value: 3, emoji: '😌', label: 'Steady' },
+  { value: 4, emoji: '😊', label: 'Good' },
+  { value: 5, emoji: '😁', label: 'Great' },
 ] as const;
 
 interface MoodSegmentProps {
@@ -38,7 +38,7 @@ export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
               type="button"
               role="radio"
               aria-checked={selected}
-              aria-label={`${option.label} mood ${option.value} out of 10`}
+              aria-label={`${option.label} mood ${option.value} out of 5`}
               onClick={() => onChange(option.value)}
               onKeyDown={(event) => {
                 if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
