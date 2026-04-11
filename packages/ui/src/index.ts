@@ -10,5 +10,8 @@ export * from './hooks';
 // Components
 export * from './components';
 
+// Onboarding
+export * from './onboarding';
+
 // Legacy design system (deprecated — remove after migration)
 export * from './design-system';
