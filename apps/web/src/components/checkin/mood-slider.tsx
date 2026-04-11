@@ -6,11 +6,11 @@ interface MoodSliderProps {
 }
 
 const MOOD_OPTIONS = [
-  { value: 1, emoji: '\u{1F614}', label: 'Very Low' },
-  { value: 2, emoji: '\u{1F61E}', label: 'Low' },
-  { value: 3, emoji: '\u{1F610}', label: 'Okay' },
-  { value: 4, emoji: '\u{1F60A}', label: 'Good' },
-  { value: 5, emoji: '\u{1F601}', label: 'Great' },
+  { value: 1, emoji: '😞', label: 'Low' },
+  { value: 2, emoji: '🙂', label: 'Okay' },
+  { value: 3, emoji: '😌', label: 'Steady' },
+  { value: 4, emoji: '😊', label: 'Good' },
+  { value: 5, emoji: '😁', label: 'Great' },
 ] as const;
 
 export default function MoodSlider({ value, onChange }: MoodSliderProps) {

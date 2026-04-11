@@ -40,7 +40,7 @@ const DARK = 'var(--color-stone-900)';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert a score (1-10) to a percentage (0-100) for positioning. */
+/** Convert a score (1-5) to a percentage (0-100) for positioning. */
 function scoreToPercent(score: number): number {
   return ((Math.min(MAX, Math.max(MIN, score)) - MIN) / (MAX - MIN)) * 100;
 }
