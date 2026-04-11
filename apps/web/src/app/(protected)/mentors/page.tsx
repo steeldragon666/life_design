@@ -44,7 +44,7 @@ export default async function MentorsPage() {
             </h1>
           </div>
           <p className="text-stone-500 font-medium max-w-lg">
-            Choose a digital companion to guide your personal evolution. Each mentor brings a unique perspective to your life design journey.
+            Choose a digital companion to guide your personal evolution. Each mentor brings a unique perspective to your Opt In journey.
           </p>
         </div>
       </div>

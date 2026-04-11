@@ -80,7 +80,7 @@ export async function generatePsychometricNarrative(
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `You are a personal development coach. Generate a warm, encouraging 2-3 paragraph narrative summary connecting this person's psychometric profile to actionable life design insights. Write in second person ("You..."). Be specific about what the scores mean.
+    const prompt = `You are a personal development coach. Generate a warm, encouraging 2-3 paragraph narrative summary connecting this person's psychometric profile to actionable personal growth insights. Write in second person ("You..."). Be specific about what the scores mean.
 
 PERMA Wellbeing (0-10 scale):
 - Positive Emotion: ${profile.perma.positiveEmotion.toFixed(1)}
@@ -144,5 +144,5 @@ function buildFallbackNarrative(profile: PsychometricProfile): string {
     ? `Areas that could benefit from attention include ${areas.join(', ')}.`
     : '';
 
-  return `${strengthText} ${areaText} Your Life Design journey is tailored to build on these insights.`.trim();
+  return `${strengthText} ${areaText} Your Opt In journey is tailored to build on these insights.`.trim();
 }

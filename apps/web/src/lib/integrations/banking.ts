@@ -3,6 +3,10 @@
  * Requires OPENBANKING_CLIENT_ID and OPENBANKING_CLIENT_SECRET env variables.
  * Uses a registered AISP (Account Information Service Provider) connection.
  *
+ * TODO: SECURITY — Migrate to user_connections table with AES-256-GCM encryption
+ * via oauth-manager.ts. Currently stores tokens as plaintext in the legacy
+ * integrations table. See: packages/core/src/connectors/oauth-manager.ts
+ *
  * Used by the AI mentor system to:
  * - Track spending patterns and correlate with Finance dimension
  * - Detect unusual spending spikes

@@ -2,6 +2,10 @@
  * Notion integration using Notion API.
  * Requires NOTION_CLIENT_ID and NOTION_CLIENT_SECRET env variables.
  *
+ * TODO: SECURITY — Migrate to user_connections table with AES-256-GCM encryption
+ * via oauth-manager.ts. Currently stores tokens as plaintext in the legacy
+ * integrations table. See: packages/core/src/connectors/oauth-manager.ts
+ *
  * Used by the AI mentor system to:
  * - Track project progress and task completion rates
  * - Detect work overload from task volume

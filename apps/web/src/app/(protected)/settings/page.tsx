@@ -102,7 +102,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-serif text-3xl lg:text-4xl text-stone-900">Settings</h1>
-        <p className="text-sm text-stone-400 mt-1">Personalize your Life Design experience</p>
+        <p className="text-sm text-stone-400 mt-1">Personalize your Opt In experience</p>
       </div>
 
       {/* Profile */}
@@ -191,7 +191,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="mt-8 mb-4 text-center">
-        <p className="text-xs text-stone-300">Life Design &mdash; Crafted with care for meaningful living</p>
+        <p className="text-xs text-stone-300">Opt In &mdash; Crafted with care for meaningful living</p>
       </div>
     </div>
   );

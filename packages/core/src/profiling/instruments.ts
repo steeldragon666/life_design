@@ -499,6 +499,229 @@ const BPNS_ITEMS: PsychometricItem[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// MEQ-SA Chronotype (Horne & Ostberg) — 3 items, categorical
+// ---------------------------------------------------------------------------
+
+const CHRONOTYPE_ITEMS: PsychometricItem[] = [
+  {
+    id: 'chrono_1',
+    instrument: 'chronotype',
+    subscale: 'chronotype',
+    text: 'If you were entirely free to plan your day, what time would you get up?',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'chrono_2',
+    instrument: 'chronotype',
+    subscale: 'chronotype',
+    text: 'During the first half hour after waking, how alert do you feel?',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 4,
+  },
+  {
+    id: 'chrono_3',
+    instrument: 'chronotype',
+    subscale: 'chronotype',
+    text: 'At what time of day do you feel your best?',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// PSQI Short Form — Sleep Quality — 4 items, 0-3 scale
+// ---------------------------------------------------------------------------
+
+const SLEEP_QUALITY_ITEMS: PsychometricItem[] = [
+  {
+    id: 'sleep_1',
+    instrument: 'sleep',
+    subscale: 'sleepQuality',
+    text: 'During the past month, how would you rate your overall sleep quality?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'sleep_2',
+    instrument: 'sleep',
+    subscale: 'sleepQuality',
+    text: 'How often have you had trouble sleeping because you could not get to sleep within 30 minutes?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'sleep_3',
+    instrument: 'sleep',
+    subscale: 'sleepQuality',
+    text: 'How often have you had trouble staying asleep during the night?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'sleep_4',
+    instrument: 'sleep',
+    subscale: 'sleepQuality',
+    text: 'How often have you felt tired or had low energy during the day?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// PSS-4 Perceived Stress (Cohen) — 4 items, 0-4 scale
+// ---------------------------------------------------------------------------
+
+const STRESS_ITEMS: PsychometricItem[] = [
+  {
+    id: 'stress_1',
+    instrument: 'stress',
+    subscale: 'stress',
+    text: 'In the last month, how often have you felt that you were unable to control the important things in your life?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_2',
+    instrument: 'stress',
+    subscale: 'stress',
+    text: 'In the last month, how often have you felt confident about your ability to handle your personal problems?',
+    reversed: true,
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_3',
+    instrument: 'stress',
+    subscale: 'stress',
+    text: 'In the last month, how often have you felt that things were going your way?',
+    reversed: true,
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_4',
+    instrument: 'stress',
+    subscale: 'stress',
+    text: 'In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// SCS-SF Self-Compassion (Neff) — 6 items, 1-5 scale
+// ---------------------------------------------------------------------------
+
+const SELF_COMPASSION_ITEMS: PsychometricItem[] = [
+  {
+    id: 'sc_1',
+    instrument: 'selfCompassion',
+    subscale: 'selfKindness',
+    text: 'When I fail at something important to me, I try to keep things in perspective.',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_2',
+    instrument: 'selfCompassion',
+    subscale: 'selfJudgment',
+    text: "When I'm going through a hard time, I'm tough on myself.",
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_3',
+    instrument: 'selfCompassion',
+    subscale: 'commonHumanity',
+    text: "When something painful happens, I try to see it as part of everyone's experience.",
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_4',
+    instrument: 'selfCompassion',
+    subscale: 'isolation',
+    text: "When I fail, I feel like I'm the only one who struggles.",
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_5',
+    instrument: 'selfCompassion',
+    subscale: 'mindfulness',
+    text: 'When something upsets me, I try to observe my feelings without judging them.',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_6',
+    instrument: 'selfCompassion',
+    subscale: 'overIdentification',
+    text: "When I'm feeling down, I get carried away by negative feelings.",
+    reversed: true,
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Brief IPC Locus of Control (Levenson) — 3 items, 1-6 scale
+// ---------------------------------------------------------------------------
+
+const LOCUS_OF_CONTROL_ITEMS: PsychometricItem[] = [
+  {
+    id: 'loc_1',
+    instrument: 'locusOfControl',
+    subscale: 'internal',
+    text: 'My life is determined by my own actions.',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 6,
+  },
+  {
+    id: 'loc_2',
+    instrument: 'locusOfControl',
+    subscale: 'powerfulOthers',
+    text: 'Other people have a lot of influence over what happens in my life.',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 6,
+  },
+  {
+    id: 'loc_3',
+    instrument: 'locusOfControl',
+    subscale: 'chance',
+    text: 'To a great extent, my life is controlled by accidental happenings.',
+    reversed: false,
+    scaleMin: 1,
+    scaleMax: 6,
+  },
+];
+
+export const BASELINE_ITEMS: PsychometricItem[] = [
+  ...CHRONOTYPE_ITEMS,
+  ...SLEEP_QUALITY_ITEMS,
+  ...STRESS_ITEMS,
+  ...SELF_COMPASSION_ITEMS,
+  ...LOCUS_OF_CONTROL_ITEMS,
+];
+
+// ---------------------------------------------------------------------------
 // Combined export of all instrument items
 // ---------------------------------------------------------------------------
 
@@ -508,6 +731,7 @@ export const PSYCHOMETRIC_ITEMS: PsychometricItem[] = [
   ...GRIT_ITEMS,
   ...SWLS_ITEMS,
   ...BPNS_ITEMS,
+  ...BASELINE_ITEMS,
 ];
 
 // ---------------------------------------------------------------------------
@@ -515,9 +739,10 @@ export const PSYCHOMETRIC_ITEMS: PsychometricItem[] = [
 // ---------------------------------------------------------------------------
 
 export const PSYCHOMETRIC_SECTIONS = [
-  { id: 'wellbeing',    label: 'Your Wellbeing',   instrument: 'perma', questionCount: 15 },
-  { id: 'personality',  label: 'Your Personality',  instrument: 'tipi',  questionCount: 10 },
-  { id: 'drive',        label: 'Your Drive',         instrument: 'grit',  questionCount: 8  },
-  { id: 'satisfaction', label: 'Life Satisfaction',  instrument: 'swls',  questionCount: 5  },
-  { id: 'needs',        label: 'Your Needs',         instrument: 'bpns',  questionCount: 12 },
+  { id: 'wellbeing',    label: 'Your Wellbeing',    instrument: 'perma',          questionCount: 15 },
+  { id: 'baseline',     label: 'Your Baseline',     instrument: 'chronotype',     questionCount: 20, instruments: ['chronotype', 'sleep', 'stress', 'selfCompassion', 'locusOfControl'] as const },
+  { id: 'personality',  label: 'Your Personality',  instrument: 'tipi',           questionCount: 10 },
+  { id: 'drive',        label: 'Your Drive',        instrument: 'grit',           questionCount: 8  },
+  { id: 'satisfaction', label: 'Life Satisfaction',  instrument: 'swls',           questionCount: 5  },
+  { id: 'needs',        label: 'Your Needs',        instrument: 'bpns',           questionCount: 12 },
 ] as const;

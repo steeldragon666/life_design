@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Cookie names are intentionally kept as "life-design-oauth-*" for backward compatibility.
+// Renaming would break any in-flight OAuth callbacks and require cookie migration.
 const OAUTH_PENDING_COOKIE_BY_PROVIDER: Record<string, string> = {
   linkedin: 'life-design-oauth-linkedin',
   strava: 'life-design-oauth-strava',
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest) {
   const clearPendingCookie = (response: NextResponse) => {
     response.cookies.set(cookieName, '', {
       httpOnly: true,
-      secure: request.nextUrl.protocol === 'https:',
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 0,

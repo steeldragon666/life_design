@@ -6,21 +6,31 @@ import { SECTIONS, getQuestionsForSection } from '@/lib/profiling/question-schem
 import type { RawAnswers, ProfileSummaryTemplate, PsychometricProfile } from '@life-design/core';
 import { createClient } from '@/lib/supabase/client';
 import { useGuest } from '@/lib/guest-context';
+import { encryptLocalStorageString, decryptLocalStorageString } from '@/lib/local-storage-crypto';
 import ProgressBar from './progress-bar';
 import SectionHeader from './section-header';
 import QuestionRenderer from './question-renderer';
 import MentorIntro from './mentor-intro';
 import ProfileSummary from './profile-summary';
 
+const SESSION_STORAGE_KEY = 'opt-in-onboarding-session';
+const SESSION_CRYPTO_SCOPE = 'onboarding-session';
+
 type WizardPhase = 'loading' | 'section_intro' | 'question' | 'mentors' | 'completing' | 'summary';
 
-export default function ProfilingWizard() {
+interface ProfilingWizardProps {
+  embedded?: boolean;
+  onComplete?: (answers: RawAnswers, summary: ProfileSummaryTemplate | null) => void;
+  initialAnswers?: RawAnswers;
+}
+
+export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComplete, initialAnswers }: ProfilingWizardProps) {
   const router = useRouter();
   const { setProfile } = useGuest();
   const [phase, setPhase] = useState<WizardPhase>('loading');
   const [sectionIndex, setSectionIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<RawAnswers>({});
+  const [answers, setAnswers] = useState<RawAnswers>(initialAnswers ?? {});
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [summary, setSummary] = useState<ProfileSummaryTemplate | null>(null);
   const [userName, setUserName] = useState<string>('');
@@ -31,22 +41,29 @@ export default function ProfilingWizard() {
   // Initialise session
   useEffect(() => {
     async function init() {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      const isGuest = !session;
+      let user = null;
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getUser();
+        user = data?.user ?? null;
+      } catch {
+        // Supabase not configured — fall through to guest mode
+      }
+      const isGuest = !user;
 
       // Try to get user's name for personalized summary
-      if (session?.user?.user_metadata?.full_name) {
-        setUserName(session.user.user_metadata.full_name.split(' ')[0]);
-      } else if (session?.user?.email) {
-        setUserName(session.user.email.split('@')[0]);
+      if (user?.user_metadata?.full_name) {
+        setUserName(user.user_metadata.full_name.split(' ')[0]);
+      } else if (user?.email) {
+        setUserName(user.email.split('@')[0]);
       }
 
       if (isGuest) {
-        const savedSessionStr = localStorage.getItem('life-design-onboarding-session');
-        if (savedSessionStr) {
+        const rawSessionStr = localStorage.getItem(SESSION_STORAGE_KEY);
+        if (rawSessionStr) {
           try {
-            const statusData = JSON.parse(savedSessionStr);
+            const { plaintext } = await decryptLocalStorageString(rawSessionStr, SESSION_CRYPTO_SCOPE);
+            const statusData = JSON.parse(plaintext ?? rawSessionStr);
             if (statusData.status === 'completed') {
               router.push('/dashboard');
               return;
@@ -105,12 +122,15 @@ export default function ProfilingWizard() {
     setAnswers(newAnswers);
 
     if (sessionId === 'guest-session') {
-      localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+      const sessionJson = JSON.stringify({
         status: 'in_progress',
         raw_answers: newAnswers,
         current_section: currentSection?.id,
         current_step: questionIndex,
-      }));
+      });
+      encryptLocalStorageString(sessionJson, SESSION_CRYPTO_SCOPE).then((encrypted) => {
+        localStorage.setItem(SESSION_STORAGE_KEY, encrypted);
+      });
       return;
     }
 
@@ -137,10 +157,12 @@ export default function ProfilingWizard() {
       setSectionIndex((i) => i + 1);
       setQuestionIndex(0);
       setPhase('section_intro');
+    } else if (embedded && onEmbeddedComplete) {
+      onEmbeddedComplete(answers, null);
     } else {
       setPhase('mentors');
     }
-  }, [currentQuestion, questionIndex, sectionQuestions.length, sectionIndex, saveAnswer]);
+  }, [currentQuestion, questionIndex, sectionQuestions.length, sectionIndex, saveAnswer, embedded, onEmbeddedComplete, answers]);
 
   const handleBack = useCallback(() => {
     if (phase === 'section_intro' && sectionIndex > 0) {
@@ -185,12 +207,12 @@ export default function ProfilingWizard() {
 
         // Set onboarded cookie synchronously so middleware allows /dashboard
         // before the GuestProvider useEffect fires.
-        document.cookie = 'life-design-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
+        document.cookie = 'opt-in-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
 
-        localStorage.setItem('life-design-onboarding-session', JSON.stringify({
-          status: 'completed',
-          raw_answers: answers,
-        }));
+        const completedJson = JSON.stringify({ status: 'completed', raw_answers: answers });
+        encryptLocalStorageString(completedJson, SESSION_CRYPTO_SCOPE).then((enc) => {
+          localStorage.setItem(SESSION_STORAGE_KEY, enc);
+        });
 
         // Compute psychometric profile client-side for guest users
         const psychometricResponses: Record<string, number> = {};
@@ -215,11 +237,11 @@ export default function ProfilingWizard() {
       } catch (err) {
         console.error('Guest onboarding completion failed, using fallback summary', err);
         setProfile({ id: 'guest-user', onboarded: true });
-        document.cookie = 'life-design-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
-        localStorage.setItem('life-design-onboarding-session', JSON.stringify({
-          status: 'completed',
-          raw_answers: answers,
-        }));
+        document.cookie = 'opt-in-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
+        const fallbackJson = JSON.stringify({ status: 'completed', raw_answers: answers });
+        encryptLocalStorageString(fallbackJson, SESSION_CRYPTO_SCOPE).then((enc) => {
+          localStorage.setItem(SESSION_STORAGE_KEY, enc);
+        });
         setSummary(buildFallbackSummary());
         setPhase('summary');
       }
@@ -239,9 +261,18 @@ export default function ProfilingWizard() {
       const data = await res.json();
       if (!data.summary) throw new Error('No summary in response');
       setSummary(data.summary);
-      if (data.psychometric) {
-        setPsychometricProfile(data.psychometric);
-        setPsychometricNarrative(data.psychometricNarrative ?? '');
+
+      // Compute psychometric profile client-side for display (the full profile
+      // is saved server-side but not returned to minimize data exposure)
+      const { computePsychometricProfile } = await import('@life-design/core');
+      const psychResponses: Record<string, number> = {};
+      for (const [key, value] of Object.entries(answers)) {
+        if (key.startsWith('perma_') || key.startsWith('tipi_') || key.startsWith('grit_') || key.startsWith('swls_') || key.startsWith('bpns_')) {
+          psychResponses[key] = Number(value);
+        }
+      }
+      if (Object.keys(psychResponses).length >= 25) {
+        setPsychometricProfile(computePsychometricProfile(psychResponses));
       }
       setPhase('summary');
     } catch (err) {
@@ -271,7 +302,7 @@ export default function ProfilingWizard() {
 
   if (phase === 'section_intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-stone-50 to-stone-100">
+      <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
         <SectionHeader
           label={currentSection.label}
           questionCount={currentSection.questionCount}
@@ -288,7 +319,7 @@ export default function ProfilingWizard() {
       : (answers[currentQuestion.id] ?? null);
 
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-stone-50 to-stone-100">
+      <div className={`flex flex-col ${embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}`}>
         <header className="sticky top-0 z-50 px-4 py-4 bg-stone-50/80 backdrop-blur-sm">
           <div className="max-w-lg mx-auto flex items-center gap-3">
             {canGoBack && (

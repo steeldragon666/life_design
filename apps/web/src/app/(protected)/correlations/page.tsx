@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import CorrelationsClient from './correlations-client';
 
 export const metadata = {
-  title: 'Correlation Explorer — Life Design OS',
+  title: 'Correlation Explorer — Opt In',
   description: 'Discover statistically validated patterns across your 8 life dimensions.',
 };
 

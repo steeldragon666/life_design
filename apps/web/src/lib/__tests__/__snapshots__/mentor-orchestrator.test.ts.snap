@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'coach' x 'checkin' 1`] = `
-"You are Theo, the user's persistent Life Design companion.
+"You are Theo, the user's persistent Opt In companion.
 
 Archetype: Focused Coach
 Style:
@@ -32,7 +32,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'coach' x 'goals' 1`] = `
-"You are Theo, the user's persistent Life Design companion.
+"You are Theo, the user's persistent Opt In companion.
 
 Archetype: Focused Coach
 Style:
@@ -63,7 +63,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'coach' x 'meditation' 1`] = `
-"You are Theo, the user's persistent Life Design companion.
+"You are Theo, the user's persistent Opt In companion.
 
 Archetype: Focused Coach
 Style:
@@ -94,7 +94,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'coach' x 'mentors' 1`] = `
-"You are Theo, the user's persistent Life Design companion.
+"You are Theo, the user's persistent Opt In companion.
 
 Archetype: Focused Coach
 Style:
@@ -125,7 +125,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'coach' x 'onboarding' 1`] = `
-"You are Theo, the user's persistent Life Design companion.
+"You are Theo, the user's persistent Opt In companion.
 
 Archetype: Focused Coach
 Style:
@@ -156,7 +156,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'sage' x 'checkin' 1`] = `
-"You are Maya, the user's persistent Life Design companion.
+"You are Maya, the user's persistent Opt In companion.
 
 Archetype: Reflective Sage
 Style:
@@ -187,7 +187,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'sage' x 'goals' 1`] = `
-"You are Maya, the user's persistent Life Design companion.
+"You are Maya, the user's persistent Opt In companion.
 
 Archetype: Reflective Sage
 Style:
@@ -218,7 +218,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'sage' x 'meditation' 1`] = `
-"You are Maya, the user's persistent Life Design companion.
+"You are Maya, the user's persistent Opt In companion.
 
 Archetype: Reflective Sage
 Style:
@@ -249,7 +249,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'sage' x 'mentors' 1`] = `
-"You are Maya, the user's persistent Life Design companion.
+"You are Maya, the user's persistent Opt In companion.
 
 Archetype: Reflective Sage
 Style:
@@ -280,7 +280,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'sage' x 'onboarding' 1`] = `
-"You are Maya, the user's persistent Life Design companion.
+"You are Maya, the user's persistent Opt In companion.
 
 Archetype: Reflective Sage
 Style:
@@ -311,7 +311,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'therapist' x 'checkin' 1`] = `
-"You are Eleanor, the user's persistent Life Design companion.
+"You are Eleanor, the user's persistent Opt In companion.
 
 Archetype: Compassionate Therapist
 Style:
@@ -342,7 +342,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'therapist' x 'goals' 1`] = `
-"You are Eleanor, the user's persistent Life Design companion.
+"You are Eleanor, the user's persistent Opt In companion.
 
 Archetype: Compassionate Therapist
 Style:
@@ -373,7 +373,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'therapist' x 'meditation' 1`] = `
-"You are Eleanor, the user's persistent Life Design companion.
+"You are Eleanor, the user's persistent Opt In companion.
 
 Archetype: Compassionate Therapist
 Style:
@@ -404,7 +404,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'therapist' x 'mentors' 1`] = `
-"You are Eleanor, the user's persistent Life Design companion.
+"You are Eleanor, the user's persistent Opt In companion.
 
 Archetype: Compassionate Therapist
 Style:
@@ -435,7 +435,7 @@ Behavior rules:
 `;
 
 exports[`buildMentorSystemPrompt regression coverage > builds stable key prompt sections for 'therapist' x 'onboarding' 1`] = `
-"You are Eleanor, the user's persistent Life Design companion.
+"You are Eleanor, the user's persistent Opt In companion.
 
 Archetype: Compassionate Therapist
 Style:

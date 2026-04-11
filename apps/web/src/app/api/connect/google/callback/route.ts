@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { exchangeGoogleCode } from '@life-design/core';
 import { storeTokens } from '@life-design/core';
 
@@ -52,8 +52,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const tokens = await exchangeGoogleCode(code);
 
     // ── Store encrypted tokens ─────────────────────────────────────────────
-    const { createClient: createServiceClient } = await import('@/lib/supabase/server');
-    const serviceSupabase = await createServiceClient();
+    // Use the service role client — user_connections INSERT requires service_role
+    // (RLS intentionally restricts authenticated users to SELECT/DELETE only).
+    const serviceSupabase = createServiceRoleClient();
 
     await storeTokens(
       serviceSupabase,

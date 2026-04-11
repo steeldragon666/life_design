@@ -55,7 +55,7 @@ describe('ProfilingWizard', () => {
 
   it('redirects to dashboard if onboarding already completed', async () => {
     // Guest mode: saved completed session
-    localStorage.setItem('life-design-onboarding-session', JSON.stringify({
+    localStorage.setItem('opt-in-onboarding-session', JSON.stringify({
       status: 'completed',
       raw_answers: {},
     }));

@@ -26,11 +26,11 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: 'Life Design — Your entire life, intelligently connected',
+  title: 'Opt In — Your entire life, intelligently connected',
   description:
     'Discover hidden patterns across health, career, relationships and growth. AI-powered insights that connect all 8 dimensions of your life.',
   openGraph: {
-    title: 'Life Design — Your entire life, intelligently connected',
+    title: 'Opt In — Your entire life, intelligently connected',
     description:
       'Discover hidden patterns across health, career, relationships and growth.',
     type: 'website',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Life Design — Your entire life, intelligently connected',
+    title: 'Opt In — Your entire life, intelligently connected',
     description:
       'Discover hidden patterns across health, career, relationships and growth.',
     images: ['/og-image.png'],
@@ -62,7 +62,7 @@ export default function RootLayout({
         {/* iOS PWA support */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Life Design" />
+        <meta name="apple-mobile-web-app-title" content="Opt In" />
         <link rel="apple-touch-icon" href="/icons/icon-512.png" />
       </head>
       <body className="font-sans antialiased selection:bg-sage-500/30">

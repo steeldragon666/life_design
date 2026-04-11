@@ -78,7 +78,7 @@ export default function SettingsClient({ integrations }: SettingsClientProps) {
       const { url } = await getSpotifyAuthUrl();
       if (url) window.location.href = url;
     } else if (provider === 'apple_health') {
-      alert('Apple Health syncs automatically from the Life Design iOS app. Download it to connect your health data.');
+      alert('Apple Health syncs automatically from the Opt In iOS app. Download it to connect your health data.');
     } else if (provider === 'notion') {
       const { url } = await getNotionAuthUrl();
       if (url) window.location.href = url;

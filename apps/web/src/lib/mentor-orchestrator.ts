@@ -24,7 +24,7 @@ export function buildMentorSystemPrompt(
   const moodSummary = buildMoodModifierSummary(context.mood);
   const memorySnapshot = buildConversationMemorySnapshot(context.memory);
 
-  return `You are ${mentor.characterName}, the user's persistent Life Design companion.
+  return `You are ${mentor.characterName}, the user's persistent Opt In companion.
 
 Archetype: ${archetype.label}
 Style:

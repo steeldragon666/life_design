@@ -6,9 +6,9 @@ import Link from 'next/link';
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Life Design',
+  title: 'Privacy Policy | Opt In',
   description:
-    'How Life Design collects, uses, and protects your personal data — including health, financial, and calendar information.',
+    'How Opt In collects, uses, and protects your personal data — including health, financial, and calendar information.',
   alternates: { canonical: '/privacy' },
   robots: { index: true, follow: true },
 };
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
             Last updated: {lastUpdated}
           </p>
           <p className="mt-4 text-stone-400 leading-relaxed">
-            Your privacy is foundational to what Life Design does. This policy explains
+            Your privacy is foundational to what Opt In does. This policy explains
             exactly what data we collect, how we use it, and the rights you have over it.
             We believe in plain language, not legalese — but some sections are marked for
             formal legal review before publication.
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
         <SectionHeading id="data-use">2. How We Use Your Data</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed">
-          Your data is used exclusively to provide the Life Design service to you.
+          Your data is used exclusively to provide the Opt In service to you.
           We will never sell your data to third parties or use it for advertising.
         </p>
 
@@ -231,7 +231,7 @@ export default function PrivacyPage() {
               name: 'Stripe',
               role: 'Payment processing',
               detail:
-                "Stripe processes all subscription payments. Life Design never stores raw card data. Stripe is PCI DSS Level 1 certified. Stripe may transfer data internationally under Standard Contractual Clauses.",
+                "Stripe processes all subscription payments. Opt In never stores raw card data. Stripe is PCI DSS Level 1 certified. Stripe may transfer data internationally under Standard Contractual Clauses.",
               url: 'https://stripe.com/privacy',
             },
             {
@@ -274,7 +274,7 @@ export default function PrivacyPage() {
         <SectionHeading id="apple-health">4. Apple Health Data</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed">
-          Life Design requests read-only access to Apple Health data solely to compute
+          Opt In requests read-only access to Apple Health data solely to compute
           the health and fitness features listed in Section 1.3. We handle this data
           with particular care:
         </p>
@@ -303,7 +303,7 @@ export default function PrivacyPage() {
         </ul>
 
         <p className="mt-4 text-sm text-stone-500">
-          Life Design complies with Apple&apos;s HealthKit guidelines and App Store Review
+          Opt In complies with Apple&apos;s HealthKit guidelines and App Store Review
           Guidelines Section 5.1.3 (Health &amp; Fitness Apps).
         </p>
 
@@ -430,7 +430,7 @@ export default function PrivacyPage() {
         <SectionHeading id="children">8. Children&apos;s Privacy</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed">
-          Life Design is not directed at children under 16 years of age (or the relevant
+          Opt In is not directed at children under 16 years of age (or the relevant
           age of digital consent in your jurisdiction). We do not knowingly collect
           personal data from children. If you believe a child has provided us with their
           data, please contact us and we will delete it promptly.
@@ -460,7 +460,7 @@ export default function PrivacyPage() {
           For all privacy matters:
         </p>
         <address className="mt-3 not-italic text-sm text-stone-400 space-y-1">
-          <p className="font-semibold text-white">Life Design</p>
+          <p className="font-semibold text-white">Opt In</p>
           <p>[Registered company name and address — to be completed]</p>
           <p>
             Email:{' '}

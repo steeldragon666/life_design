@@ -6,9 +6,9 @@ import Link from 'next/link';
 // ---------------------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Life Design',
+  title: 'Terms of Service | Opt In',
   description:
-    'Terms and conditions for using Life Design — subscriptions, cancellations, data ownership, and acceptable use.',
+    'Terms and conditions for using Opt In — subscriptions, cancellations, data ownership, and acceptable use.',
   alternates: { canonical: '/terms' },
   robots: { index: true, follow: true },
 };
@@ -81,7 +81,7 @@ export default function TermsPage() {
             Last updated: {lastUpdated}
           </p>
           <p className="mt-4 text-stone-400 leading-relaxed">
-            These Terms of Service (&ldquo;Terms&rdquo;) govern your use of Life Design
+            These Terms of Service (&ldquo;Terms&rdquo;) govern your use of Opt In
             (&ldquo;Service&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;). By creating an account or using the Service
             you agree to these Terms. Please read them carefully.
           </p>
@@ -125,7 +125,7 @@ export default function TermsPage() {
 
         <p className="text-stone-400 leading-relaxed">
           You must be at least 16 years old (or the age of digital consent in your
-          jurisdiction, whichever is higher) to use Life Design. By using the Service
+          jurisdiction, whichever is higher) to use Opt In. By using the Service
           you represent that you meet this requirement. We reserve the right to
           terminate accounts where we have reason to believe this requirement is not met.
         </p>
@@ -136,7 +136,7 @@ export default function TermsPage() {
         <SectionHeading id="subscriptions">2. Subscription Plans &amp; Pricing</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed mb-4">
-          Life Design is offered on the following plans. All prices are in USD and
+          Opt In is offered on the following plans. All prices are in USD and
           exclusive of any applicable taxes.
         </p>
 
@@ -264,12 +264,12 @@ export default function TermsPage() {
 
         <p className="text-stone-400 leading-relaxed">
           <strong className="text-white">You own your data.</strong> All check-ins, health metrics, journal entries,
-          and other personal data you create in Life Design remain yours. We do not
+          and other personal data you create in Opt In remain yours. We do not
           claim any ownership rights over your data.
         </p>
         <ul className="mt-4 list-disc pl-5 space-y-2 text-sm text-stone-400">
           <li>
-            You grant Life Design a limited, non-exclusive, revocable licence to
+            You grant Opt In a limited, non-exclusive, revocable licence to
             process your data for the sole purpose of providing the Service to you.
           </li>
           <li>
@@ -291,7 +291,7 @@ export default function TermsPage() {
         <SectionHeading id="acceptable-use">7. Acceptable Use</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed mb-3">
-          You agree not to use Life Design to:
+          You agree not to use Opt In to:
         </p>
         <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
           <li>Violate any applicable law or regulation</li>
@@ -319,8 +319,8 @@ export default function TermsPage() {
         <SectionHeading id="intellectual-property">8. Intellectual Property</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed">
-          The Life Design application, website, algorithms, branding, and content
-          (excluding user-generated data) are owned by or licensed to Life Design and
+          The Opt In application, website, algorithms, branding, and content
+          (excluding user-generated data) are owned by or licensed to Opt In and
           protected by applicable intellectual property laws. You may not reproduce,
           distribute, or create derivative works without our express written permission.
         </p>
@@ -335,7 +335,7 @@ export default function TermsPage() {
 
         <SubHeading>Not medical or financial advice</SubHeading>
         <p className="text-sm text-stone-400 leading-relaxed">
-          Life Design provides data analysis, pattern recognition, and AI-generated
+          Opt In provides data analysis, pattern recognition, and AI-generated
           insights for informational and personal development purposes only.
           Nothing in the Service constitutes medical, psychological, financial,
           legal, or professional advice. Always consult a qualified professional
@@ -353,7 +353,7 @@ export default function TermsPage() {
 
         <SubHeading>Limitation of liability</SubHeading>
         <p className="text-sm text-stone-400 leading-relaxed">
-          To the maximum extent permitted by applicable law, Life Design shall not
+          To the maximum extent permitted by applicable law, Opt In shall not
           be liable for any indirect, incidental, special, consequential, or punitive
           damages, or loss of profits, data, or goodwill. Our total cumulative
           liability to you for claims arising under these Terms shall not exceed the
@@ -373,7 +373,7 @@ export default function TermsPage() {
         <SectionHeading id="indemnification">10. Indemnification</SectionHeading>
 
         <p className="text-stone-400 leading-relaxed">
-          You agree to indemnify and hold harmless Life Design and its officers,
+          You agree to indemnify and hold harmless Opt In and its officers,
           employees, and agents from any claims, damages, losses, and expenses
           (including reasonable legal fees) arising from your use of the Service
           in breach of these Terms, or from your violation of any law or the rights
@@ -437,7 +437,7 @@ export default function TermsPage() {
         {/* Insert registered company name, ABN, and registered address */}
 
         <address className="not-italic text-sm text-stone-400 space-y-1">
-          <p className="font-semibold text-white">Life Design</p>
+          <p className="font-semibold text-white">Opt In</p>
           <p>[Registered company name and address — to be completed]</p>
           <p>
             Email:{' '}

@@ -1,6 +1,24 @@
 'use client';
 
+/**
+ * Client-side localStorage obfuscation layer (AES-256-GCM).
+ *
+ * SECURITY NOTE: This module provides **obfuscation, not true encryption**.
+ * The key is derived deterministically from publicly available values
+ * (NEXT_PUBLIC_SUPABASE_ANON_KEY, browser fingerprint), all of which are
+ * accessible to any script running on the same origin. This means:
+ *
+ *  - It DOES protect against: casual inspection via DevTools on shared devices.
+ *  - It does NOT protect against: XSS attacks (an attacker can reconstruct the
+ *    key from the same public inputs) or motivated physical-access adversaries.
+ *
+ * The real defense against token theft is XSS prevention (CSP headers, input
+ * sanitization) and moving sensitive tokens server-side where possible.
+ */
+
 const ENCRYPTION_PREFIX = 'ld-enc-v1:';
+// IMPORTANT: Do not rename — existing encrypted localStorage data depends on this value.
+// Changing it would make all previously encrypted blobs permanently undecryptable.
 const DEFAULT_APP_SCOPE = 'life-design-web';
 
 type EncryptedPayloadV1 = {

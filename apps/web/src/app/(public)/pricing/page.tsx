@@ -28,7 +28,7 @@ export default function PricingPage() {
       <div className="mb-10 space-y-3 text-center">
         <h1 className="text-4xl font-semibold tracking-tight text-white">Pricing</h1>
         <p className="text-stone-400">
-          Choose a plan that supports your life design journey with guided rituals and AI mentorship.
+          Choose a plan that supports your Opt In journey with guided rituals and AI mentorship.
         </p>
       </div>
 

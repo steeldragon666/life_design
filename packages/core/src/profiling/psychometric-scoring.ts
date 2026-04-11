@@ -7,6 +7,12 @@ import type {
   SWLSScore,
   BPNSScores,
   PsychometricProfile,
+  ChronotypeScore,
+  SleepQualityScore,
+  StressScore,
+  SelfCompassionScore,
+  LocusOfControlScore,
+  ExtendedPsychometricProfile,
 } from './psychometric-types';
 
 // ---------------------------------------------------------------------------
@@ -167,6 +173,101 @@ export function scoreBPNS(responses: Record<string, number>): BPNSScores {
 }
 
 // ---------------------------------------------------------------------------
+// MEQ-SA Chronotype (Horne & Ostberg)
+// Items: chrono_1..chrono_3
+// Sum range: 3-14, thresholds: >=12 definite_morning, >=10 moderate_morning,
+//            >=7 intermediate, >=5 moderate_evening, <5 definite_evening
+// ---------------------------------------------------------------------------
+
+export function scoreChronotype(responses: Record<string, number>): ChronotypeScore {
+  const raw = (responses['chrono_1'] ?? 0) + (responses['chrono_2'] ?? 0) + (responses['chrono_3'] ?? 0);
+  let type: ChronotypeScore['type'];
+  if (raw >= 12) type = 'definite_morning';
+  else if (raw >= 10) type = 'moderate_morning';
+  else if (raw >= 7) type = 'intermediate';
+  else if (raw >= 5) type = 'moderate_evening';
+  else type = 'definite_evening';
+  return { type, raw };
+}
+
+// ---------------------------------------------------------------------------
+// PSQI Short Form — Sleep Quality
+// Items: sleep_1..sleep_4, 0-3 scale
+// Sum range: 0-12, thresholds: <=4 good, <=8 fair, >8 poor
+// ---------------------------------------------------------------------------
+
+export function scoreSleepQuality(responses: Record<string, number>): SleepQualityScore {
+  const score = (responses['sleep_1'] ?? 0) + (responses['sleep_2'] ?? 0)
+    + (responses['sleep_3'] ?? 0) + (responses['sleep_4'] ?? 0);
+  let quality: SleepQualityScore['quality'];
+  if (score <= 4) quality = 'good';
+  else if (score <= 8) quality = 'fair';
+  else quality = 'poor';
+  return { score, quality };
+}
+
+// ---------------------------------------------------------------------------
+// PSS-4 Perceived Stress (Cohen)
+// Items: stress_1..stress_4, 0-4 scale
+// Reversed items: stress_2, stress_3
+// Sum range: 0-16, thresholds: <=5 low, <=10 moderate, >10 high
+// ---------------------------------------------------------------------------
+
+export function scoreStress(responses: Record<string, number>): StressScore {
+  const s1 = responses['stress_1'] ?? 0;
+  const s2 = reverse(responses['stress_2'] ?? 0, 0, 4);
+  const s3 = reverse(responses['stress_3'] ?? 0, 0, 4);
+  const s4 = responses['stress_4'] ?? 0;
+  const score = s1 + s2 + s3 + s4;
+  let level: StressScore['level'];
+  if (score <= 5) level = 'low';
+  else if (score <= 10) level = 'moderate';
+  else level = 'high';
+  return { score, level };
+}
+
+// ---------------------------------------------------------------------------
+// SCS-SF Self-Compassion (Neff)
+// Items: sc_1..sc_6, 1-5 scale
+// Reversed items: sc_2, sc_4, sc_6
+// Score: mean of 6 items (after reversal), thresholds: >=3.5 high, >=2.5 moderate, <2.5 low
+// ---------------------------------------------------------------------------
+
+export function scoreSelfCompassion(responses: Record<string, number>): SelfCompassionScore {
+  const items = [
+    responses['sc_1'] ?? 0,
+    reverse(responses['sc_2'] ?? 0, 1, 5),
+    responses['sc_3'] ?? 0,
+    reverse(responses['sc_4'] ?? 0, 1, 5),
+    responses['sc_5'] ?? 0,
+    reverse(responses['sc_6'] ?? 0, 1, 5),
+  ];
+  const score = Math.round((items.reduce((a, b) => a + b, 0) / items.length) * 100) / 100;
+  let level: SelfCompassionScore['level'];
+  if (score >= 3.5) level = 'high';
+  else if (score >= 2.5) level = 'moderate';
+  else level = 'low';
+  return { score, level };
+}
+
+// ---------------------------------------------------------------------------
+// Brief IPC Locus of Control (Levenson)
+// Items: loc_1..loc_3, 1-6 scale
+// No reversals; dominant = highest subscale
+// ---------------------------------------------------------------------------
+
+export function scoreLocusOfControl(responses: Record<string, number>): LocusOfControlScore {
+  const internal = responses['loc_1'] ?? 0;
+  const powerfulOthers = responses['loc_2'] ?? 0;
+  const chance = responses['loc_3'] ?? 0;
+  let dominant: LocusOfControlScore['dominant'];
+  if (internal >= powerfulOthers && internal >= chance) dominant = 'internal';
+  else if (powerfulOthers >= chance) dominant = 'powerful_others';
+  else dominant = 'chance';
+  return { internal, powerfulOthers, chance, dominant };
+}
+
+// ---------------------------------------------------------------------------
 // Composite profile
 // ---------------------------------------------------------------------------
 
@@ -182,5 +283,24 @@ export function computePsychometricProfile(responses: Record<string, number>): P
     grit:  scoreGrit(responses),
     swls:  scoreSWLS(responses),
     bpns:  scoreBPNS(responses),
+  };
+}
+
+/**
+ * Computes the extended psychometric profile including baseline instruments.
+ *
+ * TODO: Wire into onboarding completion flow (Phase 2) — currently exported
+ * but not called from any code path. The /api/onboarding/complete route and
+ * guest-mode completion in profiling-wizard.tsx should call this instead of
+ * computePsychometricProfile once the baseline questions are live.
+ */
+export function computeExtendedPsychometricProfile(responses: Record<string, number>): ExtendedPsychometricProfile {
+  return {
+    ...computePsychometricProfile(responses),
+    chronotype: scoreChronotype(responses),
+    sleepQuality: scoreSleepQuality(responses),
+    stress: scoreStress(responses),
+    selfCompassion: scoreSelfCompassion(responses),
+    locusOfControl: scoreLocusOfControl(responses),
   };
 }

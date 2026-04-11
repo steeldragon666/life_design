@@ -55,10 +55,51 @@ export interface PsychometricProfile {
   bpns: BPNSScores;
 }
 
+/** MEQ-SA Chronotype (Horne & Ostberg) — categorical result */
+export interface ChronotypeScore {
+  type: 'definite_morning' | 'moderate_morning' | 'intermediate' | 'moderate_evening' | 'definite_evening';
+  raw: number;
+}
+
+/** PSQI Short Form — Sleep Quality (0-3 scale per item) */
+export interface SleepQualityScore {
+  score: number;
+  quality: 'good' | 'fair' | 'poor';
+}
+
+/** PSS-4 Perceived Stress (Cohen) — 0-4 scale per item */
+export interface StressScore {
+  score: number;
+  level: 'low' | 'moderate' | 'high';
+}
+
+/** SCS-SF Self-Compassion (Neff) — 1-5 scale per item */
+export interface SelfCompassionScore {
+  score: number;
+  level: 'low' | 'moderate' | 'high';
+}
+
+/** Brief IPC Locus of Control (Levenson) — 1-6 scale per item */
+export interface LocusOfControlScore {
+  internal: number;
+  powerfulOthers: number;
+  chance: number;
+  dominant: 'internal' | 'powerful_others' | 'chance';
+}
+
+/** Extended psychometric profile including baseline instruments */
+export interface ExtendedPsychometricProfile extends PsychometricProfile {
+  chronotype: ChronotypeScore;
+  sleepQuality: SleepQualityScore;
+  stress: StressScore;
+  selfCompassion: SelfCompassionScore;
+  locusOfControl: LocusOfControlScore;
+}
+
 /** Item definition for validated psychometric instruments */
 export interface PsychometricItem {
   id: string;
-  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns';
+  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns' | 'chronotype' | 'sleep' | 'stress' | 'selfCompassion' | 'locusOfControl';
   subscale: string;
   text: string;
   reversed: boolean;

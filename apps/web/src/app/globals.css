@@ -237,6 +237,15 @@
 .stagger-4 { animation-delay: 0.4s; opacity: 0; }
 .stagger-5 { animation-delay: 0.5s; opacity: 0; }
 
+/* Onboarding card transitions */
+.card-enter-active {
+  animation: cardSlideIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes cardSlideIn {
+  from { transform: translateX(60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 /* Mentor avatar state animations */
 @keyframes mentorSpeaking {
   0%, 100% { box-shadow: 0 0 0 0 var(--accent, rgba(139,92,246,0.6)); }

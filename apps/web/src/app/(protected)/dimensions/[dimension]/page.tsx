@@ -14,9 +14,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps) {
   const { dimension } = await params;
   const label = DIMENSION_LABELS[dimension as Dimension];
-  if (!label) return { title: 'Dimension — Life Design OS' };
+  if (!label) return { title: 'Dimension — Opt In' };
   return {
-    title: `${label} — Life Design OS`,
+    title: `${label} — Opt In`,
     description: `Deep dive into your ${label.toLowerCase()} dimension: score history, feature contributions, cross-dimension correlations, forecasts, and recommended actions.`,
   };
 }

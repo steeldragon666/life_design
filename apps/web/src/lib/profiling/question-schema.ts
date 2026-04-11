@@ -4,6 +4,7 @@ import type { SectionMeta } from './types';
 export const SECTIONS: SectionMeta[] = [
   { id: 'goal', label: 'Your Goal', questionCount: 3 },
   { id: 'wellbeing', label: 'Your Wellbeing', questionCount: 15 },
+  { id: 'baseline', label: 'Your Baseline', questionCount: 20 },
   { id: 'personality', label: 'Your Personality', questionCount: 10 },
   { id: 'drive', label: 'Your Drive', questionCount: 8 },
   { id: 'satisfaction', label: 'Life Satisfaction', questionCount: 5 },
@@ -184,6 +185,215 @@ export const QUESTIONS: QuestionDefinition[] = [
     question: 'How often are you able to handle your responsibilities?',
     scaleMin: 0,
     scaleMax: 10,
+  },
+
+  // =========================================================================
+  // Section: baseline — Chronotype, Sleep, Stress, Self-Compassion, Locus of Control
+  // 17 items across 5 validated instruments
+  // NOTE: Question text mirrors packages/core/src/profiling/instruments.ts
+  // (BASELINE_ITEMS). The core package owns scoring metadata (scales, reverse
+  // flags, subscales); this file owns UI presentation (option labels, types).
+  // If you update question wording, update both locations.
+  // =========================================================================
+
+  // Chronotype (MEQ-SA short form)
+  {
+    id: 'chrono_1',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'If you were entirely free to plan your day, what time would you get up?',
+    options: [
+      { value: '5', label: 'Before 6:30am' },
+      { value: '4', label: '6:30–7:30am' },
+      { value: '3', label: '7:30–9:00am' },
+      { value: '2', label: '9:00–11:00am' },
+      { value: '1', label: 'After 11:00am' },
+    ],
+  },
+  {
+    id: 'chrono_2',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'During the first half hour after waking, how alert do you feel?',
+    options: [
+      { value: '4', label: 'Very alert' },
+      { value: '3', label: 'Fairly alert' },
+      { value: '2', label: 'Fairly groggy' },
+      { value: '1', label: 'Very groggy' },
+    ],
+  },
+  {
+    id: 'chrono_3',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'At what time of day do you feel your best?',
+    options: [
+      { value: '5', label: 'Early morning' },
+      { value: '4', label: 'Late morning' },
+      { value: '3', label: 'Afternoon' },
+      { value: '2', label: 'Early evening' },
+      { value: '1', label: 'Late evening / night' },
+    ],
+  },
+
+  // Sleep Quality (PSQI short form) — 0-3 scale
+  {
+    id: 'sleep_1',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'During the past month, how would you rate your overall sleep quality?',
+    options: [
+      { value: '0', label: 'Very good' },
+      { value: '1', label: 'Fairly good' },
+      { value: '2', label: 'Fairly bad' },
+      { value: '3', label: 'Very bad' },
+    ],
+  },
+  {
+    id: 'sleep_2',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'How often have you had trouble falling asleep within 30 minutes?',
+    options: [
+      { value: '0', label: 'Not at all' },
+      { value: '1', label: 'Less than once a week' },
+      { value: '2', label: 'Once or twice a week' },
+      { value: '3', label: 'Three or more times a week' },
+    ],
+  },
+  {
+    id: 'sleep_3',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'How often have you had trouble staying asleep during the night?',
+    options: [
+      { value: '0', label: 'Not at all' },
+      { value: '1', label: 'Less than once a week' },
+      { value: '2', label: 'Once or twice a week' },
+      { value: '3', label: 'Three or more times a week' },
+    ],
+  },
+  {
+    id: 'sleep_4',
+    section: 'baseline',
+    type: 'single_select',
+    question: 'How often have you felt tired or had low energy during the day?',
+    options: [
+      { value: '0', label: 'Not at all' },
+      { value: '1', label: 'Less than once a week' },
+      { value: '2', label: 'Once or twice a week' },
+      { value: '3', label: 'Three or more times a week' },
+    ],
+  },
+
+  // Perceived Stress (PSS-4) — 0-4 scale
+  {
+    id: 'stress_1',
+    section: 'baseline',
+    type: 'scale',
+    question: 'In the last month, how often have you felt unable to control the important things in your life?',
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_2',
+    section: 'baseline',
+    type: 'scale',
+    question: 'In the last month, how often have you felt confident about handling your personal problems?',
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_3',
+    section: 'baseline',
+    type: 'scale',
+    question: 'In the last month, how often have you felt things were going your way?',
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+  {
+    id: 'stress_4',
+    section: 'baseline',
+    type: 'scale',
+    question: 'In the last month, how often have you felt difficulties piling up so high you could not overcome them?',
+    scaleMin: 0,
+    scaleMax: 4,
+  },
+
+  // Self-Compassion (SCS-SF) — 1-5 scale
+  {
+    id: 'sc_1',
+    section: 'baseline',
+    type: 'scale',
+    question: 'When I fail at something important, I try to keep things in perspective.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_2',
+    section: 'baseline',
+    type: 'scale',
+    question: "When I'm going through a hard time, I'm tough on myself.",
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_3',
+    section: 'baseline',
+    type: 'scale',
+    question: "When something painful happens, I try to see it as part of everyone's experience.",
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_4',
+    section: 'baseline',
+    type: 'scale',
+    question: "When I fail, I feel like I'm the only one who struggles.",
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_5',
+    section: 'baseline',
+    type: 'scale',
+    question: 'When something upsets me, I try to observe my feelings without judging them.',
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+  {
+    id: 'sc_6',
+    section: 'baseline',
+    type: 'scale',
+    question: "When I'm feeling down, I get carried away by negative feelings.",
+    scaleMin: 1,
+    scaleMax: 5,
+  },
+
+  // Locus of Control (Brief IPC) — 1-6 scale
+  {
+    id: 'loc_1',
+    section: 'baseline',
+    type: 'scale',
+    question: 'My life is determined by my own actions.',
+    scaleMin: 1,
+    scaleMax: 6,
+  },
+  {
+    id: 'loc_2',
+    section: 'baseline',
+    type: 'scale',
+    question: 'Other people have a lot of influence over what happens in my life.',
+    scaleMin: 1,
+    scaleMax: 6,
+  },
+  {
+    id: 'loc_3',
+    section: 'baseline',
+    type: 'scale',
+    question: 'To a great extent, my life is controlled by accidental happenings.',
+    scaleMin: 1,
+    scaleMax: 6,
   },
 
   // =========================================================================

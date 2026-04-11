@@ -1,7 +1,7 @@
 'use client';
 
-import ProfilingWizard from '@/components/onboarding/profiling-wizard';
+import OnboardingFlow from '@/components/onboarding/onboarding-flow';
 
 export default function OnboardingPage() {
-  return <ProfilingWizard />;
+  return <OnboardingFlow />;
 }

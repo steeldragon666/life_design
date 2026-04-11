@@ -6,9 +6,14 @@ import {
   scoreSWLS,
   scoreBPNS,
   computePsychometricProfile,
+  scoreChronotype,
+  scoreSleepQuality,
+  scoreStress,
+  scoreSelfCompassion,
+  scoreLocusOfControl,
 } from '../psychometric-scoring';
 import { PSYCHOMETRIC_ITEMS, PSYCHOMETRIC_SECTIONS } from '../instruments';
-import type { PsychometricItem } from '../psychometric-types';
+import type { PsychometricItem, SWLSScore } from '../psychometric-types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -35,8 +40,8 @@ function fullUniformResponses(value: number): Record<string, number> {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_ITEMS', () => {
-  it('contains exactly 50 items', () => {
-    expect(PSYCHOMETRIC_ITEMS).toHaveLength(50);
+  it('contains exactly 70 items (50 original + 20 baseline)', () => {
+    expect(PSYCHOMETRIC_ITEMS).toHaveLength(70);
   });
 
   it('contains 15 PERMA items', () => {
@@ -64,9 +69,15 @@ describe('PSYCHOMETRIC_ITEMS', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('all item IDs are prefixed with their instrument name', () => {
+  it('all item IDs are prefixed with their instrument-specific prefix', () => {
+    const prefixMap: Record<string, string> = {
+      perma: 'perma', tipi: 'tipi', grit: 'grit', swls: 'swls', bpns: 'bpns',
+      chronotype: 'chrono', sleep: 'sleep', stress: 'stress',
+      selfCompassion: 'sc', locusOfControl: 'loc',
+    };
     PSYCHOMETRIC_ITEMS.forEach((item) => {
-      expect(item.id).toMatch(new RegExp(`^${item.instrument}_\\d+$`));
+      const prefix = prefixMap[item.instrument] ?? item.instrument;
+      expect(item.id).toMatch(new RegExp(`^${prefix}_\\d+$`));
     });
   });
 
@@ -97,13 +108,16 @@ describe('PSYCHOMETRIC_ITEMS', () => {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_SECTIONS', () => {
-  it('contains 5 sections', () => {
-    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(5);
+  it('contains 6 sections (5 original + 1 baseline)', () => {
+    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(6);
   });
 
   it('section questionCounts match item catalogue', () => {
+    const baselineInstruments = new Set(['chronotype', 'sleep', 'stress', 'selfCompassion', 'locusOfControl']);
     PSYCHOMETRIC_SECTIONS.forEach((section) => {
-      const count = PSYCHOMETRIC_ITEMS.filter((i) => i.instrument === section.instrument).length;
+      const count = section.instrument === 'baseline'
+        ? PSYCHOMETRIC_ITEMS.filter((i) => baselineInstruments.has(i.instrument)).length
+        : PSYCHOMETRIC_ITEMS.filter((i) => i.instrument === section.instrument).length;
       expect(count).toBe(section.questionCount);
     });
   });
@@ -383,5 +397,111 @@ describe('computePsychometricProfile', () => {
     expect(profile.perma.overall).toBe(0);
     expect(profile.swls.score).toBe(1);
     expect(profile.swls.band).toBe('extremely_dissatisfied');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreChronotype
+// ---------------------------------------------------------------------------
+
+describe('scoreChronotype', () => {
+  it('classifies high scores as definite morning', () => {
+    const responses = { chrono_1: 5, chrono_2: 4, chrono_3: 5 };
+    const result = scoreChronotype(responses);
+    expect(result.type).toBe('definite_morning');
+    expect(result.raw).toBe(14);
+  });
+
+  it('classifies low scores as definite evening', () => {
+    const responses = { chrono_1: 1, chrono_2: 1, chrono_3: 1 };
+    const result = scoreChronotype(responses);
+    expect(result.type).toBe('definite_evening');
+    expect(result.raw).toBe(3);
+  });
+
+  it('classifies mid-range as intermediate', () => {
+    const responses = { chrono_1: 3, chrono_2: 2, chrono_3: 3 };
+    const result = scoreChronotype(responses);
+    expect(result.type).toBe('intermediate');
+    expect(result.raw).toBe(8);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreSleepQuality
+// ---------------------------------------------------------------------------
+
+describe('scoreSleepQuality', () => {
+  it('scores good sleep quality', () => {
+    const responses = { sleep_1: 0, sleep_2: 0, sleep_3: 0, sleep_4: 1 };
+    const result = scoreSleepQuality(responses);
+    expect(result.score).toBe(1);
+    expect(result.quality).toBe('good');
+  });
+
+  it('scores poor sleep quality', () => {
+    const responses = { sleep_1: 3, sleep_2: 3, sleep_3: 3, sleep_4: 3 };
+    const result = scoreSleepQuality(responses);
+    expect(result.score).toBe(12);
+    expect(result.quality).toBe('poor');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreStress
+// ---------------------------------------------------------------------------
+
+describe('scoreStress', () => {
+  it('reverses items 2 and 3 and sums', () => {
+    const responses = { stress_1: 4, stress_2: 0, stress_3: 0, stress_4: 4 };
+    const result = scoreStress(responses);
+    expect(result.score).toBe(16);
+    expect(result.level).toBe('high');
+  });
+
+  it('scores low stress', () => {
+    const responses = { stress_1: 0, stress_2: 4, stress_3: 4, stress_4: 0 };
+    const result = scoreStress(responses);
+    expect(result.score).toBe(0);
+    expect(result.level).toBe('low');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreSelfCompassion
+// ---------------------------------------------------------------------------
+
+describe('scoreSelfCompassion', () => {
+  it('reverses negative items and averages high', () => {
+    const responses = { sc_1: 5, sc_2: 1, sc_3: 5, sc_4: 1, sc_5: 5, sc_6: 1 };
+    const result = scoreSelfCompassion(responses);
+    expect(result.score).toBe(5);
+    expect(result.level).toBe('high');
+  });
+
+  it('scores low self-compassion', () => {
+    const responses = { sc_1: 1, sc_2: 5, sc_3: 1, sc_4: 5, sc_5: 1, sc_6: 5 };
+    const result = scoreSelfCompassion(responses);
+    expect(result.score).toBe(1);
+    expect(result.level).toBe('low');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreLocusOfControl
+// ---------------------------------------------------------------------------
+
+describe('scoreLocusOfControl', () => {
+  it('identifies dominant locus as internal', () => {
+    const responses = { loc_1: 6, loc_2: 2, loc_3: 1 };
+    const result = scoreLocusOfControl(responses);
+    expect(result.internal).toBe(6);
+    expect(result.dominant).toBe('internal');
+  });
+
+  it('identifies dominant locus as chance', () => {
+    const responses = { loc_1: 1, loc_2: 2, loc_3: 5 };
+    const result = scoreLocusOfControl(responses);
+    expect(result.dominant).toBe('chance');
   });
 });

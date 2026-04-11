@@ -3,7 +3,7 @@ import { getUserMentors } from '@/lib/services/mentor-service';
 import MentorClient from './mentor-client';
 
 export const metadata = {
-  title: 'AI Mentor | Life Design',
+  title: 'AI Mentor | Opt In',
   description: 'Chat with your AI mentor for personalised guidance across all life dimensions.',
 };
 

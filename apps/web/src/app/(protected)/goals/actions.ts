@@ -69,7 +69,7 @@ export async function schedulePathwayStep(stepId: string, title: string, descrip
   end.setHours(11, 0, 0, 0);
 
   const event = {
-    summary: `[Life Design] ${title}`,
+    summary: `[Opt In] ${title}`,
     description: description,
     start: {
       dateTime: tomorrow.toISOString(),

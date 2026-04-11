@@ -7,6 +7,7 @@ export type ProfilingSection =
   | 'energy'
   | 'style'
   | 'wellbeing'
+  | 'baseline'
   | 'personality'
   | 'drive'
   | 'satisfaction'

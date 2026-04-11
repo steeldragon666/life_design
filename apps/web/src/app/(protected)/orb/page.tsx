@@ -5,7 +5,7 @@ import OrbClient from './orb-client';
 import type { LifeOrbDimension } from '@/components/dashboard/life-orb';
 
 export const metadata = {
-  title: 'Life Orb | Life Design OS',
+  title: 'Life Orb | Opt In',
   description: 'Immersive 3D visualisation of your life dimension balance.',
 };
 

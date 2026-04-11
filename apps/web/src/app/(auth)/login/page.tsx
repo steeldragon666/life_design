@@ -39,9 +39,9 @@ export default function LoginPage() {
   }, [profile, router]);
 
   useEffect(() => {
-    const savedFlow = localStorage.getItem('life-design-onboarding-progress');
-    const savedCheckpoint = localStorage.getItem('life-design-onboarding-checkpoint');
-    const savedSession = localStorage.getItem('life-design-onboarding-session');
+    const savedFlow = localStorage.getItem('opt-in-onboarding-progress');
+    const savedCheckpoint = localStorage.getItem('opt-in-onboarding-checkpoint');
+    const savedSession = localStorage.getItem('opt-in-onboarding-session');
     setHasOnboardingProgress(Boolean(savedFlow || savedCheckpoint || savedSession));
   }, []);
 
@@ -51,9 +51,9 @@ export default function LoginPage() {
 
   const restartOnboarding = () => {
     clearGuestData();
-    localStorage.removeItem('life-design-onboarding-progress');
-    localStorage.removeItem('life-design-onboarding-checkpoint');
-    localStorage.removeItem('life-design-onboarding-session');
+    localStorage.removeItem('opt-in-onboarding-progress');
+    localStorage.removeItem('opt-in-onboarding-checkpoint');
+    localStorage.removeItem('opt-in-onboarding-session');
     router.push('/onboarding');
   };
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
             <Leaf size={20} weight="light" className="text-white" />
           </div>
-          <span className="font-serif text-xl text-stone-800">Life Design</span>
+          <span className="font-serif text-xl text-stone-800">Opt In</span>
         </Link>
       </header>
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <div className="flex items-center gap-2">
             <Leaf size={16} weight="light" className="text-sage-300" />
-            <span>Life Design</span>
+            <span>Opt In</span>
           </div>
           <p>Crafted with care for meaningful living</p>
         </div>

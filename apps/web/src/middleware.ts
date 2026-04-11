@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { hasBillingAccess, requiresBillingGate } from '@/lib/stripe';
 import { isAssetOrInternalPath, isGuestProtectedPath, isPublicGuestPath } from '@/lib/route-guard';
 
-const GUEST_ONBOARDED_COOKIE = 'life-design-guest-onboarded';
+const GUEST_ONBOARDED_COOKIE = 'opt-in-guest-onboarded';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

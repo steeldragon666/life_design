@@ -20,6 +20,8 @@ declare const self: ServiceWorkerGlobalScope;
 // ---------------------------------------------------------------------------
 
 const CACHE_VERSION = 'v1';
+// Cache names kept as "life-design-*" intentionally — renaming would invalidate
+// all existing caches and force full re-downloads for active users.
 const STATIC_CACHE = `life-design-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `life-design-dynamic-${CACHE_VERSION}`;
 const SYNC_QUEUE_KEY = 'offline-checkin-queue';
@@ -211,7 +213,7 @@ self.addEventListener('push', (event: PushEvent) => {
 
   event.waitUntil(
     (self as ServiceWorkerGlobalScope).registration.showNotification(
-      data.title ?? 'Life Design',
+      data.title ?? 'Opt In',
       {
         body: data.body ?? 'You have a new update.',
         icon: data.icon ?? '/icons/icon-192.png',

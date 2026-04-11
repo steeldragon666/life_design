@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     // Load theme from localStorage on mount
-    const savedTheme = localStorage.getItem('life-design-theme') as Theme;
+    const savedTheme = localStorage.getItem('opt-in-theme') as Theme;
     if (savedTheme && ['botanical', 'ocean', 'modern'].includes(savedTheme)) {
       setTheme(savedTheme);
     }
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (mounted) {
       // Save theme to localStorage
-      localStorage.setItem('life-design-theme', theme);
+      localStorage.setItem('opt-in-theme', theme);
       // Apply theme to document
       document.documentElement.setAttribute('data-theme', theme);
     }

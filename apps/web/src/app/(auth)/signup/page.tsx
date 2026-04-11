@@ -35,7 +35,7 @@ export default function SignUpPage() {
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
               <Leaf size={20} weight="light" className="text-white" />
             </div>
-            <span className="font-serif text-xl text-stone-800">Life Design</span>
+            <span className="font-serif text-xl text-stone-800">Opt In</span>
           </Link>
         </div>
 

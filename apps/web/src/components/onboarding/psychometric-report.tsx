@@ -191,7 +191,7 @@ export default function PsychometricReport({
           <div className="w-16 h-16 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle weight="fill" size={32} color="#10b981" aria-hidden="true" />
           </div>
-          <h1 className="font-serif text-3xl text-stone-900">Your Life Design Profile</h1>
+          <h1 className="font-serif text-3xl text-stone-900">Your Opt In Profile</h1>
           {userName && (
             <p className="text-stone-500 text-sm mt-2">
               Here's what we discovered about you, {userName}

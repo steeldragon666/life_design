@@ -129,16 +129,45 @@ const DEFAULT_MICRO_MOMENTS: MicroMomentsPreferences = {
   cadence: 'balanced',
 };
 
-const GUEST_PROFILE_STORAGE_KEY = 'life-design-guest-profile';
-const GUEST_GOALS_STORAGE_KEY = 'life-design-guest-goals';
-const GUEST_CHECKINS_STORAGE_KEY = 'life-design-guest-checkins';
-const CONVERSATION_MEMORY_STORAGE_KEY = 'life-design-conversation-memory';
-const MENTOR_PROFILE_STORAGE_KEY = 'life-design-mentor-profile';
-const SOUNDSCAPE_STORAGE_KEY = 'life-design-soundscape-preferences';
-const MICRO_MOMENTS_STORAGE_KEY = 'life-design-micro-moments-preferences';
-const GUEST_INTEGRATIONS_STORAGE_KEY = 'life-design-guest-integrations';
+const GUEST_PROFILE_STORAGE_KEY = 'opt-in-guest-profile';
+const GUEST_GOALS_STORAGE_KEY = 'opt-in-guest-goals';
+const GUEST_CHECKINS_STORAGE_KEY = 'opt-in-guest-checkins';
+const CONVERSATION_MEMORY_STORAGE_KEY = 'opt-in-conversation-memory';
+const MENTOR_PROFILE_STORAGE_KEY = 'opt-in-mentor-profile';
+const SOUNDSCAPE_STORAGE_KEY = 'opt-in-soundscape-preferences';
+const MICRO_MOMENTS_STORAGE_KEY = 'opt-in-micro-moments-preferences';
+const GUEST_INTEGRATIONS_STORAGE_KEY = 'opt-in-guest-integrations';
+
+// One-time migration: copy old "life-design-*" localStorage keys to "opt-in-*" keys.
+// Runs on first load after brand rename. Old keys are removed after successful copy.
+const LEGACY_KEY_MAP: [string, string][] = [
+  ['life-design-guest-profile', GUEST_PROFILE_STORAGE_KEY],
+  ['life-design-guest-goals', GUEST_GOALS_STORAGE_KEY],
+  ['life-design-guest-checkins', GUEST_CHECKINS_STORAGE_KEY],
+  ['life-design-conversation-memory', CONVERSATION_MEMORY_STORAGE_KEY],
+  ['life-design-mentor-profile', MENTOR_PROFILE_STORAGE_KEY],
+  ['life-design-soundscape-preferences', SOUNDSCAPE_STORAGE_KEY],
+  ['life-design-micro-moments-preferences', MICRO_MOMENTS_STORAGE_KEY],
+  ['life-design-guest-integrations', GUEST_INTEGRATIONS_STORAGE_KEY],
+  ['life-design-onboarding-session', 'opt-in-onboarding-session'],
+  ['life-design-onboarding-card', 'opt-in-onboarding-card'],
+];
+
+function migrateLocalStorageKeys() {
+  if (typeof window === 'undefined') return;
+  // Only run once — check if migration already happened
+  if (localStorage.getItem('opt-in-ls-migrated')) return;
+  for (const [oldKey, newKey] of LEGACY_KEY_MAP) {
+    const oldValue = localStorage.getItem(oldKey);
+    if (oldValue && !localStorage.getItem(newKey)) {
+      localStorage.setItem(newKey, oldValue);
+      localStorage.removeItem(oldKey);
+    }
+  }
+  localStorage.setItem('opt-in-ls-migrated', '1');
+}
 const GUEST_INTEGRATIONS_CRYPTO_SCOPE = 'guest-integrations';
-const GUEST_ONBOARDED_COOKIE = 'life-design-guest-onboarded';
+const GUEST_ONBOARDED_COOKIE = 'opt-in-guest-onboarded';
 
 function parseIntegrations(rawValue: string): GuestIntegration[] {
   try {
@@ -167,6 +196,9 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     let isCancelled = false;
 
     const hydrateGuestData = async () => {
+      // Migrate old "life-design-*" keys to "opt-in-*" before reading
+      migrateLocalStorageKeys();
+
       try {
         const savedProfile = localStorage.getItem(GUEST_PROFILE_STORAGE_KEY);
         const savedGoals = localStorage.getItem(GUEST_GOALS_STORAGE_KEY);
@@ -215,13 +247,14 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Backward compatibility: migrate legacy standalone voice preference into profile.
-        const legacyVoicePreference = localStorage.getItem('life-design-voice-preference');
+        const legacyVoicePreference = localStorage.getItem('opt-in-voice-preference') || localStorage.getItem('life-design-voice-preference');
         if (legacyVoicePreference && !parsedProfile?.voicePreference) {
           setProfileState((prev) =>
             prev
               ? { ...prev, voicePreference: legacyVoicePreference }
               : { id: 'guest-user', voicePreference: legacyVoicePreference }
           );
+          localStorage.removeItem('opt-in-voice-preference');
           localStorage.removeItem('life-design-voice-preference');
         }
       } catch (error) {
@@ -364,6 +397,7 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(GUEST_GOALS_STORAGE_KEY);
     localStorage.removeItem(GUEST_CHECKINS_STORAGE_KEY);
     localStorage.removeItem(CONVERSATION_MEMORY_STORAGE_KEY);
+    localStorage.removeItem('opt-in-voice-preference');
     localStorage.removeItem('life-design-voice-preference');
     localStorage.removeItem(GUEST_INTEGRATIONS_STORAGE_KEY);
     localStorage.removeItem(MENTOR_PROFILE_STORAGE_KEY);

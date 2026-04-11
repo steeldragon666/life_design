@@ -2,6 +2,10 @@
  * Spotify integration using Spotify Web API.
  * Requires SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET env variables.
  *
+ * TODO: SECURITY — Migrate to user_connections table with AES-256-GCM encryption
+ * via oauth-manager.ts. Currently stores tokens as plaintext in the legacy
+ * integrations table. See: packages/core/src/connectors/oauth-manager.ts
+ *
  * Used by the AI mentor system to:
  * - Track listening patterns and correlate with mood
  * - Detect changes in music taste (e.g., shift to sad/energetic music)

@@ -31,13 +31,13 @@ export async function POST() {
   const answerCount = Object.keys(session.raw_answers ?? {}).length;
   if (answerCount < 30) {
     return NextResponse.json(
-      { error: `Insufficient answers (${answerCount}/18). Please complete more questions.` },
+      { error: 'Please complete more questions before finishing.' },
       { status: 400 },
     );
   }
 
   // Normalise and score
-  const normalised = normaliseRawAnswers(session.raw_answers);
+  const normalised = normaliseRawAnswers(session.raw_answers ?? {});
   const derived = computeAllDerivedScores(normalised);
   const summaryTemplate = generateSummaryTemplate(normalised, derived);
 
@@ -143,10 +143,10 @@ export async function POST() {
     console.error('Failed to record onboarding_completed event:', eventError);
   }
 
+  // Data minimization: only return the summary template needed for the UI.
+  // Full profile and psychometric data are persisted server-side and should
+  // not transit to the client unnecessarily (sensitive health/personality data).
   return NextResponse.json({
-    profile: { ...normalised, ...derived },
     summary: summaryTemplate,
-    psychometric: psychometricProfile,
-    psychometricNarrative: narrativeSummary,
   });
 }

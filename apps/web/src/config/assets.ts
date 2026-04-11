@@ -291,7 +291,7 @@ export const voiceSamples: VoiceSample[] = [
   {
     id: 'sage-welcome',
     voiceId: 'sage',
-    text: "Welcome to Life Design. I'm here to help you create a life of purpose and balance.",
+    text: "Welcome to Opt In. I'm here to help you create a life of purpose and balance.",
     url: `${AUDIO_CDN}/voices/sage-welcome.mp3`,
     duration: 4.5,
   },
@@ -333,7 +333,7 @@ export const voiceSamples: VoiceSample[] = [
   {
     id: 'scholar-welcome',
     voiceId: 'scholar',
-    text: "Welcome. Based on behavioral research, we'll optimize your life design parameters together.",
+    text: "Welcome. Based on behavioral research, we'll optimize your personal growth parameters together.",
     url: `${AUDIO_CDN}/voices/scholar-welcome.mp3`,
     duration: 5.8,
   },
@@ -348,7 +348,7 @@ export const voiceSamples: VoiceSample[] = [
 
 // Loading Messages - Calming, thematic tips
 export const loadingMessages = [
-  "Preparing your personal life design canvas...",
+  "Preparing your personal growth canvas...",
   "Gathering inspiration from the universe...",
   "Calibrating your life dimensions...",
   "Setting up your growth pathway...",

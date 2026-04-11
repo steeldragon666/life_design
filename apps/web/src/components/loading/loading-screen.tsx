@@ -177,7 +177,7 @@ export function LoadingScreen({
       aria-valuenow={Math.round(displayProgress)}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label="Loading Life Design"
+      aria-label="Loading Opt In"
     >
       {/* Background with theme-aware gradient */}
       <div
@@ -293,7 +293,7 @@ export function LoadingScreen({
                 </div>
                 <div className="text-left">
                   <h1 className="text-xl font-semibold tracking-tight text-white/90">
-                    Life Design
+                    Opt In
                   </h1>
                   <p className="text-xs text-white/40 tracking-wide uppercase">
                     Your Journey Begins
