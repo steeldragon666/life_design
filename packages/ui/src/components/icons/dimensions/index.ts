@@ -1,0 +1,16 @@
+export { CareerIcon } from './career-icon';
+export type { CareerIconProps } from './career-icon';
+export { FinanceIcon } from './finance-icon';
+export type { FinanceIconProps } from './finance-icon';
+export { HealthIcon } from './health-icon';
+export type { HealthIconProps } from './health-icon';
+export { FitnessIcon } from './fitness-icon';
+export type { FitnessIconProps } from './fitness-icon';
+export { FamilyIcon } from './family-icon';
+export type { FamilyIconProps } from './family-icon';
+export { SocialIcon } from './social-icon';
+export type { SocialIconProps } from './social-icon';
+export { RomanceIcon } from './romance-icon';
+export type { RomanceIconProps } from './romance-icon';
+export { GrowthIcon } from './growth-icon';
+export type { GrowthIconProps } from './growth-icon';

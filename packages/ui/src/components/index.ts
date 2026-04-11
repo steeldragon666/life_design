@@ -22,3 +22,6 @@ export { Avatar } from './Avatar';
 export type { AvatarProps } from './Avatar';
 export { Separator } from './Separator';
 export type { SeparatorProps } from './Separator';
+export { Icon } from './Icon';
+export type { IconProps } from './Icon';
+export * from './icons/dimensions';
