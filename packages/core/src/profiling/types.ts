@@ -11,7 +11,8 @@ export type ProfilingSection =
   | 'personality'
   | 'drive'
   | 'satisfaction'
-  | 'needs';
+  | 'needs'
+  | 'clinical';
 
 /** Question input types */
 export type QuestionType = 'single_select' | 'multi_select' | 'scale';

@@ -13,11 +13,13 @@ import SectionHeader from './section-header';
 import QuestionRenderer from './question-renderer';
 import MentorIntro from './mentor-intro';
 import ProfileSummary from './profile-summary';
+import { ConsentCard } from './cards/consent-card';
+import { ClinicalScreeningForm } from '@/components/screening/clinical-screening-form';
 
 const SESSION_STORAGE_KEY = 'opt-in-onboarding-session';
 const SESSION_CRYPTO_SCOPE = 'onboarding-session';
 
-type WizardPhase = 'loading' | 'section_intro' | 'question' | 'mentors' | 'completing' | 'summary';
+type WizardPhase = 'loading' | 'section_intro' | 'question' | 'clinical_consent' | 'clinical_phq9' | 'clinical_gad7' | 'mentors' | 'completing' | 'summary';
 
 interface ProfilingWizardProps {
   embedded?: boolean;
@@ -38,6 +40,8 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
   const [psychometricProfile, setPsychometricProfile] = useState<PsychometricProfile | null>(null);
   const [psychometricNarrative, setPsychometricNarrative] = useState<string>('');
   const [pendingMultiSelect, setPendingMultiSelect] = useState<string[] | null>(null);
+  const [clinicalSkipped, setClinicalSkipped] = useState(false);
+  const [baselineScores, setBaselineScores] = useState<{ phq9?: number; gad7?: number }>({});
 
   // Initialise session
   useEffect(() => {
@@ -155,7 +159,7 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
     } else if (embedded && onEmbeddedComplete) {
       onEmbeddedComplete(answers, null);
     } else {
-      setPhase('mentors');
+      setPhase('clinical_consent');
     }
   }, [currentQuestion, questionIndex, sectionQuestions.length, sectionIndex, saveAnswer, embedded, onEmbeddedComplete, answers]);
 
@@ -359,6 +363,74 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
                 Continue
               </button>
             )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (phase === 'clinical_consent') {
+    return (
+      <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <div className="max-w-lg mx-auto">
+            <ConsentCard
+              onConsent={() => setPhase('clinical_phq9')}
+              onSkip={() => {
+                setClinicalSkipped(true);
+                setAnswers((prev) => ({ ...prev, clinical_skipped: 1 }));
+                setPhase('mentors');
+              }}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (phase === 'clinical_phq9') {
+    return (
+      <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <div className="max-w-lg mx-auto space-y-4">
+            <h2 className="font-serif text-2xl text-stone-900">Depression Screening (PHQ-9)</h2>
+            <ClinicalScreeningForm
+              instrument="phq9"
+              onComplete={(result) => {
+                setBaselineScores((prev) => ({ ...prev, phq9: result.score }));
+                setPhase('clinical_gad7');
+              }}
+              onCriticalFlag={() => {
+                // Critical flag is handled by the form itself;
+                // store that it was flagged so we can surface resources later
+                setAnswers((prev) => ({ ...prev, clinical_phq9_critical: 1 }));
+              }}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (phase === 'clinical_gad7') {
+    return (
+      <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <div className="max-w-lg mx-auto space-y-4">
+            <h2 className="font-serif text-2xl text-stone-900">Anxiety Screening (GAD-7)</h2>
+            <ClinicalScreeningForm
+              instrument="gad7"
+              onComplete={(result) => {
+                setBaselineScores((prev) => ({ ...prev, gad7: result.score }));
+                // Store baseline scores in answers for persistence
+                setAnswers((prevAnswers) => ({
+                  ...prevAnswers,
+                  clinical_phq9_score: baselineScores.phq9 ?? 0,
+                  clinical_gad7_score: result.score,
+                }));
+                setPhase('mentors');
+              }}
+            />
           </div>
         </main>
       </div>
