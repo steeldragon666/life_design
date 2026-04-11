@@ -23,6 +23,7 @@ export function useScrollReveal<T extends HTMLElement>(options?: IntersectionObs
     );
     observer.observe(el);
     return () => observer.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally empty: one-shot observer, options must be stable at mount
   }, []);
 
   return { ref, isVisible };
