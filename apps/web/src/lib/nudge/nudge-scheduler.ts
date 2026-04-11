@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import type { LifeDesignDB, DBNudge } from '@/lib/db/schema';
+import type { JITAIDecision } from '@life-design/core/jitai';
 
 export class NudgeScheduler {
   private intervalId: ReturnType<typeof setInterval> | null = null;
@@ -114,11 +115,52 @@ export class NudgeScheduler {
   }
 
   // ---------------------------------------------------------------------------
+  // JITAI integration
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Schedule a nudge from a JITAI decision.
+   * Returns the nudge id if one was created, or null if the decision
+   * did not warrant an intervention or a duplicate already exists.
+   */
+  async scheduleFromJITAI(decision: JITAIDecision): Promise<number | null> {
+    if (!decision.shouldIntervene || !decision.content) return null;
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Avoid duplicate JITAI nudges of the same intervention type today
+    const existing = await this.db.nudges
+      .where('dismissed')
+      .equals(0)
+      .toArray();
+
+    const hasDuplicate = existing.some(
+      (n) =>
+        n.type === `jitai_${decision.interventionType}` &&
+        new Date(n.createdAt).toISOString().slice(0, 10) === today,
+    );
+
+    if (hasDuplicate) return null;
+
+    // Schedule immediately — JITAI decisions are time-sensitive
+    const id = await this.scheduleNudge({
+      type: `jitai_${decision.interventionType}`,
+      title: decision.content.title,
+      message: decision.content.message,
+      actionUrl: decision.content.actionUrl,
+      scheduledFor: new Date(),
+    });
+
+    return id;
+  }
+
+  // ---------------------------------------------------------------------------
   // Internal
   // ---------------------------------------------------------------------------
 
   /**
    * Check whether to auto-generate nudges based on user activity.
+   * Falls back to rule-based scheduling when no JITAI decision is provided.
    */
   private async checkAndSchedule(): Promise<void> {
     try {

@@ -11,6 +11,100 @@ type CorrelationRow = {
   insight_text: string | null;
 };
 
+// ---------------------------------------------------------------------------
+// Inlined JITAI types & rules (Deno edge functions can't import from packages)
+// ---------------------------------------------------------------------------
+
+interface JITAIContext {
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  recentMood: number | null;
+  sleepQuality: number | null;
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | null;
+  calendarDensity: 'empty' | 'light' | 'moderate' | 'packed' | null;
+  lastCheckinHoursAgo: number | null;
+  streakDays: number;
+  hrvStressLevel: 'low' | 'moderate' | 'high' | null;
+}
+
+interface JITAIDecision {
+  shouldIntervene: boolean;
+  interventionType: 'nudge' | 'checkin_prompt' | 'breathing_exercise' | 'activity_suggestion' | 'none';
+  urgency: 'low' | 'medium' | 'high';
+  content: { title: string; message: string; actionUrl?: string } | null;
+  reasoning: string;
+}
+
+function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
+  if (ctx.hrvStressLevel === 'high' && ctx.timeOfDay === 'evening') {
+    return {
+      shouldIntervene: true,
+      interventionType: 'breathing_exercise',
+      urgency: 'high',
+      content: {
+        title: 'Take a moment',
+        message: 'Your stress levels are elevated. A 2-minute breathing exercise can help.',
+        actionUrl: '/meditations',
+      },
+      reasoning: 'High HRV stress detected in evening',
+    };
+  }
+  if (ctx.lastCheckinHoursAgo !== null && ctx.lastCheckinHoursAgo > 24 && ctx.timeOfDay === 'evening') {
+    return {
+      shouldIntervene: true,
+      interventionType: 'checkin_prompt',
+      urgency: 'medium',
+      content: {
+        title: 'Daily reflection',
+        message: 'A quick check-in helps track your progress. Just takes a minute.',
+        actionUrl: '/checkin',
+      },
+      reasoning: 'No check-in for 24h+ and it is evening',
+    };
+  }
+  if (ctx.recentMood !== null && ctx.recentMood <= 2 && ctx.activityLevel === 'sedentary') {
+    return {
+      shouldIntervene: true,
+      interventionType: 'activity_suggestion',
+      urgency: 'medium',
+      content: {
+        title: 'Movement helps',
+        message: 'Even a short walk can shift your mood. Research shows 10 minutes makes a difference.',
+      },
+      reasoning: 'Low mood combined with sedentary activity level',
+    };
+  }
+  if (ctx.calendarDensity === 'packed' && ctx.lastCheckinHoursAgo !== null && ctx.lastCheckinHoursAgo > 12) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'nudge',
+      urgency: 'low',
+      content: {
+        title: 'Busy day?',
+        message: 'Even on packed days, a 30-second check-in helps you stay connected to how you feel.',
+        actionUrl: '/checkin',
+      },
+      reasoning: 'Packed calendar with no recent check-in',
+    };
+  }
+  return { shouldIntervene: false, interventionType: 'none', urgency: 'low', content: null, reasoning: 'No intervention rules matched' };
+}
+
+const JITAI_URGENCY_TO_CATEGORY: Record<JITAIDecision['urgency'], 'reminder' | 'insight' | 'milestone'> = {
+  low: 'reminder',
+  medium: 'insight',
+  high: 'insight',
+};
+
+function getTimeOfDay(): JITAIContext['timeOfDay'] {
+  const hour = new Date().getUTCHours();
+  if (hour >= 5 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 17) return 'afternoon';
+  if (hour >= 17 && hour < 21) return 'evening';
+  return 'night';
+}
+
+// ---------------------------------------------------------------------------
+
 function isoDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
@@ -92,19 +186,63 @@ Deno.serve(async () => {
           )
         : 99;
 
-      if (daysSinceLastCheckin >= 1) {
+      // -----------------------------------------------------------------------
+      // JITAI evaluation — run before rule-based nudges
+      // -----------------------------------------------------------------------
+      const recentMood = rows.length > 0 ? rows[rows.length - 1].mood : null;
+      // Normalise mood from 1-10 scale (DB) to 1-5 scale (JITAI)
+      const normalisedMood = recentMood !== null ? Math.round(recentMood / 2) : null;
+
+      const jitaiCtx: JITAIContext = {
+        timeOfDay: getTimeOfDay(),
+        recentMood: normalisedMood,
+        sleepQuality: null,         // not yet tracked server-side
+        activityLevel: null,        // not yet tracked server-side
+        calendarDensity: null,      // not yet tracked server-side
+        lastCheckinHoursAgo: daysSinceLastCheckin * 24,
+        streakDays: streak,
+        hrvStressLevel: null,       // not yet tracked server-side
+      };
+
+      const jitaiDecision = evaluateJITAIRules(jitaiCtx);
+
+      if (jitaiDecision.shouldIntervene && jitaiDecision.content) {
         await insertNudge(
           supabase,
           userId,
-          'reminder',
-          'Your check-in rhythm is waiting',
-          streak > 0
-            ? `You are on a ${streak}-day streak. One check-in today keeps momentum alive.`
-            : 'A 60-second check-in today is enough to restart your momentum.',
-          { streak, daysSinceLastCheckin },
+          JITAI_URGENCY_TO_CATEGORY[jitaiDecision.urgency],
+          jitaiDecision.content.title,
+          jitaiDecision.content.message,
+          {
+            source: 'jitai',
+            interventionType: jitaiDecision.interventionType,
+            urgency: jitaiDecision.urgency,
+            reasoning: jitaiDecision.reasoning,
+            actionUrl: jitaiDecision.content.actionUrl ?? null,
+          },
         );
+        // JITAI already handled this user — skip the overlapping rule-based
+        // check-in reminder to avoid duplicate nudges.
+        // Milestone and insight nudges still run below.
+      } else {
+        // -----------------------------------------------------------------------
+        // Fallback: rule-based check-in reminder
+        // -----------------------------------------------------------------------
+        if (daysSinceLastCheckin >= 1) {
+          await insertNudge(
+            supabase,
+            userId,
+            'reminder',
+            'Your check-in rhythm is waiting',
+            streak > 0
+              ? `You are on a ${streak}-day streak. One check-in today keeps momentum alive.`
+              : 'A 60-second check-in today is enough to restart your momentum.',
+            { streak, daysSinceLastCheckin },
+          );
+        }
       }
 
+      // Milestone nudges (always evaluated)
       if ([7, 14, 30, 90].includes(streak)) {
         await insertNudge(
           supabase,
@@ -116,6 +254,7 @@ Deno.serve(async () => {
         );
       }
 
+      // Insight nudges from correlation data (always evaluated)
       const { data: correlations } = await supabase
         .from('correlation_results')
         .select(
