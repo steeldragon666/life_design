@@ -96,12 +96,14 @@ export function selectQuestions(
   }
 
   // Pass 2: fill remaining slots with highest-scored questions
+  const selectedIds = new Set(selected.map(q => q.id));
   for (const { question } of scored) {
     if (selected.length >= maxQuestions) break;
-    if (selected.includes(question)) continue;
+    if (selectedIds.has(question.id)) continue;
     if (question.burdenScore > remainingBurden) continue;
 
     selected.push(question);
+    selectedIds.add(question.id);
     remainingBurden -= question.burdenScore;
   }
 

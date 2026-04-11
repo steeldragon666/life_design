@@ -18,6 +18,16 @@ describe('computeExerciseMoodLag', () => {
     expect(computeExerciseMoodLag([], [], 3)).toEqual([]);
   });
 
+  it('returns empty array when exercises is empty but moods is not', () => {
+    const moods = [mood('2024-01-01', 4), mood('2024-01-02', 3)];
+    expect(computeExerciseMoodLag([], moods, 3)).toEqual([]);
+  });
+
+  it('returns empty array when moods is empty but exercises is not', () => {
+    const exercises = [exercise('2024-01-01', 0.8), exercise('2024-01-02', 0.5)];
+    expect(computeExerciseMoodLag(exercises, [], 3)).toEqual([]);
+  });
+
   it('returns empty array when not enough pairs for any lag', () => {
     const exercises = [exercise('2024-01-01', 0.8)];
     const moods = [mood('2024-01-01', 4)];

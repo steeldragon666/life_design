@@ -27,6 +27,9 @@ export function aggregateGradients(
   if (totalSamples === 0) return null;
 
   const nWeights = submissions[0].weights.length;
+  if (submissions.some(s => s.weights.length !== nWeights)) {
+    return null;
+  }
   const avgWeights = new Array(nWeights).fill(0);
   let avgBias = 0;
 

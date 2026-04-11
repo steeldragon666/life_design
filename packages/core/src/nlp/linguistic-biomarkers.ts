@@ -58,10 +58,22 @@ interface PatternGroup {
   confidence: number;
 }
 
+const MIND_READING_PATTERNS = [
+  /\b(they think|she thinks|he thinks|everyone thinks|people think)\b/gi,
+  /\b(they must think|she must think|he must think)\b/gi,
+];
+
+const FORTUNE_TELLING_PATTERNS = [
+  /\b(it will never|will never work|going to fail|won't ever|it'll go wrong|I know it will)\b/gi,
+  /\b(there's no point|no use trying)\b/gi,
+];
+
 const PATTERN_GROUPS: PatternGroup[] = [
   { type: 'all_or_nothing', patterns: ALL_OR_NOTHING_PATTERNS, confidence: 0.7 },
   { type: 'catastrophising', patterns: CATASTROPHISING_PATTERNS, confidence: 0.75 },
   { type: 'personalisation', patterns: PERSONALISATION_PATTERNS, confidence: 0.8 },
+  { type: 'mind_reading', patterns: MIND_READING_PATTERNS, confidence: 0.65 },
+  { type: 'fortune_telling', patterns: FORTUNE_TELLING_PATTERNS, confidence: 0.65 },
 ];
 
 function countMatches(text: string, pattern: RegExp): number {
@@ -104,7 +116,7 @@ export function detectLinguisticBiomarkers(text: string): BiomarkerResult {
   const distortionCount = distortions.length;
 
   if (
-    distortionCount >= 3 ||
+    distortionCount >= 4 ||
     (negativeWordCount > 0 && negativeWordCount >= positiveWordCount + 3)
   ) {
     overallRisk = 'elevated';

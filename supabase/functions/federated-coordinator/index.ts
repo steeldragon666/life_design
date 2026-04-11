@@ -64,6 +64,16 @@ Deno.serve(async (req: Request) => {
   try {
     const body = (await req.json()) as RequestPayload;
 
+    if (body.action === 'aggregate') {
+      const serviceSecret = req.headers.get('x-service-secret');
+      if (serviceSecret !== Deno.env.get('SERVICE_SECRET')) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: aggregate requires service authorization' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+    }
+
     if (body.action === 'submit') {
       return await handleSubmit(supabase, user.id, body as SubmitPayload);
     } else if (body.action === 'aggregate') {
@@ -87,6 +97,11 @@ async function handleSubmit(
   userId: string,
   payload: SubmitPayload,
 ) {
+  // Validate submission payload
+  if (!Array.isArray(payload.weights) || typeof payload.bias !== 'number' || !Number.isFinite(payload.sampleCount) || payload.sampleCount <= 0) {
+    return new Response(JSON.stringify({ error: 'Invalid submission payload' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+
   // Verify round is open
   const { data: round, error: roundErr } = await supabase
     .from('federated_rounds')
@@ -176,6 +191,12 @@ async function handleAggregate(
     });
   }
 
+  // Validate weight dimensions are consistent across submissions
+  const nWeights = (submissions[0].weights as number[]).length;
+  if (!submissions.every((s: any) => Array.isArray(s.weights) && (s.weights as number[]).length === nWeights)) {
+    return new Response(JSON.stringify({ error: 'Inconsistent weight dimensions across submissions' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+
   // Check minimum participants
   if (submissions.length < (round.min_participants ?? 5)) {
     // Revert status back to open
@@ -212,7 +233,6 @@ async function handleAggregate(
     });
   }
 
-  const nWeights = (submissions[0].weights as number[]).length;
   const avgWeights = new Array(nWeights).fill(0);
   let avgBias = 0;
 

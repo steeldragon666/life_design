@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+
 interface MoodSliderProps {
   value: number;
   onChange: (value: number) => void;
@@ -14,6 +16,7 @@ const MOOD_OPTIONS = [
 ] as const;
 
 export default function MoodSlider({ value, onChange }: MoodSliderProps) {
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const selectedValue =
     MOOD_OPTIONS.find((option) => option.value === value)?.value ?? MOOD_OPTIONS[2].value;
 
@@ -21,6 +24,7 @@ export default function MoodSlider({ value, onChange }: MoodSliderProps) {
     const currentIndex = MOOD_OPTIONS.findIndex((option) => option.value === selectedValue);
     const nextIndex = Math.min(MOOD_OPTIONS.length - 1, Math.max(0, currentIndex + direction));
     onChange(MOOD_OPTIONS[nextIndex].value);
+    buttonRefs.current[nextIndex]?.focus();
   }
 
   return (
@@ -29,11 +33,12 @@ export default function MoodSlider({ value, onChange }: MoodSliderProps) {
         <span className="text-sm font-medium text-stone-800">Mood</span>
       </div>
       <div role="radiogroup" aria-label="Mood selection" className="grid grid-cols-5 gap-2">
-        {MOOD_OPTIONS.map((option) => {
+        {MOOD_OPTIONS.map((option, index) => {
           const selected = option.value === selectedValue;
           return (
             <button
               key={option.value}
+              ref={(el) => { buttonRefs.current[index] = el; }}
               type="button"
               role="radio"
               aria-checked={selected}

@@ -86,11 +86,12 @@ export default function PopulationInsights() {
   const [insights, setInsights] = useState<PopulationInsight[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalParticipants, setTotalParticipants] = useState(0);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchFederatedData() {
       const supabase = createClient();
-      const { data: rounds } = await supabase
+      const { data: rounds, error } = await supabase
         .from('federated_rounds')
         .select(
           'id, round_number, target_dimension, aggregate_weights, aggregate_bias, total_samples, participant_count, closed_at',
@@ -98,6 +99,14 @@ export default function PopulationInsights() {
         .eq('status', 'complete')
         .order('closed_at', { ascending: false })
         .limit(20);
+
+      if (error) {
+        console.error('Failed to fetch federated rounds:', error);
+        setInsights([]);
+        setLoading(false);
+        setFetchError(error.message);
+        return;
+      }
 
       if (!rounds || rounds.length === 0) {
         setLoading(false);
@@ -167,6 +176,22 @@ export default function PopulationInsights() {
               <div className="h-3 w-40 rounded bg-stone-100" />
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="space-y-3">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-stone-900">
+          <Activity size={20} className="text-sage-600" />
+          Population Insights
+        </h2>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-sm text-red-700">
+            Failed to load population insights. Please try again later.
+          </p>
         </div>
       </div>
     );

@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef } from 'react';
+
 const QUICK_MOOD_OPTIONS = [
   { value: 1, emoji: '😞', label: 'Low' },
   { value: 2, emoji: '🙂', label: 'Okay' },
@@ -14,6 +16,7 @@ interface MoodSegmentProps {
 }
 
 export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const selectedValue =
     QUICK_MOOD_OPTIONS.find((option) => option.value === value)?.value ?? QUICK_MOOD_OPTIONS[2].value;
 
@@ -21,6 +24,7 @@ export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
     const currentIndex = QUICK_MOOD_OPTIONS.findIndex((option) => option.value === selectedValue);
     const nextIndex = Math.min(QUICK_MOOD_OPTIONS.length - 1, Math.max(0, currentIndex + direction));
     onChange(QUICK_MOOD_OPTIONS[nextIndex].value);
+    buttonRefs.current[nextIndex]?.focus();
   }
 
   return (
@@ -30,11 +34,12 @@ export default function MoodSegment({ value, onChange }: MoodSegmentProps) {
         <span className="text-sm text-stone-300">One tap</span>
       </div>
       <div role="radiogroup" aria-label="Quick mood selection" className="grid grid-cols-5 gap-2">
-        {QUICK_MOOD_OPTIONS.map((option) => {
+        {QUICK_MOOD_OPTIONS.map((option, index) => {
           const selected = option.value === selectedValue;
           return (
             <button
               key={option.value}
+              ref={(el) => { buttonRefs.current[index] = el; }}
               type="button"
               role="radio"
               aria-checked={selected}

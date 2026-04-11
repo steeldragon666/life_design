@@ -76,10 +76,20 @@ export function detectCrisisIndicators(text: string): CrisisDetectionResult {
   // Only check false positives when NO crisis patterns matched.
   // This prevents metaphorical language (e.g. "work is killing me") from
   // suppressing genuine crisis signals in the same message.
+  let hasFalsePositiveMatch = false;
   for (const pattern of FALSE_POSITIVE_PATTERNS) {
     if (pattern.test(normalised)) {
-      return { matched: false, level: CrisisLevel.None, triggers: [], confidence: 0.9 };
+      hasFalsePositiveMatch = true;
+      break;
     }
+  }
+
+  // CrisisLevel.Low: returned when no HIGH or MEDIUM crisis patterns matched,
+  // but a false-positive pattern DID match. This indicates ambiguous language
+  // that was suppressed — the text contains crisis-adjacent vocabulary used
+  // metaphorically, which may still indicate mild distress worth monitoring.
+  if (hasFalsePositiveMatch) {
+    return { matched: false, level: CrisisLevel.Low, triggers: [], confidence: 0.5 };
   }
 
   return { matched: false, level: CrisisLevel.None, triggers: [], confidence: 0.9 };

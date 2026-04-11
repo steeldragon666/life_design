@@ -39,7 +39,7 @@ export function computeExerciseMoodLag(
   moods: MoodEntry[],
   maxLag: number = 3,
 ): ExerciseMoodCorrelation[] {
-  if (exercises.length === 0 && moods.length === 0) return [];
+  if (exercises.length === 0 || moods.length === 0) return [];
 
   // Build date-indexed maps
   const exerciseByDate = new Map<string, number>();

@@ -217,6 +217,7 @@ export function ClinicalExport() {
 
       {/* Export button */}
       <button
+        type="button"
         onClick={handleExport}
         disabled={!hasSelection || isExporting}
         className={[
@@ -261,6 +262,7 @@ export function ClinicalExport() {
               className="flex-1 rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none"
             />
             <button
+              type="button"
               onClick={handleCopyLink}
               className="rounded-md bg-sage-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-sage-700"
             >

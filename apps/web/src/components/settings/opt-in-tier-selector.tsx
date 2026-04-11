@@ -149,8 +149,6 @@ export function OptInTierSelector({
       </p>
       <div
         className="grid gap-4 sm:grid-cols-1 md:grid-cols-3"
-        role="radiogroup"
-        aria-label="Data sharing tier selection"
       >
         {TIER_BENEFITS.map((benefit) => (
           <TierCard

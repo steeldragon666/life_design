@@ -47,7 +47,7 @@ function LockedPopulationInsights() {
       </div>
 
       {/* Placeholder content behind blur */}
-      <div className="pointer-events-none select-none opacity-40" aria-hidden>
+      <div className="pointer-events-none select-none opacity-40" aria-hidden="true">
         <div className="mb-3 h-5 w-36 rounded bg-stone-200" />
         <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-3">
           {[1, 2, 3].map((i) => (

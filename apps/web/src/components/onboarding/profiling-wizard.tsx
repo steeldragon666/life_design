@@ -15,6 +15,7 @@ import MentorIntro from './mentor-intro';
 import ProfileSummary from './profile-summary';
 import { ConsentCard } from './cards/consent-card';
 import { ClinicalScreeningForm } from '@/components/screening/clinical-screening-form';
+import { CRISIS_RESOURCES } from '@life-design/core';
 
 const SESSION_STORAGE_KEY = 'opt-in-onboarding-session';
 const SESSION_CRYPTO_SCOPE = 'onboarding-session';
@@ -42,6 +43,7 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
   const [pendingMultiSelect, setPendingMultiSelect] = useState<string[] | null>(null);
   const [clinicalSkipped, setClinicalSkipped] = useState(false);
   const [baselineScores, setBaselineScores] = useState<{ phq9?: number; gad7?: number }>({});
+  const [showCrisisResources, setShowCrisisResources] = useState(false);
 
   // Initialise session
   useEffect(() => {
@@ -389,6 +391,45 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
   }
 
   if (phase === 'clinical_phq9') {
+    if (showCrisisResources) {
+      return (
+        <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
+          <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+            <div className="max-w-lg mx-auto space-y-6">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-4">
+                <h2 className="font-serif text-xl text-stone-900">Support is available</h2>
+                <p className="text-sm text-stone-700 leading-relaxed">
+                  We noticed your response indicates you may be going through a difficult time.
+                  You are not alone, and there are people who want to help. Please consider
+                  reaching out to one of these services.
+                </p>
+                <ul className="space-y-3">
+                  {CRISIS_RESOURCES.map((resource) => (
+                    <li key={resource.phone} className="rounded-lg border border-amber-100 bg-white p-3">
+                      <div className="font-medium text-stone-900">{resource.name}</div>
+                      <a
+                        href={`tel:${resource.phone.replace(/\s/g, '')}`}
+                        className="text-sage-700 underline text-sm font-semibold"
+                      >
+                        {resource.phone}
+                      </a>
+                      <p className="text-xs text-stone-500 mt-0.5">{resource.description}</p>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setShowCrisisResources(false)}
+                  className="w-full py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-stone-900 text-white hover:bg-stone-900/90"
+                >
+                  I understand, continue
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
     return (
       <div className={embedded ? '' : 'min-h-screen bg-gradient-to-b from-stone-50 to-stone-100'}>
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
@@ -401,8 +442,7 @@ export default function ProfilingWizard({ embedded, onComplete: onEmbeddedComple
                 setPhase('clinical_gad7');
               }}
               onCriticalFlag={() => {
-                // Critical flag is handled by the form itself;
-                // store that it was flagged so we can surface resources later
+                setShowCrisisResources(true);
                 setAnswers((prev) => ({ ...prev, clinical_phq9_critical: 1 }));
               }}
             />

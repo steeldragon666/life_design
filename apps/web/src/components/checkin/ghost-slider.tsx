@@ -189,6 +189,9 @@ export default function GhostSlider({
         )}
 
         {/* Invisible range input for accessibility + drag */}
+        <span id={`${dimension}-prediction`} className="sr-only">
+          AI prediction: {Math.round(predictedScore)} out of {MAX} ({Math.round(confidence * 100)}% confidence)
+        </span>
         <input
           type="range"
           min={MIN}
@@ -199,6 +202,7 @@ export default function GhostSlider({
           className="absolute inset-0 w-full opacity-0 cursor-pointer"
           style={{ height: HANDLE_SIZE + 8, zIndex: 3, margin: 0 }}
           aria-label={`${label} score`}
+          aria-describedby={`${dimension}-prediction`}
           aria-valuemin={MIN}
           aria-valuemax={MAX}
           aria-valuenow={value ?? undefined}

@@ -92,10 +92,28 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    // Auth check BEFORE body parse
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
+    // Auth client — validates JWT properly
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    // Service client — for privileged DB writes
+    const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
+
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
 
     const { user_id, date, samples } = await req.json();
 
@@ -106,18 +124,23 @@ Deno.serve(async (req) => {
       });
     }
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
-    }
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user || user.id !== user_id) {
+    if (user.id !== user_id) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
+    // Validate date format
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return new Response(JSON.stringify({ error: 'Invalid date format. Expected YYYY-MM-DD' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
+    // Validate sample elements
+    if (!samples.every((s: unknown) => s && typeof s === 'object' && 'startDate' in s && 'endDate' in s && 'value' in s)) {
+      return new Response(JSON.stringify({ error: 'Invalid sample format' }), { status: 400, headers: corsHeaders });
     }
 
     const metrics = computeSleepMetrics(samples);
 
-    const { error } = await supabase.from('sleep_analysis').upsert({
+    const { error } = await serviceClient.from('sleep_analysis').upsert({
       user_id,
       date,
       total_sleep_minutes: metrics.totalSleepMinutes,

@@ -68,4 +68,12 @@ describe('aggregateGradients', () => {
     expect(result).not.toBeNull();
     expect(result!.roundId).toBe('my-custom-round-id');
   });
+
+  it('returns null when submissions have mismatched weight vector lengths', () => {
+    const submissions: GradientSubmission[] = [
+      { userId: 'u1', weights: [1.0, 2.0], bias: 0.5, sampleCount: 10 },
+      { userId: 'u2', weights: [3.0], bias: 1.5, sampleCount: 10 },
+    ];
+    expect(aggregateGradients(submissions, 'round-mismatch')).toBeNull();
+  });
 });

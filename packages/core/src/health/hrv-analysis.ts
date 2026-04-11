@@ -64,7 +64,7 @@ export function computeHRVMetrics(intervals: RRInterval[]): HRVMetrics | null {
 
   // Stress score: 0-100, inversely proportional to RMSSD
   // RMSSD of 100ms -> score ~0, RMSSD of 0ms -> score 100
-  const stressScore = Math.max(0, Math.min(100, Math.round(100 * (1 - rmssd / 100))));
+  const stressScore = Math.max(0, Math.min(100, Math.round(100 * Math.exp(-rmssd / 50))));
 
   return {
     rmssd: Math.round(rmssd * 100) / 100,

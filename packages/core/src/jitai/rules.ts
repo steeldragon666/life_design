@@ -1,8 +1,8 @@
 import type { JITAIContext, JITAIDecision } from './types';
 
 export function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
-  // Rule 1: High stress + evening = breathing exercise
-  if (ctx.hrvStressLevel === 'high' && ctx.timeOfDay === 'evening') {
+  // Rule 1: High stress = breathing exercise (fires at any time of day)
+  if (ctx.hrvStressLevel === 'high') {
     return {
       shouldIntervene: true,
       interventionType: 'breathing_exercise',
@@ -12,7 +12,7 @@ export function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
         message: 'Your stress levels are elevated. A 2-minute breathing exercise can help.',
         actionUrl: '/meditations',
       },
-      reasoning: 'High HRV stress detected in evening — breathing exercise recommended',
+      reasoning: 'High HRV stress detected — breathing exercise recommended',
     };
   }
 

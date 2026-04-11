@@ -17,8 +17,8 @@ function makeContext(overrides: Partial<JITAIContext> = {}): JITAIContext {
 }
 
 describe('evaluateJITAIRules', () => {
-  describe('Rule 1: High stress + evening -> breathing exercise', () => {
-    it('should recommend breathing exercise when HRV stress is high and it is evening', () => {
+  describe('Rule 1: High stress -> breathing exercise (any time of day)', () => {
+    it('should recommend breathing exercise when HRV stress is high in the evening', () => {
       const ctx = makeContext({ hrvStressLevel: 'high', timeOfDay: 'evening' });
       const result = evaluateJITAIRules(ctx);
 
@@ -31,11 +31,21 @@ describe('evaluateJITAIRules', () => {
       expect(result.reasoning).toContain('High HRV stress');
     });
 
-    it('should not trigger for high stress in the morning', () => {
+    it('should also trigger for high stress in the morning', () => {
       const ctx = makeContext({ hrvStressLevel: 'high', timeOfDay: 'morning' });
       const result = evaluateJITAIRules(ctx);
 
-      expect(result.interventionType).not.toBe('breathing_exercise');
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('breathing_exercise');
+      expect(result.urgency).toBe('high');
+    });
+
+    it('should also trigger for high stress in the afternoon', () => {
+      const ctx = makeContext({ hrvStressLevel: 'high', timeOfDay: 'afternoon' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('breathing_exercise');
     });
 
     it('should not trigger for moderate stress in the evening', () => {

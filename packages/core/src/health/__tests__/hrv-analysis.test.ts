@@ -106,7 +106,7 @@ describe('computeHRVMetrics', () => {
     expect(result.stressScore).toBe(100);
   });
 
-  it('computes stress score: RMSSD=100 → 0', () => {
+  it('computes stress score: RMSSD=100 → 14', () => {
     // Two intervals with diff = 100
     const intervals: RRInterval[] = [
       { timestamp: 0, value: 800 },
@@ -114,17 +114,28 @@ describe('computeHRVMetrics', () => {
     ];
     const result = computeHRVMetrics(intervals)!;
     expect(result.rmssd).toBe(100);
-    expect(result.stressScore).toBe(0);
+    expect(result.stressScore).toBe(14);
   });
 
-  it('computes stress score: RMSSD=50 → 50', () => {
+  it('computes stress score: RMSSD=50 → 37', () => {
     const intervals: RRInterval[] = [
       { timestamp: 0, value: 800 },
       { timestamp: 1000, value: 850 },
     ];
     const result = computeHRVMetrics(intervals)!;
     expect(result.rmssd).toBe(50);
-    expect(result.stressScore).toBe(50);
+    expect(result.stressScore).toBe(37);
+  });
+
+  it('computes stress score: RMSSD=150 → 5 (low stress, not 0)', () => {
+    // Two intervals with diff = 150
+    const intervals: RRInterval[] = [
+      { timestamp: 0, value: 800 },
+      { timestamp: 1000, value: 950 },
+    ];
+    const result = computeHRVMetrics(intervals)!;
+    expect(result.rmssd).toBe(150);
+    expect(result.stressScore).toBe(5);
   });
 
   it('handles identical intervals (RMSSD=0, SDNN=0)', () => {

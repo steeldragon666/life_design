@@ -93,7 +93,7 @@ describe('extractScreenTimeFeatures', () => {
       makeEntry({ pickupCount: 30 }),
     ];
     const result = extractScreenTimeFeatures(entries)!;
-    expect(result.avgPickupsPerDay).toBeCloseTo(20, 0);
+    expect(result.avgPickupsPerDay).toBeCloseTo(60, 0);
   });
 });
 

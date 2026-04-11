@@ -126,6 +126,8 @@ export default function ExplainabilityTooltip({
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
+        onBlur={() => setIsOpen(false)}
+        onKeyDown={(e) => { if (e.key === 'Escape') setIsOpen(false); }}
         className="inline-flex items-center justify-center rounded-full transition-colors"
         style={{
           width: 18,
@@ -137,6 +139,7 @@ export default function ExplainabilityTooltip({
           border: `1px solid ${BORDER}`,
         }}
         aria-label="Why this prediction?"
+        aria-describedby="explainability-tooltip-panel"
         title="Why this prediction?"
       >
         ?
@@ -144,6 +147,8 @@ export default function ExplainabilityTooltip({
 
       {isOpen && (
         <div
+          id="explainability-tooltip-panel"
+          role="tooltip"
           className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-xl p-3 shadow-lg"
           style={{
             backgroundColor: 'white',

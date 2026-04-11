@@ -38,7 +38,8 @@ export function extractScreenTimeFeatures(entries: ScreenTimeEntry[]): ScreenTim
     .filter((e) => isLateNight(e.lastUseTime))
     .reduce((sum, e) => sum + e.durationMinutes, 0);
 
-  const avgPickupsPerDay = entries.reduce((sum, e) => sum + e.pickupCount, 0) / entries.length;
+  const uniqueDays = new Set(entries.map(e => e.date)).size;
+  const avgPickupsPerDay = uniqueDays > 0 ? entries.reduce((sum, e) => sum + e.pickupCount, 0) / uniqueDays : 0;
 
   const digitalWellnessScore = computeWellnessScore(
     totalDailyMinutes,

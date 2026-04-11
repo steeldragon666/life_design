@@ -12,12 +12,9 @@ const RESPONSE_OPTIONS = [
   { value: 3, label: 'Nearly every day' },
 ] as const;
 
-interface ClinicalScreeningFormProps {
-  instrument: 'phq9' | 'gad7';
-  onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void;
-  onCriticalFlag?: () => void;
-  className?: string;
-}
+type ClinicalScreeningFormProps =
+  | { instrument: 'phq9'; onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void; onCriticalFlag: () => void; className?: string }
+  | { instrument: 'gad7'; onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void; onCriticalFlag?: never; className?: string };
 
 export function ClinicalScreeningForm({
   instrument,
@@ -64,8 +61,6 @@ export function ClinicalScreeningForm({
           return (
             <fieldset
               key={item.id}
-              role="radiogroup"
-              aria-labelledby={questionId}
               className="space-y-3"
             >
               <legend id={questionId} className="text-sm font-medium text-stone-800">
@@ -88,13 +83,11 @@ export function ClinicalScreeningForm({
                     >
                       <input
                         type="radio"
-                        role="radio"
                         id={inputId}
                         name={item.id}
                         value={option.value}
                         checked={isSelected}
                         onChange={() => handleChange(item.id, option.value)}
-                        aria-label={option.label}
                         className="sr-only"
                       />
                       <span

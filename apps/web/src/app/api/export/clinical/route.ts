@@ -158,7 +158,6 @@ export async function POST(request: NextRequest) {
 
   const exportPayload = {
     exportedAt: new Date().toISOString(),
-    userId: user.id,
     shareToken,
     shareExpiresAt,
     dataIncluded,

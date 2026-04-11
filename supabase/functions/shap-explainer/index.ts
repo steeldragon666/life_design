@@ -21,11 +21,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
-
     // ── Auth ─────────────────────────────────────────────────────────────
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -34,10 +29,23 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
+
+    // Auth client — validates JWT properly
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    // Service client — for privileged DB writes
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    } = await authClient.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 403,
@@ -72,7 +80,7 @@ Deno.serve(async (req) => {
     }
 
     // ── Load latest model artifact ───────────────────────────────────────
-    const { data: model, error: modelErr } = await supabase
+    const { data: model, error: modelErr } = await serviceClient
       .from('model_artifacts')
       .select('weights, intercept, feature_names')
       .eq('user_id', userId)
@@ -133,7 +141,7 @@ Deno.serve(async (req) => {
     // ── Store explanation ────────────────────────────────────────────────
     const predictionDate = new Date().toISOString().slice(0, 10);
 
-    const { error: insertErr } = await supabase
+    const { error: insertErr } = await serviceClient
       .from('shap_explanations')
       .insert({
         user_id: userId,

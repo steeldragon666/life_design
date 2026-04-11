@@ -49,7 +49,7 @@ export function computeSocialDensity(
   let longestGapDays = socialDates.length === 0 ? windowDays : 0;
   for (let i = 1; i < socialDates.length; i++) {
     const gap = (new Date(socialDates[i]).getTime() - new Date(socialDates[i - 1]).getTime()) / 86400000;
-    longestGapDays = Math.max(longestGapDays, gap);
+    longestGapDays = Math.max(longestGapDays, Math.round(gap));
   }
 
   // Isolation detection

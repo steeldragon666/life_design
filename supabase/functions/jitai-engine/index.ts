@@ -120,10 +120,33 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
+
+    // Auth client — validates JWT properly
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    // Service client — for privileged DB writes
+    const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
+
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
+    }
 
     const { user_id } = await req.json();
 
@@ -134,15 +157,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      });
-    }
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user || user.id !== user_id) {
+    if (user.id !== user_id) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -153,7 +168,7 @@ Deno.serve(async (req) => {
     const now = new Date();
 
     // Get most recent check-in
-    const { data: lastCheckin } = await supabase
+    const { data: lastCheckin } = await serviceClient
       .from('checkins')
       .select('created_at, mood_score')
       .eq('user_id', user_id)
@@ -162,7 +177,7 @@ Deno.serve(async (req) => {
       .single();
 
     // Get most recent sleep analysis
-    const { data: lastSleep } = await supabase
+    const { data: lastSleep } = await serviceClient
       .from('sleep_analysis')
       .select('sleep_quality_score')
       .eq('user_id', user_id)
@@ -171,7 +186,7 @@ Deno.serve(async (req) => {
       .single();
 
     // Get streak days (count consecutive days with check-ins)
-    const { count: streakCount } = await supabase
+    const { count: streakCount } = await serviceClient
       .from('checkins')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user_id)
@@ -204,7 +219,7 @@ Deno.serve(async (req) => {
     const decision = evaluateJITAIRules(context);
 
     // Log decision to jitai_decisions table
-    const { error: insertError } = await supabase.from('jitai_decisions').insert({
+    const { error: insertError } = await serviceClient.from('jitai_decisions').insert({
       user_id,
       context,
       should_intervene: decision.shouldIntervene,

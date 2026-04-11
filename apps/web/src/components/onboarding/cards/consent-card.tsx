@@ -27,12 +27,14 @@ export function ConsentCard({ onConsent, onSkip }: ConsentCardProps) {
       </div>
       <div className="flex gap-3">
         <button
+          type="button"
           onClick={onConsent}
           className="flex-1 rounded-lg bg-sage-600 text-white py-2 font-medium"
         >
           Continue
         </button>
         <button
+          type="button"
           onClick={onSkip}
           className="flex-1 rounded-lg border border-stone-300 text-stone-600 py-2 font-medium"
         >

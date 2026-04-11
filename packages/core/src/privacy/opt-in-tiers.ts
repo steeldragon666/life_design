@@ -40,7 +40,12 @@ export const TIER_BENEFITS: TierBenefit[] = [
   },
 ];
 
+const TIER_ORDER: Record<OptInTier, number> = {
+  [OptInTier.Basic]: 0,
+  [OptInTier.Enhanced]: 1,
+  [OptInTier.Full]: 2,
+};
+
 export function isFeatureAvailable(userTier: OptInTier, requiredTier: OptInTier): boolean {
-  const tierOrder = [OptInTier.Basic, OptInTier.Enhanced, OptInTier.Full];
-  return tierOrder.indexOf(userTier) >= tierOrder.indexOf(requiredTier);
+  return TIER_ORDER[userTier] >= TIER_ORDER[requiredTier];
 }

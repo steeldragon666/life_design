@@ -24,6 +24,18 @@ const CRISIS_RESOURCES: CrisisResource[] = [
     description: 'Crisis support for Aboriginal and Torres Strait Islander peoples',
     url: 'https://www.13yarn.org.au',
   },
+  {
+    name: 'Kids Helpline',
+    phone: '1800 55 1800',
+    description: 'Free 24/7 counselling for young people under 25',
+    url: 'https://kidshelpline.com.au',
+  },
+  {
+    name: 'Suicide Call Back Service',
+    phone: '1300 659 467',
+    description: 'Free 24/7 telephone and video counselling',
+    url: 'https://www.suicidecallbackservice.org.au',
+  },
 ];
 
 export function buildCrisisResponse(level: CrisisLevel): CrisisResponse {
