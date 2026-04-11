@@ -87,6 +87,13 @@ export interface LocusOfControlScore {
   dominant: 'internal' | 'powerful_others' | 'chance';
 }
 
+/** PHQ-9 Patient Health Questionnaire (Kroenke, Spitzer, Williams, 2001) — 0-3 scale */
+export interface PHQ9Score {
+  score: number;
+  severity: 'minimal' | 'mild' | 'moderate' | 'moderately_severe' | 'severe';
+  criticalItem9: boolean; // CRITICAL: Item 9 = suicidal ideation, any non-zero value is flagged
+}
+
 /** Extended psychometric profile including baseline instruments */
 export interface ExtendedPsychometricProfile extends PsychometricProfile {
   chronotype: ChronotypeScore;
@@ -99,7 +106,7 @@ export interface ExtendedPsychometricProfile extends PsychometricProfile {
 /** Item definition for validated psychometric instruments */
 export interface PsychometricItem {
   id: string;
-  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns' | 'chronotype' | 'sleep' | 'stress' | 'selfCompassion' | 'locusOfControl';
+  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns' | 'chronotype' | 'sleep' | 'stress' | 'selfCompassion' | 'locusOfControl' | 'phq9';
   subscale: string;
   text: string;
   reversed: boolean;

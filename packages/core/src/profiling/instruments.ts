@@ -713,6 +713,95 @@ const LOCUS_OF_CONTROL_ITEMS: PsychometricItem[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// PHQ-9 Patient Health Questionnaire (Kroenke, Spitzer, Williams, 2001)
+// 9 items, 0-3 scale (0=Not at all, 3=Nearly every day)
+// ---------------------------------------------------------------------------
+
+export const PHQ9_ITEMS: PsychometricItem[] = [
+  {
+    id: 'phq9_1',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Little interest or pleasure in doing things',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_2',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Feeling down, depressed, or hopeless',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_3',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Trouble falling or staying asleep, or sleeping too much',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_4',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Feeling tired or having little energy',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_5',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Poor appetite or overeating',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_6',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Feeling bad about yourself \u2014 or that you are a failure or have let yourself or your family down',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_7',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Trouble concentrating on things, such as reading the newspaper or watching television',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_8',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Moving or speaking so slowly that other people could have noticed? Or the opposite \u2014 being so fidgety or restless that you have been moving around a lot more than usual',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'phq9_9',
+    instrument: 'phq9',
+    subscale: 'depression',
+    text: 'Thoughts that you would be better off dead, or of hurting yourself in some way',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+];
+
 export const BASELINE_ITEMS: PsychometricItem[] = [
   ...CHRONOTYPE_ITEMS,
   ...SLEEP_QUALITY_ITEMS,
@@ -732,6 +821,7 @@ export const PSYCHOMETRIC_ITEMS: PsychometricItem[] = [
   ...SWLS_ITEMS,
   ...BPNS_ITEMS,
   ...BASELINE_ITEMS,
+  ...PHQ9_ITEMS,
 ];
 
 // ---------------------------------------------------------------------------
@@ -745,4 +835,5 @@ export const PSYCHOMETRIC_SECTIONS = [
   { id: 'drive',        label: 'Your Drive',        instrument: 'grit',           questionCount: 8  },
   { id: 'satisfaction', label: 'Life Satisfaction',  instrument: 'swls',           questionCount: 5  },
   { id: 'needs',        label: 'Your Needs',        instrument: 'bpns',           questionCount: 12 },
+  { id: 'clinical_depression', label: 'Mood Assessment', instrument: 'phq9',  questionCount: 9 },
 ] as const;

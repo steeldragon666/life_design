@@ -13,6 +13,7 @@ import type {
   SelfCompassionScore,
   LocusOfControlScore,
   ExtendedPsychometricProfile,
+  PHQ9Score,
 } from './psychometric-types';
 
 // ---------------------------------------------------------------------------
@@ -265,6 +266,34 @@ export function scoreLocusOfControl(responses: Record<string, number>): LocusOfC
   else if (powerfulOthers >= chance) dominant = 'powerful_others';
   else dominant = 'chance';
   return { internal, powerfulOthers, chance, dominant };
+}
+
+// ---------------------------------------------------------------------------
+// PHQ-9 Patient Health Questionnaire (Kroenke, Spitzer, Williams, 2001)
+// Items: phq9_1..phq9_9, 0-3 scale, no reversed items
+// Sum range: 0-27
+// Severity thresholds: 0-4 minimal, 5-9 mild, 10-14 moderate,
+//                      15-19 moderately_severe, 20-27 severe
+// CRITICAL: Item 9 = suicidal ideation — any non-zero value is flagged
+// ---------------------------------------------------------------------------
+
+export function scorePHQ9(responses: Record<string, number>): PHQ9Score {
+  const score = (responses['phq9_1'] ?? 0) + (responses['phq9_2'] ?? 0)
+    + (responses['phq9_3'] ?? 0) + (responses['phq9_4'] ?? 0)
+    + (responses['phq9_5'] ?? 0) + (responses['phq9_6'] ?? 0)
+    + (responses['phq9_7'] ?? 0) + (responses['phq9_8'] ?? 0)
+    + (responses['phq9_9'] ?? 0);
+
+  let severity: PHQ9Score['severity'];
+  if (score <= 4) severity = 'minimal';
+  else if (score <= 9) severity = 'mild';
+  else if (score <= 14) severity = 'moderate';
+  else if (score <= 19) severity = 'moderately_severe';
+  else severity = 'severe';
+
+  const criticalItem9 = (responses['phq9_9'] ?? 0) > 0;
+
+  return { score, severity, criticalItem9 };
 }
 
 // ---------------------------------------------------------------------------

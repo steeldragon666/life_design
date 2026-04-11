@@ -40,8 +40,8 @@ function fullUniformResponses(value: number): Record<string, number> {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_ITEMS', () => {
-  it('contains exactly 70 items (50 original + 20 baseline)', () => {
-    expect(PSYCHOMETRIC_ITEMS).toHaveLength(70);
+  it('contains exactly 79 items (50 original + 20 baseline + 9 PHQ-9)', () => {
+    expect(PSYCHOMETRIC_ITEMS).toHaveLength(79);
   });
 
   it('contains 15 PERMA items', () => {
@@ -108,16 +108,16 @@ describe('PSYCHOMETRIC_ITEMS', () => {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_SECTIONS', () => {
-  it('contains 6 sections (5 original + 1 baseline)', () => {
-    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(6);
+  it('contains 7 sections (5 original + 1 baseline + 1 clinical)', () => {
+    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(7);
   });
 
   it('section questionCounts match item catalogue', () => {
-    const baselineInstruments = new Set(['chronotype', 'sleep', 'stress', 'selfCompassion', 'locusOfControl']);
     PSYCHOMETRIC_SECTIONS.forEach((section) => {
-      const count = section.instrument === 'baseline'
-        ? PSYCHOMETRIC_ITEMS.filter((i) => baselineInstruments.has(i.instrument)).length
-        : PSYCHOMETRIC_ITEMS.filter((i) => i.instrument === section.instrument).length;
+      const instruments = 'instruments' in section
+        ? new Set(section.instruments)
+        : new Set([section.instrument]);
+      const count = PSYCHOMETRIC_ITEMS.filter((i) => instruments.has(i.instrument)).length;
       expect(count).toBe(section.questionCount);
     });
   });
