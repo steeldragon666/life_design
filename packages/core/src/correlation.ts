@@ -199,6 +199,32 @@ function approximatePValue(r: number, n: number): number {
   return clamp(p, 0, 1);
 }
 
+/**
+ * Computes a confidence interval for a Pearson correlation coefficient
+ * using the Fisher z-transform.
+ *
+ * @param r  - Pearson correlation coefficient in [-1, 1]
+ * @param n  - Sample size (must be >= 4)
+ * @param z  - Z-score for desired confidence level (default 1.96 = 95% CI)
+ * @returns   [lower, upper] bounds of the confidence interval
+ */
+export function correlationConfidenceInterval(
+  r: number,
+  n: number,
+  z: number = 1.96,
+): [number, number] {
+  if (n < 4) return [-1, 1];
+  const clamped = clamp(r, -0.999999, 0.999999);
+  // Fisher z-transform: z' = atanh(r)
+  const zPrime = Math.atanh(clamped);
+  // Standard error
+  const se = 1 / Math.sqrt(n - 3);
+  // CI in z-space, then inverse-transform back
+  const lower = Math.tanh(zPrime - z * se);
+  const upper = Math.tanh(zPrime + z * se);
+  return [lower, upper];
+}
+
 function computeConfidence(r: number, n: number, pValue: number): number {
   const effect = clamp((Math.abs(r) - 0.3) / 0.7, 0, 1);
   const sample = clamp((n - 14) / 30, 0, 1);
@@ -225,7 +251,7 @@ export function computeAllPairCorrelations(
       const [x, y] = toFiniteAlignedPairs(seriesMap[keyA], seriesMap[keyB]);
       const sampleSize = x.length;
       const correlation = pearsonCorrelation(x, y);
-      const lagged = laggedCorrelation(x, y, 3);
+      const lagged = laggedCorrelation(x, y, 72);
       const pValue = approximatePValue(correlation, sampleSize);
       const confidence = computeConfidence(correlation, sampleSize, pValue);
 

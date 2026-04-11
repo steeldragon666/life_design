@@ -177,7 +177,7 @@ function computePairs(series: Record<string, number[]>): PairCorrelation[] {
 
       const sampleSize = cleanX.length;
       const correlation = pearsonCorrelation(cleanX, cleanY);
-      const lag = laggedCorrelation(cleanX, cleanY, 3);
+      const lag = laggedCorrelation(cleanX, cleanY, 72);
       const pValue = approximatePValue(correlation, sampleSize);
       const confidence = confidenceScore(correlation, sampleSize, pValue);
 

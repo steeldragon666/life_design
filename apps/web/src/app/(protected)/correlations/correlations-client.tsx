@@ -11,7 +11,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ALL_DIMENSIONS, DIMENSION_LABELS, Dimension } from '@life-design/core';
+import { ALL_DIMENSIONS, DIMENSION_LABELS, Dimension, correlationConfidenceInterval } from '@life-design/core';
 import {
   GlassCard,
   DimensionBadge,
@@ -132,6 +132,12 @@ function cellColor(coeff: number): string {
   const opacity = Math.min(abs, 1) * 0.7;
   if (coeff > 0) return `rgba(16,185,129,${opacity})`;
   return `rgba(239,68,68,${opacity})`;
+}
+
+/** Format a 95% confidence interval as a compact string. */
+function formatCI(r: number, n: number): string {
+  const [lo, hi] = correlationConfidenceInterval(r, n);
+  return `${lo > 0 ? '+' : ''}${lo.toFixed(2)} to ${hi > 0 ? '+' : ''}${hi.toFixed(2)}`;
 }
 
 /** Short human label for a feature key. */
@@ -438,11 +444,15 @@ function MatrixView({ correlations }: MatrixViewProps) {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-5">
             {[
               {
                 label: 'Coefficient',
                 val: selected.data.best.coefficient.toFixed(3),
+              },
+              {
+                label: '95% CI',
+                val: formatCI(selected.data.best.coefficient, selected.data.best.sampleSize),
               },
               {
                 label: 'Confidence',
@@ -530,6 +540,10 @@ function ListView({ correlations }: ListViewProps) {
 
         const headline = `${featureLabel(c.feature1)} ↔ ${featureLabel(c.feature2)}: r = ${c.coefficient > 0 ? '+' : ''}${c.coefficient.toFixed(3)}`;
 
+        const ciText = c.sampleSize >= 4
+          ? ` [95% CI: ${formatCI(c.coefficient, c.sampleSize)}]`
+          : '';
+
         const lagInfo =
           c.lagDays != null && c.lagDays > 0
             ? ` (${c.lagDays}-day lag)`
@@ -548,7 +562,7 @@ function ListView({ correlations }: ListViewProps) {
             </div>
 
             <InsightCardDS
-              headline={headline + lagInfo}
+              headline={headline + ciText + lagInfo}
               body={c.narrative}
               confidence={c.confidence}
               dimension={c.dimension1 as Dimension}
