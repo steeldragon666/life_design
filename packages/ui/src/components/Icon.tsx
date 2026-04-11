@@ -9,6 +9,6 @@ export interface IconProps {
 
 const sizeMap = { sm: 16, md: 20, lg: 24 };
 
-export function Icon({ icon: LucideIcon, size = 'md', className }: IconProps) {
-  return <LucideIcon size={sizeMap[size]} className={cn('shrink-0', className)} />;
+export function Icon({ icon: IconComponent, size = 'md', className }: IconProps) {
+  return <IconComponent size={sizeMap[size]} className={cn('shrink-0', className)} />;
 }

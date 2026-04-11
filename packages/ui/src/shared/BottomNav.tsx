@@ -11,15 +11,17 @@ export interface BottomNavItem {
 
 export interface BottomNavProps {
   items: BottomNavItem[];
+  /** Link component override — pass Next.js Link or React Router NavLink. Defaults to `'a'`. */
+  linkComponent?: React.ElementType;
   className?: string;
 }
 
-export function BottomNav({ items, className }: BottomNavProps) {
+export function BottomNav({ items, linkComponent: LinkComponent = 'a', className }: BottomNavProps) {
   return (
     <nav className={cn('fixed bottom-0 left-0 right-0 z-30 bg-surface-default/95 backdrop-blur-sm border-t border-stone-200 sm:hidden', className)}>
       <div className="flex items-center justify-around px-2 py-2">
         {items.map((item) => (
-          <a
+          <LinkComponent
             key={item.href}
             href={item.href}
             className={cn(
@@ -31,7 +33,7 @@ export function BottomNav({ items, className }: BottomNavProps) {
           >
             <div className="w-6 h-6">{item.icon}</div>
             <span className="text-[10px] font-medium">{item.label}</span>
-          </a>
+          </LinkComponent>
         ))}
       </div>
     </nav>

@@ -1,6 +1,24 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MentorPanel } from './MentorPanel';
+
+beforeEach(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+  // Mock scrollIntoView for auto-scroll
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 const mockMessages = [
   { id: '1', message: 'Hello!', sender: 'user' as const, timestamp: '10:00 AM' },

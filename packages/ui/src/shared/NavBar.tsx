@@ -13,10 +13,12 @@ export interface NavBarProps {
   links?: NavLink[];
   userAvatar?: React.ReactNode;
   actions?: React.ReactNode;
+  /** Link component override — pass Next.js Link or React Router NavLink. Defaults to `'a'`. */
+  linkComponent?: React.ElementType;
   className?: string;
 }
 
-export function NavBar({ logo, links, userAvatar, actions, className }: NavBarProps) {
+export function NavBar({ logo, links, userAvatar, actions, linkComponent: LinkComponent = 'a', className }: NavBarProps) {
   return (
     <nav className={cn('flex items-center justify-between px-4 sm:px-6 py-3 bg-surface-default/95 backdrop-blur-sm border-b border-stone-200', className)}>
       <div className="flex items-center gap-6">
@@ -24,7 +26,7 @@ export function NavBar({ logo, links, userAvatar, actions, className }: NavBarPr
         {links && (
           <div className="hidden sm:flex items-center gap-1">
             {links.map((link) => (
-              <a
+              <LinkComponent
                 key={link.href}
                 href={link.href}
                 className={cn(
@@ -35,7 +37,7 @@ export function NavBar({ logo, links, userAvatar, actions, className }: NavBarPr
                 )}
               >
                 {link.label}
-              </a>
+              </LinkComponent>
             ))}
           </div>
         )}

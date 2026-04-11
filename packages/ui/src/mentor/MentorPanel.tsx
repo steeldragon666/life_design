@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { MentorAvatar } from './MentorAvatar';
@@ -24,6 +24,11 @@ export interface MentorPanelProps {
 
 export function MentorPanel({ mentorName, mentorAvatar, messages, onSend, isLoading, className }: MentorPanelProps) {
   const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +54,7 @@ export function MentorPanel({ mentorName, mentorAvatar, messages, onSend, isLoad
           <ChatBubble key={msg.id} message={msg.message} sender={msg.sender} timestamp={msg.timestamp} />
         ))}
         {isLoading && <ChatBubble message="" sender="mentor" isTyping />}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { cn } from '../utils/cn';
 import { Avatar } from '../components/Avatar';
 
@@ -11,10 +12,16 @@ export interface MentorAvatarProps {
 }
 
 export function MentorAvatar({ src, name, status = 'idle', className }: MentorAvatarProps) {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+
   return (
     <div className={cn(
       'relative',
-      status === 'speaking' && 'animate-pulse',
+      status === 'speaking' && !reducedMotion && 'animate-pulse',
       className,
     )}>
       <Avatar
@@ -23,7 +30,7 @@ export function MentorAvatar({ src, name, status = 'idle', className }: MentorAv
         size="lg"
         status={status === 'idle' ? undefined : 'online'}
       />
-      {status === 'thinking' && (
+      {status === 'thinking' && !reducedMotion && (
         <div className="absolute -bottom-1 -right-1 flex gap-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-sage-400 animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-1.5 h-1.5 rounded-full bg-sage-400 animate-bounce" style={{ animationDelay: '150ms' }} />
