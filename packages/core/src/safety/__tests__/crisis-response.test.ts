@@ -17,6 +17,13 @@ describe('buildCrisisResponse', () => {
     expect(response.resources.length).toBeGreaterThan(0);
   });
 
+  it('returns resources for low-level distress', () => {
+    const response = buildCrisisResponse(CrisisLevel.Low);
+    expect(response.level).toBe(CrisisLevel.Low);
+    expect(response.message).toContain('things are tough');
+    expect(response.resources.length).toBeGreaterThan(0);
+  });
+
   it('returns empty for no crisis', () => {
     const response = buildCrisisResponse(CrisisLevel.None);
     expect(response.message).toBe('');

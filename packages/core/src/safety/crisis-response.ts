@@ -49,6 +49,16 @@ export function buildCrisisResponse(level: CrisisLevel): CrisisResponse {
     };
   }
 
+  if (level === CrisisLevel.Low) {
+    return {
+      level,
+      message:
+        "It sounds like things are tough right now. " +
+        "If you ever need someone to talk to, these services are available.",
+      resources: CRISIS_RESOURCES,
+    };
+  }
+
   return {
     level,
     message: '',

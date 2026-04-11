@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { detectCrisisIndicators, CrisisLevel } from '../crisis-detection';
+import { detectCrisisIndicators } from '../crisis-detection';
+import { CrisisLevel } from '../types';
 
 describe('detectCrisisIndicators', () => {
   // HIGH-SEVERITY PATTERNS
@@ -220,6 +221,87 @@ describe('detectCrisisIndicators', () => {
       // "I want to kill myself, nobody would care" matches both HIGH and MEDIUM
       const result = detectCrisisIndicators('I want to kill myself, nobody would care');
       expect(result.level).toBe(CrisisLevel.High);
+    });
+  });
+
+  // NEW: Crisis signals mixed with false-positive language
+  describe('Crisis takes priority over false positives', () => {
+    it('detects crisis in "work is killing me and I want to die"', () => {
+      const result = detectCrisisIndicators('work is killing me and I want to die');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects crisis in "this deadline is killing me, I want to end it all"', () => {
+      const result = detectCrisisIndicators('this deadline is killing me, I want to end it all');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects crisis in "I was dying to try it but now I want to die"', () => {
+      const result = detectCrisisIndicators('I was dying to try it but now I want to die');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+  });
+
+  // NEW: Additional HIGH patterns
+  describe('Additional high-severity patterns', () => {
+    it('detects "hang myself"', () => {
+      const result = detectCrisisIndicators('I am going to hang myself');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects "overdose"', () => {
+      const result = detectCrisisIndicators('I am thinking about overdosing');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects "jump off"', () => {
+      const result = detectCrisisIndicators('I want to jump off a bridge');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects "drown myself"', () => {
+      const result = detectCrisisIndicators('I want to drown myself');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+
+    it('detects "shoot myself"', () => {
+      const result = detectCrisisIndicators('I am going to shoot myself');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.High);
+    });
+  });
+
+  // NEW: Additional MEDIUM patterns
+  describe('Additional medium-severity patterns', () => {
+    it('detects "no reason to live"', () => {
+      const result = detectCrisisIndicators('There is no reason to live');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.Medium);
+    });
+
+    it('detects "nothing to live for"', () => {
+      const result = detectCrisisIndicators('I have nothing to live for');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.Medium);
+    });
+
+    it('detects "I am a burden"', () => {
+      const result = detectCrisisIndicators('I am a burden to my family');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.Medium);
+    });
+
+    it('detects "world would be better without me"', () => {
+      const result = detectCrisisIndicators('The world would be better without me');
+      expect(result.matched).toBe(true);
+      expect(result.level).toBe(CrisisLevel.Medium);
     });
   });
 });

@@ -4,6 +4,10 @@ import { CrisisLevel, type CrisisDetectionResult } from './types';
 // False negatives (missing a crisis) are far worse than false positives.
 // When in doubt, flag it.
 
+// NOTE: We apply .toLowerCase() to input AND keep /i flags on all patterns.
+// This is intentional defense-in-depth for safety-critical code — if either
+// layer is accidentally removed, the other still catches case variations.
+
 const HIGH_PATTERNS = [
   /\b(kill|end)\s+(my\s*self|myself|my\s+life)\b/i,
   /\bsuicid/i,
@@ -14,6 +18,11 @@ const HIGH_PATTERNS = [
   /\bcut(ting)?\s+(my\s*self|myself)\b/i,
   /\btake\s+my\s+(own\s+)?life\b/i,
   /\bend\s+it\s+all\b/i,
+  /\b(hang|hanging)\s+(my\s*self|myself)\b/i,
+  /\boverdos/i,
+  /\b(jump|jumping)\s+(off|from)\b/i,
+  /\bdrown(ing)?\s+(my\s*self|myself)\b/i,
+  /\bshoot(ing)?\s+(my\s*self|myself)\b/i,
 ];
 
 const MEDIUM_PATTERNS = [
@@ -24,9 +33,15 @@ const MEDIUM_PATTERNS = [
   /\bwish\s+I\s+(was|were)\s+(dead|gone|never\s+born)\b/i,
   /\bnobody\s+would\s+(care|miss|notice)\b/i,
   /\beveryone\s+would\s+be\s+better\s+off\s+without\s+me\b/i,
+  /\bno\s+reason\s+to\s+live\b/i,
+  /\bnothing\s+to\s+live\s+for\b/i,
+  /\b(i\s+am|i'm)\s+a\s+burden\b/i,
+  /\bworld\s+would\s+be\s+better\s+without\s+me\b/i,
 ];
 
-// Patterns that look dangerous but are common metaphorical usage
+// Patterns that look dangerous but are common metaphorical usage.
+// IMPORTANT: These are checked ONLY when no crisis patterns matched.
+// Crisis signals always take priority over false-positive dismissals.
 const FALSE_POSITIVE_PATTERNS = [
   /\bkilling\s+(it|the\s+game|time)\b/i,
   /\b(deadline|work|job|traffic|weather)\s+is\s+killing\b/i,
@@ -38,14 +53,7 @@ export function detectCrisisIndicators(text: string): CrisisDetectionResult {
   const normalised = text.toLowerCase().trim();
   const triggers: string[] = [];
 
-  // Check false positives first
-  for (const pattern of FALSE_POSITIVE_PATTERNS) {
-    if (pattern.test(normalised)) {
-      return { matched: false, level: CrisisLevel.None, triggers: [], confidence: 0.9 };
-    }
-  }
-
-  // Check high-severity patterns
+  // Check high-severity patterns FIRST — crisis signals always take priority
   for (const pattern of HIGH_PATTERNS) {
     if (pattern.test(normalised)) {
       triggers.push(pattern.source);
@@ -65,7 +73,14 @@ export function detectCrisisIndicators(text: string): CrisisDetectionResult {
     return { matched: true, level: CrisisLevel.Medium, triggers, confidence: 0.8 };
   }
 
+  // Only check false positives when NO crisis patterns matched.
+  // This prevents metaphorical language (e.g. "work is killing me") from
+  // suppressing genuine crisis signals in the same message.
+  for (const pattern of FALSE_POSITIVE_PATTERNS) {
+    if (pattern.test(normalised)) {
+      return { matched: false, level: CrisisLevel.None, triggers: [], confidence: 0.9 };
+    }
+  }
+
   return { matched: false, level: CrisisLevel.None, triggers: [], confidence: 0.9 };
 }
-
-export { CrisisLevel };
