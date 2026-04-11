@@ -15,6 +15,12 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import {
+  computeFinancialStressIndex,
+  computeSpendingBaseline,
+  type Transaction as CoreTransaction,
+  type FinancialStressResult,
+} from '@life-design/core/integrations';
 
 export interface SpendingSummary {
   totalSpentToday: number;
@@ -200,4 +206,62 @@ export async function buildBankingContext(userId: string): Promise<string | null
   lines.push('- IMPORTANT: Never share exact financial figures with the user unless they ask. Use general terms like "higher than usual" or "on track".');
 
   return lines.join('\n');
+}
+
+/**
+ * Compute financial stress from recent banking transactions.
+ * Uses a 90-day window for baseline and the last 14 days for current analysis.
+ */
+export async function getFinancialStress(userId: string): Promise<FinancialStressResult | null> {
+  const token = await getAccessToken(userId);
+  if (!token) return null;
+
+  const supabase = await createClient();
+  const { data: integration } = await supabase
+    .from('integrations')
+    .select('metadata')
+    .eq('user_id', userId)
+    .eq('provider', 'banking')
+    .single();
+
+  const accountId = (integration?.metadata as Record<string, string>)?.account_id;
+  if (!accountId) return null;
+
+  try {
+    const apiBase = process.env.OPENBANKING_API_URL ?? 'https://ob.example.com';
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await fetch(
+      `${apiBase}/accounts/${accountId}/transactions?fromBookingDateTime=${ninetyDaysAgo}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'x-fapi-financial-id': process.env.OPENBANKING_FINANCIAL_ID ?? '',
+        },
+      },
+    );
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const rawTxs = (data.Data?.Transaction ?? []) as Array<Record<string, unknown>>;
+
+    const transactions: CoreTransaction[] = rawTxs.map((tx) => ({
+      date: (tx.BookingDateTime as string) ?? '',
+      amount:
+        tx.CreditDebitIndicator === 'Debit'
+          ? -parseFloat((tx.Amount as Record<string, string>)?.Amount ?? '0')
+          : parseFloat((tx.Amount as Record<string, string>)?.Amount ?? '0'),
+      category: ((tx.TransactionInformation as string) ?? 'other').toLowerCase(),
+      description: (tx.TransactionInformation as string) ?? '',
+    }));
+
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
+    const recentTxs = transactions.filter((t) => t.date.slice(0, 10) >= fourteenDaysAgo);
+    const baseline = computeSpendingBaseline(transactions, 90);
+
+    return computeFinancialStressIndex(recentTxs, baseline);
+  } catch {
+    return null;
+  }
 }
