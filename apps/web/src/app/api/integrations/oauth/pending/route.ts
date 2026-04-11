@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 // Cookie names are intentionally kept as "life-design-oauth-*" for backward compatibility.
 // Renaming would break any in-flight OAuth callbacks and require cookie migration.
 const OAUTH_PENDING_COOKIE_BY_PROVIDER: Record<string, string> = {
-  linkedin: 'life-design-oauth-linkedin',
   strava: 'life-design-oauth-strava',
   google: 'life-design-oauth-google',
   spotify: 'life-design-oauth-spotify',
