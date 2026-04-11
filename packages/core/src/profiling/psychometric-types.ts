@@ -96,6 +96,13 @@ export interface PHQ9Score {
   itemsAnswered: number;  // Count of items actually present (0-9); incomplete screenings should be flagged
 }
 
+/** GAD-7 Generalized Anxiety Disorder Scale (Spitzer et al., 2006) — 0-21 scale */
+export interface GAD7Score {
+  score: number;           // 0-21 range
+  severity: 'minimal' | 'mild' | 'moderate' | 'severe';
+  itemsAnswered: number;   // how many of 7 items were present in responses
+}
+
 /** Extended psychometric profile including baseline instruments */
 export interface ExtendedPsychometricProfile extends PsychometricProfile {
   chronotype: ChronotypeScore;
@@ -108,7 +115,7 @@ export interface ExtendedPsychometricProfile extends PsychometricProfile {
 /** Item definition for validated psychometric instruments */
 export interface PsychometricItem {
   id: string;
-  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns' | 'chronotype' | 'sleep' | 'stress' | 'selfCompassion' | 'locusOfControl' | 'phq9';
+  instrument: 'perma' | 'tipi' | 'grit' | 'swls' | 'bpns' | 'chronotype' | 'sleep' | 'stress' | 'selfCompassion' | 'locusOfControl' | 'phq9' | 'gad7';
   subscale: string;
   text: string;
   reversed: boolean;

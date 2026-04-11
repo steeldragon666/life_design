@@ -40,8 +40,8 @@ function fullUniformResponses(value: number): Record<string, number> {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_ITEMS', () => {
-  it('contains exactly 79 items (50 original + 20 baseline + 9 PHQ-9)', () => {
-    expect(PSYCHOMETRIC_ITEMS).toHaveLength(79);
+  it('contains exactly 86 items (50 original + 20 baseline + 9 PHQ-9 + 7 GAD-7)', () => {
+    expect(PSYCHOMETRIC_ITEMS).toHaveLength(86);
   });
 
   it('contains 15 PERMA items', () => {
@@ -73,7 +73,7 @@ describe('PSYCHOMETRIC_ITEMS', () => {
     const prefixMap: Record<string, string> = {
       perma: 'perma', tipi: 'tipi', grit: 'grit', swls: 'swls', bpns: 'bpns',
       chronotype: 'chrono', sleep: 'sleep', stress: 'stress',
-      selfCompassion: 'sc', locusOfControl: 'loc', phq9: 'phq9',
+      selfCompassion: 'sc', locusOfControl: 'loc', phq9: 'phq9', gad7: 'gad7',
     };
     PSYCHOMETRIC_ITEMS.forEach((item) => {
       const prefix = prefixMap[item.instrument] ?? item.instrument;
@@ -108,8 +108,8 @@ describe('PSYCHOMETRIC_ITEMS', () => {
 // ---------------------------------------------------------------------------
 
 describe('PSYCHOMETRIC_SECTIONS', () => {
-  it('contains 7 sections (5 original + 1 baseline + 1 clinical)', () => {
-    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(7);
+  it('contains 8 sections (5 original + 1 baseline + 2 clinical)', () => {
+    expect(PSYCHOMETRIC_SECTIONS).toHaveLength(8);
   });
 
   it('section questionCounts match item catalogue', () => {

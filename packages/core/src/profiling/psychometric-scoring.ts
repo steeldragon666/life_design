@@ -14,6 +14,7 @@ import type {
   LocusOfControlScore,
   ExtendedPsychometricProfile,
   PHQ9Score,
+  GAD7Score,
 } from './psychometric-types';
 
 // ---------------------------------------------------------------------------
@@ -304,6 +305,38 @@ export function scorePHQ9(responses: Record<string, number>): PHQ9Score {
   const item9Answered = responses['phq9_9'] !== undefined;
 
   return { score, severity, criticalItem9, item9Answered, itemsAnswered };
+}
+
+// ---------------------------------------------------------------------------
+// GAD-7 Generalized Anxiety Disorder Scale (Spitzer, Kroenke, Williams, Löwe, 2006)
+// Items: gad7_1..gad7_7, 0-3 scale, no reversed items
+// Sum range: 0-21
+// Severity thresholds: 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe
+// ---------------------------------------------------------------------------
+
+export function scoreGAD7(responses: Record<string, number>): GAD7Score {
+  const clamp = (v: number) => Math.max(0, Math.min(3, v));
+
+  const itemKeys = [
+    'gad7_1', 'gad7_2', 'gad7_3', 'gad7_4', 'gad7_5',
+    'gad7_6', 'gad7_7',
+  ] as const;
+
+  let score = 0;
+  let itemsAnswered = 0;
+  for (const key of itemKeys) {
+    const raw = responses[key];
+    score += clamp(raw ?? 0);
+    if (raw !== undefined) itemsAnswered++;
+  }
+
+  let severity: GAD7Score['severity'];
+  if (score <= 4) severity = 'minimal';
+  else if (score <= 9) severity = 'mild';
+  else if (score <= 14) severity = 'moderate';
+  else severity = 'severe';
+
+  return { score, severity, itemsAnswered };
 }
 
 // ---------------------------------------------------------------------------

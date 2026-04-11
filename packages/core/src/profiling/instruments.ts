@@ -804,6 +804,79 @@ export const PHQ9_ITEMS: PsychometricItem[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// GAD-7 Generalized Anxiety Disorder Scale (Spitzer, Kroenke, Williams, Löwe, 2006)
+// 7 items, 0-3 scale (0=Not at all, 3=Nearly every day)
+// ---------------------------------------------------------------------------
+
+// Exported separately (unlike other instrument arrays) because clinical instruments
+// need independent access for the screening UI (Task 10) and clinical pathway.
+export const GAD7_ITEMS: PsychometricItem[] = [
+  {
+    id: 'gad7_1',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Feeling nervous, anxious, or on edge',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_2',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Not being able to stop or control worrying',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_3',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Worrying too much about different things',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_4',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Trouble relaxing',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_5',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Being so restless that it is hard to sit still',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_6',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Becoming easily annoyed or irritable',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+  {
+    id: 'gad7_7',
+    instrument: 'gad7',
+    subscale: 'anxiety',
+    text: 'Feeling afraid, as if something awful might happen',
+    reversed: false,
+    scaleMin: 0,
+    scaleMax: 3,
+  },
+];
+
 export const BASELINE_ITEMS: PsychometricItem[] = [
   ...CHRONOTYPE_ITEMS,
   ...SLEEP_QUALITY_ITEMS,
@@ -824,6 +897,7 @@ export const PSYCHOMETRIC_ITEMS: PsychometricItem[] = [
   ...BPNS_ITEMS,
   ...BASELINE_ITEMS,
   ...PHQ9_ITEMS,
+  ...GAD7_ITEMS,
 ];
 
 // ---------------------------------------------------------------------------
@@ -838,4 +912,5 @@ export const PSYCHOMETRIC_SECTIONS = [
   { id: 'satisfaction', label: 'Life Satisfaction',  instrument: 'swls',           questionCount: 5  },
   { id: 'needs',        label: 'Your Needs',        instrument: 'bpns',           questionCount: 12 },
   { id: 'clinical_depression', label: 'Mood Assessment', instrument: 'phq9',  questionCount: 9 },
+  { id: 'clinical_anxiety', label: 'Anxiety Assessment', instrument: 'gad7', questionCount: 7 },
 ] as const;
