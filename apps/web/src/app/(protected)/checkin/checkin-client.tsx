@@ -5,9 +5,6 @@ import Link from 'next/link';
 import { useGuest } from '@/lib/guest-context';
 import { ALL_DIMENSIONS, Dimension, DIMENSION_LABELS, DurationType } from '@life-design/core';
 import { db } from '@/lib/db';
-import { BadgeSystem } from '@/lib/achievements/badge-system';
-import type { BadgeDefinition } from '@/lib/achievements/badge-definitions';
-import BadgeUnlockModal from '@/components/achievements/BadgeUnlockModal';
 import SmartJournalPrompt from '@/components/check-in/SmartJournalPrompt';
 import { getSmartJournalPrompts } from '@/lib/smart-prompts';
 import VoiceCheckin from '@/components/checkin/voice-checkin';
@@ -103,7 +100,6 @@ export default function CheckInClient({ date }: CheckInClientProps) {
   const [reflection, setReflection] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState<BadgeDefinition | null>(null);
   const [showVoice, setShowVoice] = useState(false);
 
   // Track whether user explicitly confirmed AI predictions without adjusting
@@ -367,15 +363,6 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         createdAt: new Date(),
       };
       await db.checkIns.add(dexieCheckIn);
-
-      // Check for newly earned badges
-      const badgeSystem = new BadgeSystem(db);
-      const newBadges = await badgeSystem.checkAfterCheckIn(
-        dexieCheckIn as typeof dexieCheckIn & { id?: number },
-      );
-      if (newBadges.length > 0) {
-        setEarnedBadge(newBadges[0]);
-      }
 
       // Run incremental analysis pipeline (non-blocking)
       analysisPipeline.runIncrementalAnalysis(dexieCheckIn as DBCheckIn).catch(() => {});
@@ -866,10 +853,6 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         </div>
       )}
 
-      {/* Badge Unlock Modal */}
-      {earnedBadge && (
-        <BadgeUnlockModal badge={earnedBadge} onClose={() => setEarnedBadge(null)} />
-      )}
     </div>
   );
 }
