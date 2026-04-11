@@ -20,3 +20,4 @@ export * from './ema';
 export * from './ml';
 export * from './cbt';
 export * from './nlp';
+export * from './federated';
