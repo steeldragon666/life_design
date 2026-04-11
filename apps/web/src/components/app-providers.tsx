@@ -3,7 +3,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { GuestProvider } from '@/lib/guest-context';
 import { ThemeProvider } from '@/components/theme/theme-provider';
-import { SoundscapeProvider } from '@/components/audio/soundscape-provider';
 import ResilientErrorBoundary, { GlassErrorFallbackCard } from '@/components/error/resilient-error-boundary';
 import { LifeDesignProvider } from '@/providers/LifeDesignProvider';
 import { ToastProvider } from '@/components/toast/ToastProvider';
@@ -32,9 +31,7 @@ export default function AppProviders({ children }: { children: ReactNode }) {
       <ThemeProvider>
         <GuestProvider>
           <LifeDesignProvider>
-            <SoundscapeProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </SoundscapeProvider>
+            <ToastProvider>{children}</ToastProvider>
           </LifeDesignProvider>
         </GuestProvider>
       </ThemeProvider>
