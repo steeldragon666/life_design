@@ -10,7 +10,7 @@ interface DataImportCardProps {
 const INTEGRATIONS = [
   { id: 'strava', name: 'Strava', description: 'Running, cycling & fitness', icon: '\u{1F3C3}', authUrl: '/api/auth/strava' },
   { id: 'spotify', name: 'Spotify', description: 'Music & listening habits', icon: '\u{1F3B5}', authUrl: '/api/auth/spotify' },
-  { id: 'google', name: 'Google Calendar', description: 'Events & time management', icon: '\u{1F4C5}', authUrl: '/api/auth/google' },
+  { id: 'google_calendar', name: 'Google Calendar', description: 'Events & time management', icon: '\u{1F4C5}', authUrl: '/api/auth/google' },
   { id: 'slack', name: 'Slack', description: 'Communication patterns', icon: '\u{1F4AC}', authUrl: '/api/auth/slack' },
   { id: 'notion', name: 'Notion', description: 'Notes & productivity', icon: '\u{1F4DD}', authUrl: '/api/auth/notion' },
 ];
@@ -25,12 +25,13 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
     const checkClosed = setInterval(() => {
       if (popup?.closed) {
         clearInterval(checkClosed);
-        setConnected((prev) => [...new Set([...prev, integration.id])]);
+        const updated = [...new Set([...connected, integration.id])];
+        setConnected(updated);
         // Persist to API
         fetch('/api/onboarding/card', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apps_connected: [...connected, integration.id] }),
+          body: JSON.stringify({ apps_connected: updated }),
         }).catch(() => {});
       }
     }, 500);

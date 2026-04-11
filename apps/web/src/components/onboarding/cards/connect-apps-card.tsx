@@ -9,7 +9,7 @@ interface ConnectAppsCardProps {
 const INTEGRATIONS = [
   { id: 'strava', name: 'Strava', description: 'Track workouts & activity', icon: '🏃', authUrl: '/api/auth/strava' },
   { id: 'spotify', name: 'Spotify', description: 'Music & listening patterns', icon: '🎵', authUrl: '/api/auth/spotify' },
-  { id: 'google', name: 'Google Calendar', description: 'Schedule & time use', icon: '📅', authUrl: '/api/auth/google' },
+  { id: 'google_calendar', name: 'Google Calendar', description: 'Schedule & time use', icon: '📅', authUrl: '/api/auth/google' },
   { id: 'slack', name: 'Slack', description: 'Communication activity', icon: '💬', authUrl: '/api/auth/slack' },
   { id: 'notion', name: 'Notion', description: 'Notes & knowledge', icon: '📝', authUrl: '/api/auth/notion' },
 ];

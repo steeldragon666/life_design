@@ -96,6 +96,9 @@ export default function OnboardingFlow() {
     }
     // Mark guest profile as onboarded so middleware allows dashboard access
     setProfile({ id: profile?.id ?? 'guest-user', onboarded: true });
+    // Set cookie synchronously — GuestProvider's useEffect won't fire before
+    // router.push, so middleware would redirect back to /login without this.
+    document.cookie = 'opt-in-guest-onboarded=1; Path=/; Max-Age=2592000; SameSite=Lax';
     localStorage.removeItem('opt-in-onboarding-card');
     router.push('/dashboard');
   }, [router, setProfile, profile?.id]);
