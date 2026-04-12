@@ -19,6 +19,8 @@ export type { ScoredCheckIn, Cluster } from './similarity';
 export type { VoiceSession, VoiceCheckInResult } from './voice-processor';
 export type { LocalJITAIInput } from './jitai-inference';
 export { runLocalJITAI, getTimeOfDay } from './jitai-inference';
+export type { LocalEMAInput } from './ema-selector';
+export { selectLocalEMAQuestions } from './ema-selector';
 export { PersonalModel } from './personal-model';
 export { LocalTrainer } from './federated/local-trainer';
 export type { TrainingData, GradientUpdate } from './federated/local-trainer';

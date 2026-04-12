@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Dimension, ALL_DIMENSIONS } from '../../enums';
-import { selectQuestions } from '../question-selector';
-import type { QuestionHistory } from '../question-selector';
+import { selectQuestions, selectQuestionsWithContext } from '../question-selector';
+import type { QuestionHistory, EMAContext } from '../question-selector';
 import { QUESTION_POOL } from '../question-pool';
 import type { EMAQuestion } from '../question-pool';
 
@@ -103,5 +103,156 @@ describe('selectQuestions', () => {
       expect(q.informationValue).toBeGreaterThanOrEqual(0);
       expect(q.informationValue).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('selectQuestionsWithContext', () => {
+  const baseContext: EMAContext = {
+    timeOfDay: 'afternoon',
+    currentMood: null,
+    lastCheckinHoursAgo: null,
+    recentDimensionScores: {},
+  };
+
+  it('returns questions with empty history and default context', () => {
+    const result = selectQuestionsWithContext([], baseContext);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.length).toBeLessThanOrEqual(5);
+  });
+
+  it('morning reduces burden (fewer/lighter questions)', () => {
+    const morningCtx: EMAContext = { ...baseContext, timeOfDay: 'morning' };
+    const afternoonCtx: EMAContext = { ...baseContext, timeOfDay: 'afternoon' };
+
+    const morningResult = selectQuestionsWithContext([], morningCtx, 10, 5);
+    const afternoonResult = selectQuestionsWithContext([], afternoonCtx, 10, 5);
+
+    const morningBurden = morningResult.reduce((s, q) => s + q.burdenScore, 0);
+    const afternoonBurden = afternoonResult.reduce((s, q) => s + q.burdenScore, 0);
+
+    // Morning should have equal or less burden than afternoon
+    expect(morningBurden).toBeLessThanOrEqual(afternoonBurden);
+  });
+
+  it('night reduces burden even more than morning', () => {
+    const nightCtx: EMAContext = { ...baseContext, timeOfDay: 'night' };
+    const morningCtx: EMAContext = { ...baseContext, timeOfDay: 'morning' };
+
+    const nightResult = selectQuestionsWithContext([], nightCtx, 10, 5);
+    const morningResult = selectQuestionsWithContext([], morningCtx, 10, 5);
+
+    const nightBurden = nightResult.reduce((s, q) => s + q.burdenScore, 0);
+    const morningBurden = morningResult.reduce((s, q) => s + q.burdenScore, 0);
+
+    expect(nightBurden).toBeLessThanOrEqual(morningBurden);
+  });
+
+  it('evening allows full burden', () => {
+    const eveningCtx: EMAContext = { ...baseContext, timeOfDay: 'evening' };
+
+    const eveningResult = selectQuestionsWithContext([], eveningCtx, 10, 5);
+    const afternoonResult = selectQuestionsWithContext([], baseContext, 10, 5);
+
+    const eveningBurden = eveningResult.reduce((s, q) => s + q.burdenScore, 0);
+    const afternoonBurden = afternoonResult.reduce((s, q) => s + q.burdenScore, 0);
+
+    // Evening and afternoon should have the same burden budget (full)
+    expect(eveningBurden).toBe(afternoonBurden);
+  });
+
+  it('low mood boosts Health and Social dimensions', () => {
+    const lowMoodCtx: EMAContext = { ...baseContext, currentMood: 1 };
+    const neutralCtx: EMAContext = { ...baseContext, currentMood: 4 };
+
+    const lowMoodResult = selectQuestionsWithContext([], lowMoodCtx, 20, 8);
+    const neutralResult = selectQuestionsWithContext([], neutralCtx, 20, 8);
+
+    const lowMoodHealthSocial = lowMoodResult.filter(
+      (q) => q.dimension === Dimension.Health || q.dimension === Dimension.Social,
+    );
+    const neutralHealthSocial = neutralResult.filter(
+      (q) => q.dimension === Dimension.Health || q.dimension === Dimension.Social,
+    );
+
+    // Low mood should include at least as many Health/Social questions
+    expect(lowMoodHealthSocial.length).toBeGreaterThanOrEqual(neutralHealthSocial.length);
+  });
+
+  it('low mood (mood=2) also triggers Health/Social boost', () => {
+    const lowMoodCtx: EMAContext = { ...baseContext, currentMood: 2 };
+
+    const result = selectQuestionsWithContext([], lowMoodCtx, 20, 8);
+    const healthSocial = result.filter(
+      (q) => q.dimension === Dimension.Health || q.dimension === Dimension.Social,
+    );
+
+    expect(healthSocial.length).toBeGreaterThan(0);
+  });
+
+  it('quick re-check-in returns very few questions', () => {
+    const quickCtx: EMAContext = { ...baseContext, lastCheckinHoursAgo: 2 };
+
+    const result = selectQuestionsWithContext([], quickCtx, 10, 5);
+
+    expect(result.length).toBeLessThanOrEqual(2);
+    const totalBurden = result.reduce((s, q) => s + q.burdenScore, 0);
+    expect(totalBurden).toBeLessThanOrEqual(3);
+  });
+
+  it('quick re-check-in at boundary (3.9h) still limits questions', () => {
+    const quickCtx: EMAContext = { ...baseContext, lastCheckinHoursAgo: 3.9 };
+
+    const result = selectQuestionsWithContext([], quickCtx, 10, 5);
+
+    expect(result.length).toBeLessThanOrEqual(2);
+  });
+
+  it('null dimension scores get boosted (dimension gap detection)', () => {
+    // All dimensions scored except Growth
+    const scores: Record<string, number | null> = {};
+    for (const dim of ALL_DIMENSIONS) {
+      scores[dim] = dim === Dimension.Growth ? null : 3;
+    }
+    const gapCtx: EMAContext = { ...baseContext, recentDimensionScores: scores };
+
+    const result = selectQuestionsWithContext([], gapCtx, 20, 8);
+
+    const growthQuestions = result.filter((q) => q.dimension === Dimension.Growth);
+    expect(growthQuestions.length).toBeGreaterThan(0);
+  });
+
+  it('works with empty history and empty dimension scores', () => {
+    const emptyCtx: EMAContext = {
+      timeOfDay: 'afternoon',
+      currentMood: null,
+      lastCheckinHoursAgo: null,
+      recentDimensionScores: {},
+    };
+
+    const result = selectQuestionsWithContext([], emptyCtx);
+    expect(result.length).toBeGreaterThan(0);
+    // Each returned question should be a valid EMAQuestion
+    for (const q of result) {
+      expect(q).toHaveProperty('id');
+      expect(q).toHaveProperty('dimension');
+      expect(q).toHaveProperty('text');
+      expect(q).toHaveProperty('burdenScore');
+      expect(q).toHaveProperty('informationValue');
+    }
+  });
+
+  it('does not mutate the original QUESTION_POOL', () => {
+    const originalValues = QUESTION_POOL.map((q) => q.informationValue);
+
+    const ctx: EMAContext = {
+      timeOfDay: 'morning',
+      currentMood: 1,
+      lastCheckinHoursAgo: null,
+      recentDimensionScores: { [Dimension.Growth]: null },
+    };
+    selectQuestionsWithContext([], ctx, 10, 5);
+
+    const afterValues = QUESTION_POOL.map((q) => q.informationValue);
+    expect(afterValues).toEqual(originalValues);
   });
 });
