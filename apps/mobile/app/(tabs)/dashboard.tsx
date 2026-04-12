@@ -66,7 +66,7 @@ export default function DashboardScreen() {
           <View key={dim} style={styles.scoreRow}>
             <Text style={styles.dimLabel}>{DIMENSION_LABELS[dim]}</Text>
             <View style={styles.barContainer}>
-              <View style={[styles.bar, { width: `${score * 10}%` }]} />
+              <View style={[styles.bar, { width: `${score * 20}%` }]} />
             </View>
             <Text style={styles.scoreText}>{score}</Text>
           </View>

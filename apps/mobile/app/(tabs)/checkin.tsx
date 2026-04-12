@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native';
-import Slider from '@react-native-community/slider';
 import { ALL_DIMENSIONS, DIMENSION_LABELS, Dimension, DurationType } from '@life-design/core';
 import { supabase } from '../../src/lib/supabase';
 
+const SCORE_OPTIONS = [
+  { value: 1, emoji: '😞', label: 'Low' },
+  { value: 2, emoji: '🙂', label: 'Okay' },
+  { value: 3, emoji: '😌', label: 'Steady' },
+  { value: 4, emoji: '😊', label: 'Good' },
+  { value: 5, emoji: '😁', label: 'Great' },
+] as const;
+
 export default function CheckInScreen() {
-  const [mood, setMood] = useState(5);
+  const [mood, setMood] = useState(3);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [journal, setJournal] = useState('');
   const [loading, setLoading] = useState(false);
 
-  function getMoodEmoji(value: number): string {
-    if (value <= 3) return '😔';
-    if (value <= 6) return '😐';
-    return '😊';
-  }
+  const moodOption = SCORE_OPTIONS.find((o) => o.value === mood);
 
   async function handleSubmit() {
     setLoading(true);
@@ -59,7 +62,7 @@ export default function CheckInScreen() {
     }
 
     Alert.alert('Success', 'Check-in saved!');
-    setMood(5);
+    setMood(3);
     setScores({});
     setJournal('');
     setLoading(false);
@@ -69,18 +72,28 @@ export default function CheckInScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Daily Check-in</Text>
 
-      <Text style={styles.label}>Mood {getMoodEmoji(mood)} {mood}/10</Text>
-      <View style={styles.sliderRow}>
-        <Slider
-          style={{ flex: 1 }}
-          minimumValue={1}
-          maximumValue={10}
-          step={1}
-          value={mood}
-          onValueChange={setMood}
-          minimumTrackTintColor="#4F46E5"
-          maximumTrackTintColor="#E5E7EB"
-        />
+      <Text style={styles.label}>Mood {moodOption?.emoji ?? '😌'} {mood}/5</Text>
+      <View style={styles.moodRow}>
+        {SCORE_OPTIONS.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            onPress={() => setMood(option.value)}
+            style={[
+              styles.moodButton,
+              mood === option.value && styles.moodButtonActive,
+            ]}
+          >
+            <Text style={styles.moodEmoji}>{option.emoji}</Text>
+            <Text
+              style={[
+                styles.moodLabel,
+                mood === option.value && styles.moodLabelActive,
+              ]}
+            >
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <Text style={styles.sectionTitle}>Dimensions</Text>
@@ -88,22 +101,23 @@ export default function CheckInScreen() {
         <View key={dim} style={styles.dimRow}>
           <Text style={styles.dimLabel}>{DIMENSION_LABELS[dim]}</Text>
           <View style={styles.scoreButtons}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+            {SCORE_OPTIONS.map((option) => (
               <TouchableOpacity
-                key={n}
-                onPress={() => setScores((prev) => ({ ...prev, [dim]: n }))}
+                key={option.value}
+                onPress={() => setScores((prev) => ({ ...prev, [dim]: option.value }))}
                 style={[
                   styles.scoreButton,
-                  scores[dim] === n && styles.scoreButtonActive,
+                  scores[dim] === option.value && styles.scoreButtonActive,
                 ]}
               >
+                <Text style={styles.scoreEmoji}>{option.emoji}</Text>
                 <Text
                   style={[
                     styles.scoreButtonText,
-                    scores[dim] === n && styles.scoreButtonTextActive,
+                    scores[dim] === option.value && styles.scoreButtonTextActive,
                   ]}
                 >
-                  {n}
+                  {option.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -133,17 +147,26 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   label: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
   sectionTitle: { fontSize: 18, fontWeight: '600', marginTop: 16, marginBottom: 12 },
-  sliderRow: { marginBottom: 16 },
+  moodRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  moodButton: {
+    flex: 1, alignItems: 'center', padding: 10, borderRadius: 12,
+    borderWidth: 2, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB',
+  },
+  moodButtonActive: { borderColor: '#4F46E5', backgroundColor: '#EEF2FF' },
+  moodEmoji: { fontSize: 22, marginBottom: 2 },
+  moodLabel: { fontSize: 10, color: '#666' },
+  moodLabelActive: { color: '#4F46E5', fontWeight: '600' },
   dimRow: { marginBottom: 16 },
   dimLabel: { fontSize: 14, fontWeight: '500', marginBottom: 6 },
-  scoreButtons: { flexDirection: 'row', gap: 4 },
+  scoreButtons: { flexDirection: 'row', gap: 6 },
   scoreButton: {
-    width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: '#ddd',
-    justifyContent: 'center', alignItems: 'center',
+    flex: 1, alignItems: 'center', padding: 8, borderRadius: 10,
+    borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB',
   },
-  scoreButtonActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
-  scoreButtonText: { fontSize: 11, color: '#333' },
-  scoreButtonTextActive: { color: '#fff' },
+  scoreButtonActive: { backgroundColor: '#EEF2FF', borderColor: '#4F46E5' },
+  scoreEmoji: { fontSize: 16, marginBottom: 2 },
+  scoreButtonText: { fontSize: 9, color: '#666' },
+  scoreButtonTextActive: { color: '#4F46E5', fontWeight: '600' },
   textArea: {
     borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12,
     fontSize: 16, minHeight: 80, textAlignVertical: 'top', marginBottom: 16,

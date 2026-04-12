@@ -22,6 +22,28 @@ export const DIMENSION_LABELS: Record<Dimension, string> = {
   [Dimension.Growth]: 'Personal Growth',
 };
 
+// ---------------------------------------------------------------------------
+// Score scale constants (mood & dimension scores)
+// ---------------------------------------------------------------------------
+
+export const SCORE_MIN = 1;
+export const SCORE_MAX = 5;
+
+export interface ScoreOption {
+  readonly value: number;
+  readonly emoji: string;
+  readonly label: string;
+}
+
+/** Canonical 5-point scale used across mood and dimension scoring. */
+export const SCORE_OPTIONS: readonly ScoreOption[] = [
+  { value: 1, emoji: '😞', label: 'Low' },
+  { value: 2, emoji: '🙂', label: 'Okay' },
+  { value: 3, emoji: '😌', label: 'Steady' },
+  { value: 4, emoji: '😊', label: 'Good' },
+  { value: 5, emoji: '😁', label: 'Great' },
+] as const;
+
 export enum MentorType {
   Stoic = 'stoic',
   Coach = 'coach',
