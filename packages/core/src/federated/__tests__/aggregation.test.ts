@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { aggregateGradients, GradientSubmission } from '../aggregation';
+import {
+  aggregateGradients,
+  GradientSubmission,
+  FederatedRound,
+  validateRoundReadiness,
+  computeModelDrift,
+} from '../aggregation';
 
 describe('aggregateGradients', () => {
   it('returns null for empty submissions', () => {
@@ -75,5 +81,56 @@ describe('aggregateGradients', () => {
       { userId: 'u2', weights: [3.0], bias: 1.5, sampleCount: 10 },
     ];
     expect(aggregateGradients(submissions, 'round-mismatch')).toBeNull();
+  });
+});
+
+describe('validateRoundReadiness', () => {
+  const makeRound = (overrides: Partial<FederatedRound> = {}): FederatedRound => ({
+    id: 'round-1',
+    roundNumber: 1,
+    targetDimension: 'sleep',
+    status: 'open',
+    minParticipants: 5,
+    participantCount: 0,
+    openedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  });
+
+  it('is ready when enough participants and status is open', () => {
+    const result = validateRoundReadiness(makeRound(), 5);
+    expect(result.ready).toBe(true);
+    expect(result.reason).toBeUndefined();
+  });
+
+  it('is not ready when too few participants', () => {
+    const result = validateRoundReadiness(makeRound(), 3);
+    expect(result.ready).toBe(false);
+    expect(result.reason).toContain('Not enough participants');
+  });
+
+  it('is not ready when status is not open', () => {
+    const result = validateRoundReadiness(makeRound({ status: 'aggregating' }), 10);
+    expect(result.ready).toBe(false);
+    expect(result.reason).toContain('aggregating');
+  });
+});
+
+describe('computeModelDrift', () => {
+  it('returns 0 for identical weights', () => {
+    expect(computeModelDrift([1, 2, 3], [1, 2, 3])).toBe(0);
+  });
+
+  it('returns a value between 0 and 1 for different weights', () => {
+    const drift = computeModelDrift([1, 0, 0], [0, 1, 0]);
+    expect(drift).toBeGreaterThan(0);
+    expect(drift).toBeLessThanOrEqual(1);
+    // Orthogonal vectors should have drift = 1
+    expect(drift).toBeCloseTo(1, 10);
+  });
+
+  it('handles empty arrays', () => {
+    expect(computeModelDrift([], [])).toBe(0);
+    expect(computeModelDrift([1, 2], [])).toBe(0);
+    expect(computeModelDrift([], [1, 2])).toBe(0);
   });
 });

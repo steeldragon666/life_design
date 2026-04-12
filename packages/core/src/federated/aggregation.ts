@@ -13,6 +13,72 @@ export interface AggregateResult {
   roundId: string;
 }
 
+export interface FederatedRound {
+  id: string;
+  roundNumber: number;
+  targetDimension: string;
+  status: 'open' | 'aggregating' | 'complete';
+  minParticipants: number;
+  participantCount: number;
+  openedAt: string;
+  closedAt?: string;
+}
+
+export interface FederatedModel {
+  targetDimension: string;
+  modelVersion: number;
+  weights: number[];
+  bias: number;
+  totalSamples: number;
+  participantCount: number;
+}
+
+/**
+ * Check if a round has enough participants and is in the correct state for aggregation.
+ */
+export function validateRoundReadiness(
+  round: FederatedRound,
+  submissions: number,
+): { ready: boolean; reason?: string } {
+  if (round.status !== 'open') {
+    return { ready: false, reason: `Round status is '${round.status}', expected 'open'` };
+  }
+  if (submissions < round.minParticipants) {
+    return {
+      ready: false,
+      reason: `Not enough participants: ${submissions}/${round.minParticipants}`,
+    };
+  }
+  return { ready: true };
+}
+
+/**
+ * Cosine distance between two weight vectors.
+ * Returns 0 for identical vectors, 1 for orthogonal vectors.
+ * For empty arrays, returns 0.
+ */
+export function computeModelDrift(oldWeights: number[], newWeights: number[]): number {
+  if (oldWeights.length === 0 || newWeights.length === 0) return 0;
+
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < oldWeights.length; i++) {
+    dotProduct += oldWeights[i] * newWeights[i];
+    normA += oldWeights[i] * oldWeights[i];
+    normB += newWeights[i] * newWeights[i];
+  }
+
+  const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
+  if (magnitude === 0) return 0;
+
+  const cosineSimilarity = dotProduct / magnitude;
+  // Clamp to [-1, 1] to handle floating point errors
+  const clamped = Math.max(-1, Math.min(1, cosineSimilarity));
+  return 1 - clamped;
+}
+
 /**
  * Federated averaging: weighted average of gradients based on sample count.
  * Server never sees raw data — only noisy gradients from GradientEncoder.
