@@ -18,9 +18,12 @@ import { createClient } from '@/lib/supabase/server';
 import {
   computeFinancialStressIndex,
   computeSpendingBaseline,
+  computeFinancialWellness,
+  buildFinancialStressContext,
   type Transaction as CoreTransaction,
   type FinancialStressResult,
 } from '@life-design/core/integrations';
+import { OptInTier, isFeatureAvailable } from '@life-design/core/privacy/opt-in-tiers';
 
 export interface SpendingSummary {
   totalSpentToday: number;
@@ -183,24 +186,33 @@ function getMonthStart(): string {
 
 /**
  * Build Open Banking context string for AI mentor system prompt.
- * NOTE: Only includes aggregated summaries — never individual transaction details.
+ *
+ * For Full tier users: uses the financial wellness reframe (no exact amounts, positive framing).
+ * For other tiers: returns null (financial features require Full tier).
  */
-export async function buildBankingContext(userId: string): Promise<string | null> {
+export async function buildBankingContext(userId: string, userTier?: OptInTier): Promise<string | null> {
+  // Financial stress features require Full tier
+  if (userTier && !isFeatureAvailable(userTier, OptInTier.Full)) {
+    return null;
+  }
+
+  // Try wellness-based context first (Full tier reframe)
+  const stressResult = await getFinancialStress(userId);
+  if (stressResult) {
+    const wellnessProfile = computeFinancialWellness(stressResult);
+    return buildFinancialStressContext(wellnessProfile);
+  }
+
+  // Fallback: basic spending summary without exact amounts
   const data = await getSpendingSummary(userId);
   if (!data) return null;
 
   const lines: string[] = ['\nFinancial Overview:'];
 
-  lines.push(`- Spent today: ${data.currency} ${data.totalSpentToday}`);
-  lines.push(`- Spent this week: ${data.currency} ${data.totalSpentThisWeek}`);
-  lines.push(`- Spent this month: ${data.currency} ${data.totalSpentThisMonth}`);
-
-  if (data.topCategories.length > 0) {
-    lines.push(`- Top spending: ${data.topCategories.slice(0, 3).map((c) => `${c.category} (${data.currency} ${c.amount})`).join(', ')}`);
-  }
-
   if (data.unusualSpending) {
-    lines.push('- ALERT: Spending today is notably higher than average — gently check if this is planned or impulsive');
+    lines.push('- Spending today is notably higher than average — gently check if this is planned or impulsive');
+  } else {
+    lines.push('- Spending appears to be within the usual range');
   }
 
   lines.push('- IMPORTANT: Never share exact financial figures with the user unless they ask. Use general terms like "higher than usual" or "on track".');
