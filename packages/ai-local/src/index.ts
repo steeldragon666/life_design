@@ -22,8 +22,10 @@ export { runLocalJITAI, getTimeOfDay } from './jitai-inference';
 export type { LocalEMAInput } from './ema-selector';
 export { selectLocalEMAQuestions } from './ema-selector';
 export { PersonalModel } from './personal-model';
+export { NOf1Model } from './n-of-1-inference';
+export type { NOf1Prediction, NOf1Config } from './n-of-1-inference';
 export { LocalTrainer } from './federated/local-trainer';
-export type { TrainingData, GradientUpdate } from './federated/local-trainer';
+export type { TrainingData, GradientUpdate, EncryptedGradientSubmission, FederatedTrainingConfig } from './federated/local-trainer';
 export { GradientEncoder } from './federated/gradient-encoder';
 
 export interface AILocalProgress {

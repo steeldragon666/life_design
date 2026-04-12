@@ -1,3 +1,6 @@
+import type { ModelArtifact } from '@life-design/core';
+import { GradientEncoder } from './gradient-encoder';
+
 export interface TrainingData {
   features: number[][];    // n_samples x n_features
   targets: number[];       // n_samples
@@ -8,6 +11,24 @@ export interface GradientUpdate {
   bias: number;            // gradient for bias
   sampleCount: number;     // how many samples used
   loss: number;            // training loss
+}
+
+// Client-side encryption wrapper for gradient submissions
+export interface EncryptedGradientSubmission {
+  encryptedWeights: string;    // base64-encoded encrypted gradients
+  encryptedBias: string;
+  sampleCount: number;         // sample count is NOT encrypted (needed for weighting)
+  nonce: string;               // for encryption
+  publicKey: string;           // sender's ephemeral public key
+}
+
+// Integration with N-of-1 model training
+export interface FederatedTrainingConfig {
+  learningRate: number;
+  epochs: number;
+  privacyEpsilon: number;         // DP epsilon
+  clipNorm: number;               // gradient clipping threshold
+  minSamplesForParticipation: number; // minimum local samples to participate
 }
 
 /**
@@ -79,6 +100,55 @@ export class LocalTrainer {
       bias,
       sampleCount: features.length,
       loss: Math.round(loss * 10000) / 10000,
+    };
+  }
+
+  /**
+   * L2 norm clipping: if ||gradients|| > maxNorm, scale down to maxNorm.
+   * Preserves direction of the gradient vector.
+   */
+  clipGradients(gradients: number[], maxNorm: number): number[] {
+    const norm = Math.sqrt(gradients.reduce((sum, g) => sum + g * g, 0));
+    if (norm <= maxNorm) {
+      return gradients.slice();
+    }
+    const scale = maxNorm / norm;
+    return gradients.map(g => g * scale);
+  }
+
+  /**
+   * Trains using existing model weights as initialization, returns gradient update
+   * (the diff between new weights and old weights).
+   */
+  trainFromPersonalModel(artifact: ModelArtifact, newData: TrainingData): GradientUpdate {
+    return this.train(newData, artifact.weights);
+  }
+
+  /**
+   * Check if user has enough data to participate in federation.
+   */
+  canParticipate(sampleCount: number, minRequired: number): boolean {
+    return sampleCount >= minRequired;
+  }
+
+  /**
+   * Clips gradients, adds DP noise, returns ready-to-submit payload.
+   * Uses GradientEncoder for differential privacy noise injection.
+   */
+  prepareSubmission(
+    update: GradientUpdate,
+    epsilon: number,
+    clipNorm: number = 1.0,
+  ): { noisyWeights: number[]; noisyBias: number; sampleCount: number } {
+    const clippedWeights = this.clipGradients(update.weights, clipNorm);
+    const encoder = new GradientEncoder(epsilon, clipNorm);
+    const noisyWeights = encoder.encode(clippedWeights);
+    const noisyBias = encoder.encode([update.bias])[0];
+
+    return {
+      noisyWeights,
+      noisyBias,
+      sampleCount: update.sampleCount,
     };
   }
 }

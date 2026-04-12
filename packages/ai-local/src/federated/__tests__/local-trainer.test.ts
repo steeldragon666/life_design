@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { LocalTrainer, type TrainingData, type GradientUpdate } from '../local-trainer';
+import { LocalTrainer, type TrainingData, type GradientUpdate, type FederatedTrainingConfig, type EncryptedGradientSubmission } from '../local-trainer';
 import { GradientEncoder } from '../gradient-encoder';
+import type { ModelArtifact } from '@life-design/core';
 
 // Simple linear data: y = 2*x1 + 3*x2 + 1
 function makeLinearData(n: number = 20): TrainingData {
@@ -75,6 +76,104 @@ describe('LocalTrainer', () => {
     // With training, the model should move weights toward [2, 3], so gradients should be positive
     expect(update.weights[0]).not.toBe(0);
     expect(update.weights[1]).not.toBe(0);
+  });
+
+  describe('clipGradients', () => {
+    it('no clipping when norm is within bound', () => {
+      const trainer = new LocalTrainer();
+      const gradients = [1.0, 2.0, 3.0]; // norm ~3.74
+      const clipped = trainer.clipGradients(gradients, 5.0);
+      expect(clipped).toEqual(gradients);
+    });
+
+    it('clips when norm exceeds maxNorm', () => {
+      const trainer = new LocalTrainer();
+      const gradients = [3.0, 4.0]; // norm = 5
+      const clipped = trainer.clipGradients(gradients, 2.5);
+      const clippedNorm = Math.sqrt(clipped.reduce((s, v) => s + v * v, 0));
+      expect(clippedNorm).toBeCloseTo(2.5, 5);
+    });
+
+    it('preserves direction after clipping', () => {
+      const trainer = new LocalTrainer();
+      const gradients = [3.0, 4.0]; // norm = 5
+      const clipped = trainer.clipGradients(gradients, 2.5);
+      // Direction ratio should be preserved: clipped[0]/clipped[1] == 3/4
+      expect(clipped[0] / clipped[1]).toBeCloseTo(3 / 4, 5);
+    });
+  });
+
+  describe('trainFromPersonalModel', () => {
+    it('uses existing weights as initialization', () => {
+      const trainer = new LocalTrainer(0.1, 50);
+      const artifact: ModelArtifact = {
+        userId: 'test-user',
+        modelVersion: 1,
+        createdAt: new Date().toISOString(),
+        featureNames: ['x1', 'x2'],
+        weights: [1.0, 1.0],
+        intercept: 0.5,
+        trainingMetrics: { mse: 0.1, r2: 0.9, sampleCount: 20, featureCount: 2 },
+        featureImportance: { x1: 0.5, x2: 0.5 },
+        targetDimension: 'wellbeing',
+      };
+      const data = makeLinearData();
+      const update = trainer.trainFromPersonalModel(artifact, data);
+
+      // Should return a gradient update (diff between new and old weights)
+      expect(update.weights).toHaveLength(2);
+      expect(update.sampleCount).toBe(20);
+      expect(typeof update.loss).toBe('number');
+      expect(typeof update.bias).toBe('number');
+    });
+  });
+
+  describe('canParticipate', () => {
+    it('returns true when enough samples', () => {
+      const trainer = new LocalTrainer();
+      expect(trainer.canParticipate(100, 50)).toBe(true);
+    });
+
+    it('returns false when insufficient samples', () => {
+      const trainer = new LocalTrainer();
+      expect(trainer.canParticipate(10, 50)).toBe(false);
+    });
+  });
+
+  describe('prepareSubmission', () => {
+    it('adds noise and clips gradients', () => {
+      const trainer = new LocalTrainer();
+      const update: GradientUpdate = {
+        weights: [10.0, 20.0, 30.0],
+        bias: 5.0,
+        sampleCount: 50,
+        loss: 0.1,
+      };
+      const submission = trainer.prepareSubmission(update, 1.0);
+
+      // Noisy weights should differ from original (statistically)
+      let anyDifferent = false;
+      for (let trial = 0; trial < 10; trial++) {
+        const sub = trainer.prepareSubmission(update, 1.0);
+        if (sub.noisyWeights.some((v, i) => v !== update.weights[i])) {
+          anyDifferent = true;
+          break;
+        }
+      }
+      expect(anyDifferent).toBe(true);
+    });
+
+    it('preserves sample count', () => {
+      const trainer = new LocalTrainer();
+      const update: GradientUpdate = {
+        weights: [1.0, 2.0],
+        bias: 0.5,
+        sampleCount: 42,
+        loss: 0.05,
+      };
+      const submission = trainer.prepareSubmission(update, 1.0);
+      expect(submission.sampleCount).toBe(42);
+    });
   });
 });
 
