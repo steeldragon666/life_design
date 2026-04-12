@@ -23,7 +23,7 @@ import {
   type Transaction as CoreTransaction,
   type FinancialStressResult,
 } from '@life-design/core/integrations';
-import { OptInTier, isFeatureAvailable } from '@life-design/core/privacy/opt-in-tiers';
+import { type OptInTier, isFeatureAvailable } from '@life-design/core';
 
 export interface SpendingSummary {
   totalSpentToday: number;
