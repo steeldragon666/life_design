@@ -235,8 +235,7 @@ export async function POST(request: NextRequest) {
 // Shared data fetching helper
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchRawData(supabase: any, userId: string, dataIncluded: string[]): Promise<ClinicalRawData> {
+async function fetchRawData(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, dataIncluded: string[]): Promise<ClinicalRawData> {
   const rawData: ClinicalRawData = {
     userId,
     phq9: [],

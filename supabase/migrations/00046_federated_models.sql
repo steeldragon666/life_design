@@ -15,7 +15,8 @@ ALTER TABLE federated_models ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read federated models (they're anonymized aggregates)
 CREATE POLICY "Anyone can read federated models" ON federated_models FOR SELECT USING (true);
-CREATE POLICY "Service role manages federated models" ON federated_models FOR ALL USING (true) WITH CHECK (true);
+-- INSERT/UPDATE/DELETE only via service role (which bypasses RLS entirely).
+-- No explicit INSERT/UPDATE/DELETE policies needed — service role is used by the coordinator.
 
 -- Index for fast lookups of latest model version per dimension
 CREATE INDEX idx_federated_models_dimension_version ON federated_models (target_dimension, model_version DESC);

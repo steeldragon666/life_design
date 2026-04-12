@@ -51,18 +51,27 @@ export function removeMask(masked: number[], mask: number[]): number[] {
 }
 
 /**
+ * Cryptographically secure random float in [-50, 50).
+ * Uses crypto.getRandomValues() for unpredictable share generation.
+ */
+function secureRandomFloat(): number {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return (buf[0] / 4294967296 - 0.5) * 100;
+}
+
+/**
  * Simple additive secret sharing: generate random shares that sum to the value.
- * All shares are needed to reconstruct (threshold = numShares).
+ * All shares are needed to reconstruct (n-of-n scheme).
  */
 export function createSecretShares(
   value: number[],
   numShares: number,
-  _threshold: number,
 ): SecretShare[] {
   const shares: SecretShare[] = [];
 
   for (let s = 0; s < numShares - 1; s++) {
-    const shareValue = value.map(() => (Math.random() - 0.5) * 100);
+    const shareValue = value.map(() => secureRandomFloat());
     shares.push({ shareIndex: s, value: shareValue });
   }
 

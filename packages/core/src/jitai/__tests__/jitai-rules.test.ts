@@ -16,6 +16,8 @@ function makeContext(overrides: Partial<JITAIContext> = {}): JITAIContext {
     sadRisk: false,
     outdoorFriendly: null,
     socialIsolationRisk: false,
+    screenTimeCompulsive: false,
+    screenTimeSleepRisk: false,
     ...overrides,
   };
 }
@@ -327,6 +329,41 @@ describe('evaluateJITAIRules', () => {
     });
   });
 
+  describe('Rule 8: Screen time sleep risk + evening -> digital sunset', () => {
+    it('should suggest digital sunset when screenTimeSleepRisk is true and evening', () => {
+      const ctx = makeContext({ screenTimeSleepRisk: true, timeOfDay: 'evening' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('digital_sunset');
+      expect(result.urgency).toBe('medium');
+      expect(result.content).not.toBeNull();
+      expect(result.content!.title).toBe('Digital sunset');
+      expect(result.reasoning).toContain('Screen time sleep disruption');
+    });
+
+    it('should not trigger when screenTimeSleepRisk is false', () => {
+      const ctx = makeContext({ screenTimeSleepRisk: false, timeOfDay: 'evening' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('digital_sunset');
+    });
+
+    it('should not trigger when timeOfDay is not evening', () => {
+      const ctx = makeContext({ screenTimeSleepRisk: true, timeOfDay: 'morning' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('digital_sunset');
+    });
+
+    it('should not trigger during afternoon', () => {
+      const ctx = makeContext({ screenTimeSleepRisk: true, timeOfDay: 'afternoon' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('digital_sunset');
+    });
+  });
+
   describe('Priority: higher rules take precedence over new rules', () => {
     it('should return breathing exercise over SAD risk when both match', () => {
       const ctx = makeContext({ hrvStressLevel: 'high', sadRisk: true });
@@ -345,6 +382,25 @@ describe('evaluateJITAIRules', () => {
 
       expect(result.interventionType).toBe('activity_suggestion');
       expect(result.reasoning).toContain('Low mood');
+    });
+
+    it('should return SAD risk (Rule 5) over digital sunset (Rule 8) when both match', () => {
+      const ctx = makeContext({ sadRisk: true, screenTimeSleepRisk: true, timeOfDay: 'evening' });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('light_therapy');
+    });
+
+    it('should return digital sunset (Rule 8) over bad weather (Rule 6) when both match', () => {
+      const ctx = makeContext({
+        screenTimeSleepRisk: true,
+        timeOfDay: 'evening',
+        weatherMoodImpact: -0.5,
+        recentMood: 1,
+      });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('digital_sunset');
     });
 
     it('should return SAD risk (Rule 5) over social isolation (Rule 7) when both match', () => {

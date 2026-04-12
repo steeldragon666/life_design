@@ -1,7 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('APP_URL') ?? 'https://lifedesign.app';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -204,11 +206,20 @@ async function handleAggregate(
     });
   }
 
-  // Mark as aggregating
-  await serviceClient
+  // Atomic compare-and-swap: only transition open → aggregating
+  const { data: updated, error: casErr } = await serviceClient
     .from('federated_rounds')
     .update({ status: 'aggregating' })
-    .eq('id', payload.roundId);
+    .eq('id', payload.roundId)
+    .eq('status', 'open')
+    .select('id');
+
+  if (casErr || !updated || updated.length === 0) {
+    return new Response(
+      JSON.stringify({ error: 'Round already being aggregated (concurrent request)' }),
+      { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
 
   // Fetch all submissions
   const { data: submissions, error: subErr } = await serviceClient

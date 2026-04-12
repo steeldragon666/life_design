@@ -255,8 +255,91 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ── Feature standardization (z-score) ─────────────────────────────────
+    const n = X.length;
+    const numFeatures = featureNames.length;
+    const featureMeans = new Array(numFeatures).fill(0);
+    const featureStds = new Array(numFeatures).fill(0);
+
+    // Compute means
+    for (let j = 0; j < numFeatures; j++) {
+      let sum = 0;
+      for (let i = 0; i < n; i++) sum += X[i][j];
+      featureMeans[j] = sum / n;
+    }
+
+    // Compute standard deviations
+    for (let j = 0; j < numFeatures; j++) {
+      let sumSq = 0;
+      for (let i = 0; i < n; i++) {
+        sumSq += (X[i][j] - featureMeans[j]) ** 2;
+      }
+      featureStds[j] = Math.sqrt(sumSq / n);
+      if (featureStds[j] < 1e-12) featureStds[j] = 1; // avoid division by zero
+    }
+
+    // Build featureStats record
+    const featureStats: Record<string, { mean: number; std: number }> = {};
+    featureNames.forEach((name, j) => {
+      featureStats[name] = {
+        mean: Math.round(featureMeans[j] * 1e6) / 1e6,
+        std: Math.round(featureStds[j] * 1e6) / 1e6,
+      };
+    });
+
+    // Standardize X in-place
+    const Xstd = X.map((row) =>
+      row.map((v, j) => (v - featureMeans[j]) / featureStds[j]),
+    );
+
+    // ── Generate interaction features for top-5 important base features ───
+    // First do a preliminary training to determine importance, then add interactions.
+    // For efficiency, we compute initial absolute correlations with y as a proxy.
+    const yMean = y.reduce((a, b) => a + b, 0) / n;
+    const correlations: Array<{ idx: number; corr: number }> = [];
+    for (let j = 0; j < numFeatures; j++) {
+      let num = 0;
+      let denX = 0;
+      let denY = 0;
+      for (let i = 0; i < n; i++) {
+        const dx = Xstd[i][j];
+        const dy = y[i] - yMean;
+        num += dx * dy;
+        denX += dx * dx;
+        denY += dy * dy;
+      }
+      const den = Math.sqrt(denX * denY);
+      correlations.push({ idx: j, corr: den > 0 ? Math.abs(num / den) : 0 });
+    }
+    correlations.sort((a, b) => b.corr - a.corr);
+    const topIndices = correlations.slice(0, 5).map((c) => c.idx);
+
+    // Generate pairwise interaction terms for top features
+    const interactionFeatureNames: string[] = [];
+    const interactionColumns: number[][] = [];
+    for (let ii = 0; ii < topIndices.length; ii++) {
+      for (let jj = ii + 1; jj < topIndices.length; jj++) {
+        const iIdx = topIndices[ii];
+        const jIdx = topIndices[jj];
+        const name = `${featureNames[iIdx]}*${featureNames[jIdx]}`;
+        interactionFeatureNames.push(name);
+        const col: number[] = [];
+        for (let i = 0; i < n; i++) {
+          col.push(Xstd[i][iIdx] * Xstd[i][jIdx]);
+        }
+        interactionColumns.push(col);
+      }
+    }
+
+    // Augment Xstd with interaction columns
+    const allFeatureNames = [...featureNames, ...interactionFeatureNames];
+    const Xaug = Xstd.map((row, i) => {
+      const interactionVals = interactionColumns.map((col) => col[i]);
+      return [...row, ...interactionVals];
+    });
+
     // ── Add bias column (intercept) ───────────────────────────────────────
-    const Xb = X.map((row) => [...row, 1]); // append 1 for intercept
+    const Xb = Xaug.map((row) => [...row, 1]); // append 1 for intercept
 
     // ── Ridge regression: w = (X^T X + λI)^(-1) X^T y ────────────────────
     const lambda = 0.01;
@@ -279,12 +362,10 @@ Deno.serve(async (req) => {
     const Xty = matVecMul(Xt, y);
     const w = matVecMul(XtXinv, Xty);
 
-    const weights = w.slice(0, featureNames.length);
-    const intercept = w[featureNames.length];
+    const weights = w.slice(0, allFeatureNames.length);
+    const intercept = w[allFeatureNames.length];
 
     // ── Training metrics ──────────────────────────────────────────────────
-    const n = y.length;
-    const yMean = y.reduce((a, b) => a + b, 0) / n;
     let ssRes = 0;
     let ssTot = 0;
     for (let i = 0; i < n; i++) {
@@ -295,11 +376,70 @@ Deno.serve(async (req) => {
     const mse = ssRes / n;
     const r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
 
+    // ── Cross-validation (5-fold) ─────────────────────────────────────────
+    const kFolds = 5;
+    const foldSize = Math.floor(n / kFolds);
+    let cvSsRes = 0;
+    let cvSsTot = 0;
+    let cvMseSum = 0;
+
+    for (let fold = 0; fold < kFolds; fold++) {
+      const valStart = fold * foldSize;
+      const valEnd = fold === kFolds - 1 ? n : valStart + foldSize;
+
+      // Split into train/val
+      const trainXb: number[][] = [];
+      const trainY: number[] = [];
+      const valXb: number[][] = [];
+      const valY: number[] = [];
+
+      for (let i = 0; i < n; i++) {
+        if (i >= valStart && i < valEnd) {
+          valXb.push(Xb[i]);
+          valY.push(y[i]);
+        } else {
+          trainXb.push(Xb[i]);
+          trainY.push(y[i]);
+        }
+      }
+
+      // Train on fold
+      const foldXt = transpose(trainXb);
+      const foldXtX = matMul(foldXt, trainXb);
+      addRidge(foldXtX, lambda);
+      const foldInv = invert(foldXtX);
+      if (!foldInv) continue; // skip singular folds
+
+      const foldXty = matVecMul(foldXt, trainY);
+      const foldW = matVecMul(foldInv, foldXty);
+
+      // Evaluate on validation set
+      const valYMean = valY.reduce((a, b) => a + b, 0) / valY.length;
+      let foldSsRes = 0;
+      let foldSsTot = 0;
+      for (let i = 0; i < valY.length; i++) {
+        const pred = valXb[i].reduce((s, v, j) => s + v * foldW[j], 0);
+        foldSsRes += (valY[i] - pred) ** 2;
+        foldSsTot += (valY[i] - valYMean) ** 2;
+      }
+      cvSsRes += foldSsRes;
+      cvSsTot += foldSsTot;
+      cvMseSum += foldSsRes / valY.length;
+    }
+
+    const cvR2 = cvSsTot > 0 ? 1 - cvSsRes / cvSsTot : 0;
+    const cvMSE = cvMseSum / kFolds;
+    const cvMetrics = {
+      cvR2: Math.round(cvR2 * 1e6) / 1e6,
+      cvMSE: Math.round(cvMSE * 1e6) / 1e6,
+      folds: kFolds,
+    };
+
     // ── Feature importance (normalised absolute weights) ──────────────────
     const absWeights = weights.map(Math.abs);
     const absSum = absWeights.reduce((a, b) => a + b, 0) || 1;
     const featureImportance: Record<string, number> = {};
-    featureNames.forEach((name, i) => {
+    allFeatureNames.forEach((name, i) => {
       featureImportance[name] =
         Math.round((absWeights[i] / absSum) * 10000) / 10000;
     });
@@ -323,16 +463,19 @@ Deno.serve(async (req) => {
         user_id: userId,
         model_version: modelVersion,
         target_dimension: targetDimension,
-        feature_names: featureNames,
+        feature_names: allFeatureNames,
         weights,
         intercept,
         training_metrics: {
           mse: Math.round(mse * 1e6) / 1e6,
           r2: Math.round(r2 * 1e6) / 1e6,
           sampleCount: n,
-          featureCount: featureNames.length,
+          featureCount: allFeatureNames.length,
         },
         feature_importance: featureImportance,
+        feature_stats: featureStats,
+        interaction_features: interactionFeatureNames,
+        cv_metrics: cvMetrics,
       });
 
     if (insertErr) {
@@ -346,16 +489,19 @@ Deno.serve(async (req) => {
       userId,
       modelVersion,
       createdAt: new Date().toISOString(),
-      featureNames,
+      featureNames: allFeatureNames,
       weights,
       intercept,
       trainingMetrics: {
         mse: Math.round(mse * 1e6) / 1e6,
         r2: Math.round(r2 * 1e6) / 1e6,
         sampleCount: n,
-        featureCount: featureNames.length,
+        featureCount: allFeatureNames.length,
       },
       featureImportance,
+      featureStats,
+      interactionFeatures: interactionFeatureNames,
+      cvMetrics: cvMetrics,
     };
 
     return new Response(JSON.stringify({ success: true, artifact }), {

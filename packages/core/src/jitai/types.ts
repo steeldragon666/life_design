@@ -11,11 +11,13 @@ export interface JITAIContext {
   sadRisk: boolean;                   // from weather trend
   outdoorFriendly: boolean | null;    // from weather features
   socialIsolationRisk: boolean;       // from social density
+  screenTimeCompulsive: boolean;      // from phenotype.highCompulsiveUse
+  screenTimeSleepRisk: boolean;       // from phenotype.sleepDisruptionRisk
 }
 
 export interface JITAIDecision {
   shouldIntervene: boolean;
-  interventionType: 'nudge' | 'checkin_prompt' | 'breathing_exercise' | 'activity_suggestion' | 'light_therapy' | 'none';
+  interventionType: 'nudge' | 'checkin_prompt' | 'breathing_exercise' | 'activity_suggestion' | 'light_therapy' | 'digital_sunset' | 'none';
   urgency: 'low' | 'medium' | 'high';
   content: {
     title: string;

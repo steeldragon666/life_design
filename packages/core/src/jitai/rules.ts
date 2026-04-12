@@ -74,6 +74,20 @@ export function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
     };
   }
 
+  // Rule 8: Screen time sleep risk + evening → digital sunset
+  if (ctx.screenTimeSleepRisk === true && ctx.timeOfDay === 'evening') {
+    return {
+      shouldIntervene: true,
+      interventionType: 'digital_sunset',
+      urgency: 'medium',
+      content: {
+        title: 'Digital sunset',
+        message: 'Your late-night screen time has been high recently. Consider putting your phone away to protect your sleep.',
+      },
+      reasoning: 'Screen time sleep disruption risk detected in the evening — digital sunset recommended',
+    };
+  }
+
   // Rule 6: Bad weather + low mood → indoor activity suggestion
   if (ctx.weatherMoodImpact !== null && ctx.weatherMoodImpact < -0.3 && ctx.recentMood !== null && ctx.recentMood <= 2) {
     return {

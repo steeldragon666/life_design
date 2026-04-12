@@ -36,7 +36,7 @@ describe('Secure Aggregation', () => {
 
   it('createSecretShares: shares sum to original value', () => {
     const original = [3.0, -1.5, 2.7];
-    const shares = createSecretShares(original, 3, 3);
+    const shares = createSecretShares(original, 3);
     expect(shares).toHaveLength(3);
 
     const reconstructed = reconstructFromShares(shares);
@@ -47,7 +47,7 @@ describe('Secure Aggregation', () => {
 
   it('createSecretShares: individual shares reveal nothing', () => {
     const original = [3.0, -1.5, 2.7];
-    const shares = createSecretShares(original, 3, 3);
+    const shares = createSecretShares(original, 3);
 
     // Each individual share should not equal the original
     for (const share of shares) {
@@ -66,7 +66,7 @@ describe('Secure Aggregation', () => {
 
   it('reconstructFromShares recovers original', () => {
     const original = [10.0, -5.0, 0.0, 3.14];
-    const shares = createSecretShares(original, 5, 5);
+    const shares = createSecretShares(original, 5);
     const recovered = reconstructFromShares(shares);
 
     for (let i = 0; i < original.length; i++) {

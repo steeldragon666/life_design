@@ -21,6 +21,9 @@ export interface ModelArtifact {
   };
   featureImportance: Record<string, number>; // feature name -> importance score
   targetDimension?: string; // which dimension this model predicts
+  featureStats?: Record<string, { mean: number; std: number }>; // for z-score normalization
+  interactionFeatures?: string[]; // names of generated interaction features (e.g. "sleep*exercise")
+  cvMetrics?: { cvR2: number; cvMSE: number; folds: number }; // cross-validation results
 }
 
 export interface TrainingRequest {
