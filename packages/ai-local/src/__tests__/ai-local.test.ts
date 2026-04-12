@@ -374,10 +374,10 @@ describe('detectMoodFromText', () => {
     expect(result.confidence).toBeLessThanOrEqual(1);
   });
 
-  it('returns neutral mood (5) for empty input', async () => {
+  it('returns neutral mood (3) for empty input', async () => {
     const { detectMoodFromText } = await import('../classify');
     const result = await detectMoodFromText('');
-    expect(result.estimatedMood).toBe(5);
+    expect(result.estimatedMood).toBe(3);
     expect(result.confidence).toBe(0);
   });
 });
@@ -436,18 +436,18 @@ describe('summarizeWeeklyJournals', () => {
 describe('extractScoresFromSpeech', () => {
   it('extracts explicit dimension scores', async () => {
     const { extractScoresFromSpeech } = await import('../voice-processor');
-    const transcript = 'My career is about a 7 and fitness maybe 5. Health is about a 3.';
+    const transcript = 'My career is about a 4 and fitness maybe 5. Health is about a 3.';
     const result = extractScoresFromSpeech(transcript);
-    expect(result.career).toBe(7);
+    expect(result.career).toBe(4);
     expect(result.fitness).toBe(5);
     expect(result.health).toBe(3);
   });
 
   it('handles "I\'d say my X is a Y" patterns', async () => {
     const { extractScoresFromSpeech } = await import('../voice-processor');
-    const transcript = "I'd say my social is a 8";
+    const transcript = "I'd say my social is a 4";
     const result = extractScoresFromSpeech(transcript);
-    expect(result.social).toBe(8);
+    expect(result.social).toBe(4);
   });
 
   it('ignores out of range scores', async () => {
@@ -471,21 +471,21 @@ describe('processVoiceCheckIn', () => {
 
   it('returns structured check-in from transcript', async () => {
     const { processVoiceCheckIn } = await import('../voice-processor');
-    const result = await processVoiceCheckIn('Career is about a 7, feeling pretty good today.');
+    const result = await processVoiceCheckIn('Career is about a 4, feeling pretty good today.');
     expect(result).toHaveProperty('mood');
     expect(result).toHaveProperty('dimensions');
     expect(result).toHaveProperty('cleanedJournal');
     expect(result).toHaveProperty('rawTranscript');
     expect(result.mood).toBeGreaterThanOrEqual(1);
-    expect(result.mood).toBeLessThanOrEqual(10);
+    expect(result.mood).toBeLessThanOrEqual(5);
     // Explicit career score should override classifier
-    expect(result.dimensions.career).toBe(7);
+    expect(result.dimensions.career).toBe(4);
   });
 
   it('returns defaults for empty transcript', async () => {
     const { processVoiceCheckIn } = await import('../voice-processor');
     const result = await processVoiceCheckIn('');
-    expect(result.mood).toBe(5);
+    expect(result.mood).toBe(3);
     expect(result.cleanedJournal).toBe('');
     expect(Object.keys(result.dimensions)).toHaveLength(0);
   });

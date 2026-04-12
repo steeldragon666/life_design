@@ -4,54 +4,53 @@ import MoodSlider from '@/components/checkin/mood-slider';
 
 describe('MoodSlider', () => {
   it('renders with default value', () => {
-    render(<MoodSlider value={5} onChange={() => {}} />);
+    render(<MoodSlider value={3} onChange={() => {}} />);
 
-    const slider = screen.getByRole('slider');
-    expect(slider).toBeInTheDocument();
-    expect(slider).toHaveValue('5');
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(5);
+    // "Steady" (value 3) should be selected
+    expect(screen.getByRole('radio', { name: /steady mood 3 out of 5/i })).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('displays the current mood value', () => {
-    render(<MoodSlider value={7} onChange={() => {}} />);
+  it('displays the current mood label', () => {
+    render(<MoodSlider value={4} onChange={() => {}} />);
 
-    expect(screen.getByText(/7/)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /good mood 4 out of 5/i })).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('calls onChange when slider value changes', () => {
+  it('calls onChange when a mood option is clicked', () => {
     const onChange = vi.fn();
-    render(<MoodSlider value={5} onChange={onChange} />);
+    render(<MoodSlider value={3} onChange={onChange} />);
 
-    const slider = screen.getByRole('slider');
-    fireEvent.change(slider, { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('radio', { name: /great mood 5 out of 5/i }));
 
-    expect(onChange).toHaveBeenCalledWith(8);
+    expect(onChange).toHaveBeenCalledWith(5);
   });
 
-  it('has min 1 and max 10', () => {
+  it('has 5 options for 1-5 scale', () => {
+    render(<MoodSlider value={3} onChange={() => {}} />);
+
+    const radios = screen.getAllByRole('radio');
+    expect(radios).toHaveLength(5);
+  });
+
+  it('shows low mood emoji for value 1', () => {
+    render(<MoodSlider value={1} onChange={() => {}} />);
+    expect(screen.getByRole('radio', { name: /low mood 1 out of 5/i })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('shows steady emoji for value 3', () => {
+    render(<MoodSlider value={3} onChange={() => {}} />);
+    expect(screen.getByRole('radio', { name: /steady mood 3 out of 5/i })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('shows great emoji for value 5', () => {
     render(<MoodSlider value={5} onChange={() => {}} />);
-
-    const slider = screen.getByRole('slider');
-    expect(slider).toHaveAttribute('min', '1');
-    expect(slider).toHaveAttribute('max', '10');
-  });
-
-  it('shows low mood emoji for values 1-3', () => {
-    render(<MoodSlider value={2} onChange={() => {}} />);
-    expect(screen.getByText(/😔/)).toBeInTheDocument();
-  });
-
-  it('shows neutral emoji for values 4-6', () => {
-    render(<MoodSlider value={5} onChange={() => {}} />);
-    expect(screen.getByText(/😐/)).toBeInTheDocument();
-  });
-
-  it('shows happy emoji for values 7-10', () => {
-    render(<MoodSlider value={9} onChange={() => {}} />);
-    expect(screen.getByText(/😊/)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /great mood 5 out of 5/i })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('displays "Mood" label', () => {
-    render(<MoodSlider value={5} onChange={() => {}} />);
+    render(<MoodSlider value={3} onChange={() => {}} />);
     expect(screen.getByText('Mood')).toBeInTheDocument();
   });
 });

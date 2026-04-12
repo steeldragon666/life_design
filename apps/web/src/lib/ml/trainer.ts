@@ -30,7 +30,7 @@ import type {
 // Constants
 // ---------------------------------------------------------------------------
 
-const BASE_SCORE = 5.5;
+const BASE_SCORE = 3;
 
 const DEFAULT_CONFIG: TrainerConfig = {
   minSamplesWarm: 7,
@@ -538,7 +538,7 @@ export class LocalTrainer {
         );
         sum += weight * (val - 0.5);
       }
-      scores[dim] = clamp(BASE_SCORE + sum * 10, 1, 10);
+      scores[dim] = clamp(BASE_SCORE + sum * 5, 1, 5);
       confidence[dim] = 0.3;
       topWeightsMap[dim] = topNWeights(weights);
     }
@@ -553,7 +553,7 @@ export class LocalTrainer {
       );
       moodSum += weight * (val - 0.5);
     }
-    const mood = clamp(BASE_SCORE + moodSum * 10, 1, 10);
+    const mood = clamp(BASE_SCORE + moodSum * 5, 1, 5);
 
     return { scores, mood, confidence, topWeights: topWeightsMap };
   }
@@ -596,7 +596,7 @@ export class LocalTrainer {
     for (const dim of ALL_DIMENSIONS) {
       const model = this.boostingModels.get(dim);
       if (model) {
-        scores[dim] = clamp(predictBoosting(model, x), 1, 10);
+        scores[dim] = clamp(predictBoosting(model, x), 1, 5);
         const dimCoeffs = extractBoostingCoefficients(model, NUMERIC_FEATURE_KEYS);
         topWeightsMap[dim] = topNWeights(dimCoeffs);
       } else {
@@ -624,7 +624,7 @@ export class LocalTrainer {
     // Mood
     const moodModel = this.boostingModels.get('mood');
     const mood = moodModel
-      ? clamp(predictBoosting(moodModel, x), 1, 10)
+      ? clamp(predictBoosting(moodModel, x), 1, 5)
       : this.predictDimensionFromCoefficients(features, coefficients, 'mood' as unknown as Dimension);
 
     return { scores, mood, confidence, topWeights: topWeightsMap };
@@ -674,7 +674,7 @@ export class LocalTrainer {
         for (let i = 0; i < x.length; i++) {
           pred += ols.coefficients[i]! * x[i]!;
         }
-        return clamp(pred, 1, 10);
+        return clamp(pred, 1, 5);
       });
       const mse =
         predictions.reduce((acc, pred, i) => acc + (pred - yd[i]!) ** 2, 0) /
@@ -759,7 +759,7 @@ export class LocalTrainer {
         const Xval = valPairs.map((p) => featureVector(p.features));
         const yval = valPairs.map((p) => p.labels[dim]!);
         const valPreds = Xval.map((x) =>
-          clamp(predictBoosting(model, x), 1, 10),
+          clamp(predictBoosting(model, x), 1, 5),
         );
         const mse =
           valPreds.reduce(
@@ -887,10 +887,10 @@ export class LocalTrainer {
           pred += coeff * featureToNumber(features, key);
         }
       }
-      return clamp(pred, 1, 10);
+      return clamp(pred, 1, 5);
     }
 
-    // Heuristic-style: baseScore + Σ(weight × (feature - 0.5)) × 10
+    // Heuristic-style: baseScore + Σ(weight × (feature - 0.5)) × 5
     let sum = 0;
     for (const key of NUMERIC_FEATURE_KEYS) {
       const weight = coefficients[`${prefix}${key}`];
@@ -898,7 +898,7 @@ export class LocalTrainer {
         sum += weight * (featureToNumber(features, key) - 0.5);
       }
     }
-    return clamp(BASE_SCORE + sum * 10, 1, 10);
+    return clamp(BASE_SCORE + sum * 5, 1, 5);
   }
 
   private extractDimensionCoefficients(

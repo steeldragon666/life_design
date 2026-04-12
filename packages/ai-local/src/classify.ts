@@ -254,8 +254,8 @@ function extractTopics(text: string): string[] {
 // ── Mood detection ──
 
 /**
- * Estimate a mood score (1-10) from journal text using keyword-based sentiment.
- * Positive words push score up from neutral 5, negative words push down.
+ * Estimate a mood score (1-5) from journal text using keyword-based sentiment.
+ * Positive words push score up from neutral 3, negative words push down.
  */
 export async function detectMoodFromText(
   text: string,
@@ -265,7 +265,7 @@ export async function detectMoodFromText(
   void onProgress;
 
   if (!text.trim()) {
-    return { estimatedMood: 5, confidence: 0 };
+    return { estimatedMood: 3, confidence: 0 };
   }
 
   const words = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
@@ -281,18 +281,18 @@ export async function detectMoodFromText(
   const sentimentWords = positiveCount + negativeCount;
 
   if (sentimentWords === 0) {
-    return { estimatedMood: 5, confidence: 0 };
+    return { estimatedMood: 3, confidence: 0 };
   }
 
   // Net sentiment ratio in [-1, 1]: +1 = all positive, -1 = all negative
   const netRatio = (positiveCount - negativeCount) / sentimentWords;
 
-  // Map net ratio from [-1, 1] to [1, 10]:
-  //   +1  → 9.5  (very positive)
-  //   0   → 5.5  (neutral leaning)
-  //   -1  → 1.5  (very negative)
-  const rawMood = 5.5 + netRatio * 4;
-  const estimatedMood = Math.max(1, Math.min(10, Math.round(rawMood)));
+  // Map net ratio from [-1, 1] to [1, 5]:
+  //   +1  → 5    (very positive)
+  //   0   → 3    (neutral)
+  //   -1  → 1    (very negative)
+  const rawMood = 3 + netRatio * 2;
+  const estimatedMood = Math.max(1, Math.min(5, Math.round(rawMood)));
 
   // Confidence = density of sentiment words in total text (capped at 1)
   const confidence = Math.round(Math.min(sentimentWords / Math.max(totalWords, 1), 1) * 100) / 100;

@@ -45,7 +45,7 @@ export default function CheckInForm({ onSubmit, loading, initialValues, predicti
     }
 
     return Object.fromEntries(
-      Object.entries(initialValues.scores).filter(([, score]) => typeof score === 'number' && score >= 1 && score <= 10),
+      Object.entries(initialValues.scores).filter(([, score]) => typeof score === 'number' && score >= 1 && score <= 5),
     );
   });
   const [notes, setNotes] = useState<Record<string, string>>({});

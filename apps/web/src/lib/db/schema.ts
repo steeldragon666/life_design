@@ -44,8 +44,8 @@ export interface RiskAlert {
 export interface DBCheckIn {
   id?: number;
   date: string; // YYYY-MM-DD
-  mood: number; // 1-10
-  energy?: number; // 1-10
+  mood: number; // 1-5
+  energy?: number; // 1-5
   sleep?: number; // hours
   journal?: string;
   dimensionScores: Partial<Record<Dimension, number>>;

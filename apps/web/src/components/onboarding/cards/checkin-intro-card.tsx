@@ -66,7 +66,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
               </div>
               <div>
                 <h3 className="font-medium text-sm text-stone-900">Takes under 60 seconds</h3>
-                <p className="text-xs text-stone-500 mt-0.5">Rate each dimension 1-10. That's it.</p>
+                <p className="text-xs text-stone-500 mt-0.5">Rate each dimension 1-5. That's it.</p>
               </div>
             </div>
             <div className="flex gap-3 items-start">
@@ -107,7 +107,7 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
         <div className="max-w-lg w-full mx-auto space-y-6">
           <div className="text-center">
             <h2 className="font-serif text-2xl text-stone-900">How's life right now?</h2>
-            <p className="text-stone-500 text-sm mt-1">Rate each area 1-10</p>
+            <p className="text-stone-500 text-sm mt-1">Rate each area 1-5</p>
           </div>
 
           <div className="space-y-4">
@@ -117,20 +117,25 @@ export default function CheckInIntroCard({ onNext }: CheckInIntroCardProps) {
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${dim.color}`}>{dim.label}</span>
                   <span className="text-sm font-medium text-stone-700">{ratings[dim.label] ?? '\u2014'}</span>
                 </div>
-                <div className="flex gap-1">
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <div className="flex gap-2">
+                  {[
+                    { value: 1, emoji: '\u{1F61E}', label: 'Low' },
+                    { value: 2, emoji: '\u{1F642}', label: 'Okay' },
+                    { value: 3, emoji: '\u{1F60C}', label: 'Steady' },
+                    { value: 4, emoji: '\u{1F60A}', label: 'Good' },
+                    { value: 5, emoji: '\u{1F601}', label: 'Great' },
+                  ].map((option) => (
                     <button
-                      key={n}
-                      onClick={() => handleRating(dim.label, n)}
-                      className={`flex-1 h-8 rounded-lg text-xs font-medium transition-all ${
-                        ratings[dim.label] === n
-                          ? 'bg-stone-900 text-white scale-110'
-                          : ratings[dim.label] && ratings[dim.label] >= n
-                            ? 'bg-stone-200 text-stone-600'
-                            : 'bg-stone-100 text-stone-400 hover:bg-stone-200'
+                      key={option.value}
+                      onClick={() => handleRating(dim.label, option.value)}
+                      className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                        ratings[dim.label] === option.value
+                          ? 'border-sage-500 bg-sage-500/20 text-stone-800 scale-105'
+                          : 'border-stone-200 bg-stone-50 text-stone-600 hover:border-stone-300 hover:bg-stone-100'
                       }`}
                     >
-                      {n}
+                      <span className="text-lg leading-none">{option.emoji}</span>
+                      <span className="text-[10px]">{option.label}</span>
                     </button>
                   ))}
                 </div>

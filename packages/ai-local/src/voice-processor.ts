@@ -39,8 +39,8 @@ const SCORE_PATTERNS = [
   /\b(career|finance|health|fitness|family|social|romance|growth)\s+(?:is\s+)?(?:about\s+|maybe\s+|like\s+|around\s+)?(?:a\s+)?(\d+)\b/gi,
   // "career: 7"
   /\b(career|finance|health|fitness|family|social|romance|growth)\s*:\s*(\d+)\b/gi,
-  // "career 7 out of 10"
-  /\b(career|finance|health|fitness|family|social|romance|growth)\s+(\d+)\s+(?:out of 10|\/10)\b/gi,
+  // "career 4 out of 5"
+  /\b(career|finance|health|fitness|family|social|romance|growth)\s+(\d+)\s+(?:out of 5|\/5)\b/gi,
   // "I'd rate career a 7" / "I'd give career a 7"
   /\b(?:rate|give)\s+(career|finance|health|fitness|family|social|romance|growth)\s+(?:a\s+)?(\d+)\b/gi,
   // "my social is a 8" / "I'd say my X is a Y"
@@ -67,7 +67,7 @@ function extractExplicitScores(text: string): Partial<Record<DimensionLabel, num
       const score = parseInt(match[2], 10);
 
       // Validate dimension and score range
-      if (DIMENSION_LABELS.includes(dim) && score >= 1 && score <= 10) {
+      if (DIMENSION_LABELS.includes(dim) && score >= 1 && score <= 5) {
         scores[dim] = score;
       }
     }
@@ -90,7 +90,7 @@ function extractExplicitMood(text: string): number | null {
     const match = pattern.exec(text);
     if (match) {
       const score = parseInt(match[1], 10);
-      if (score >= 1 && score <= 10) return score;
+      if (score >= 1 && score <= 5) return score;
     }
   }
 
@@ -142,7 +142,7 @@ export async function processVoiceCheckIn(
 ): Promise<VoiceCheckInResult> {
   if (!transcript.trim()) {
     return {
-      mood: 5,
+      mood: 3,
       dimensions: {},
       cleanedJournal: '',
       rawTranscript: transcript,
@@ -170,7 +170,7 @@ export async function processVoiceCheckIn(
     try {
       const classifiedScores = await classifyDimension(transcript, onProgress);
 
-      // Map classifier probability scores (0-1) to 1-10 range
+      // Map classifier probability scores (0-1) to 1-5 range
       for (const dim of DIMENSION_LABELS) {
         if (!scoredDims.has(dim)) {
           const probability = classifiedScores[dim as DimensionLabel] ?? 0;
@@ -178,7 +178,7 @@ export async function processVoiceCheckIn(
           if (probability > 0.15) {
             dimensions[dim as DimensionLabel] = Math.max(
               1,
-              Math.min(10, Math.round(probability * 10 + mood * 0.3)),
+              Math.min(5, Math.round(probability * 5 + mood * 0.3)),
             );
           }
         }

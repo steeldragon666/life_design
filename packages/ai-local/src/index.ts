@@ -161,7 +161,7 @@ export class AILocalClient {
   }
 
   /**
-   * Estimate mood (1-10) from text using sentiment analysis.
+   * Estimate mood (1-5) from text using sentiment analysis.
    */
   async detectMood(text: string): Promise<import('./classify').MoodEstimate> {
     return this.request('detectMood', { text });

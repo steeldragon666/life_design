@@ -46,10 +46,10 @@ describe('CheckInForm', () => {
     expect(screen.queryByPlaceholderText(/note/i)).not.toBeInTheDocument();
   });
 
-  it('renders mood slider in deep mode', () => {
+  it('renders mood selector in deep mode', () => {
     render(<CheckInForm {...defaultProps} />);
     fireEvent.click(screen.getByRole('tab', { name: /deep mode/i }));
-    expect(screen.getByRole('slider')).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: /mood selection/i })).toBeInTheDocument();
   });
 
   it('renders a submit button', () => {
@@ -62,24 +62,24 @@ describe('CheckInForm', () => {
     render(<CheckInForm {...defaultProps} onSubmit={onSubmit} />);
 
     // Set mood via quick mode segment
-    fireEvent.click(screen.getByRole('radio', { name: /good mood 8 out of 10/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /good mood 4 out of 5/i }));
 
     // Set a dimension score
     const careerButtons = screen.getByText('Career')
       .closest('div')!
       .querySelectorAll('button');
-    // Click button "7" (index 6, since buttons are 1-10)
-    fireEvent.click(careerButtons[6]);
+    // Click button for a dimension score (1-5 scale)
+    fireEvent.click(careerButtons[3]);
 
     // Submit
     fireEvent.click(screen.getByRole('button', { name: /submit|save/i }));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     const callArg = onSubmit.mock.calls[0][0];
-    expect(callArg.mood).toBe(8);
+    expect(callArg.mood).toBe(4);
     expect(callArg.scores).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ dimension: 'career', score: 7 }),
+        expect.objectContaining({ dimension: 'career', score: 4 }),
       ]),
     );
   });
@@ -91,10 +91,10 @@ describe('CheckInForm', () => {
         {...defaultProps}
         onSubmit={onSubmit}
         initialValues={{
-          mood: 8,
+          mood: 4,
           scores: {
-            [Dimension.Career]: 7,
-            [Dimension.Finance]: 6,
+            [Dimension.Career]: 4,
+            [Dimension.Finance]: 3,
           },
         }}
       />,
@@ -104,11 +104,11 @@ describe('CheckInForm', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     const callArg = onSubmit.mock.calls[0][0];
-    expect(callArg.mood).toBe(8);
+    expect(callArg.mood).toBe(4);
     expect(callArg.scores).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ dimension: 'career', score: 7 }),
-        expect.objectContaining({ dimension: 'finance', score: 6 }),
+        expect.objectContaining({ dimension: 'career', score: 4 }),
+        expect.objectContaining({ dimension: 'finance', score: 3 }),
       ]),
     );
   });

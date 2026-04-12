@@ -190,8 +190,8 @@ Deno.serve(async () => {
       // JITAI evaluation — run before rule-based nudges
       // -----------------------------------------------------------------------
       const recentMood = rows.length > 0 ? rows[rows.length - 1].mood : null;
-      // Normalise mood from 1-10 scale (DB) to 1-5 scale (JITAI)
-      const normalisedMood = recentMood !== null ? Math.round(recentMood / 2) : null;
+      // Mood is already on 1-5 scale
+      const normalisedMood = recentMood;
 
       const jitaiCtx: JITAIContext = {
         timeOfDay: getTimeOfDay(),

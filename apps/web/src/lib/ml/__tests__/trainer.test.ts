@@ -61,24 +61,24 @@ describe('LocalTrainer', () => {
     const result = await trainer.predict(makeFeatures({ sleep_quality_score: 0.9 }));
     expect(result.scores[Dimension.Health]).toBeGreaterThan(0);
     expect(result.mood).toBeGreaterThan(0);
-    expect(result.mood).toBeLessThanOrEqual(10);
+    expect(result.mood).toBeLessThanOrEqual(5);
   });
 
-  it('predictions are in 1-10 range', async () => {
+  it('predictions are in 1-5 range', async () => {
     const trainer = new LocalTrainer();
     const result = await trainer.predict(makeFeatures());
     for (const dim of Object.values(Dimension)) {
       expect(result.scores[dim]).toBeGreaterThanOrEqual(1);
-      expect(result.scores[dim]).toBeLessThanOrEqual(10);
+      expect(result.scores[dim]).toBeLessThanOrEqual(5);
     }
   });
 
   it('cold start: all features at 0.5 gives baseline score', async () => {
     const trainer = new LocalTrainer();
     const result = await trainer.predict(makeFeatures());
-    // With all features at 0.5, the deviation from 0.5 is 0 → score = BASE_SCORE (5.5)
+    // With all features at 0.5, the deviation from 0.5 is 0 → score = BASE_SCORE (3)
     for (const dim of Object.values(Dimension)) {
-      expect(result.scores[dim]).toBeCloseTo(5.5, 1);
+      expect(result.scores[dim]).toBeCloseTo(3, 1);
     }
   });
 

@@ -9,8 +9,8 @@ export interface VoiceAnalysisResult {
 
 const VOICE_ANALYSIS_PROMPT = `You are a life coach and data extractor. You will be provided with a transcript of a user's spoken journal entry.
 Your task is to:
-1. Extract a mood score from 1-10.
-2. Identify any mentioned life dimensions (Career, Finance, Health, Fitness, Family, Social, Romance, Growth) and assign a score (1-10) based on their sentiment, along with a short note explaining why.
+1. Extract a mood score from 1-5.
+2. Identify any mentioned life dimensions (Career, Finance, Health, Fitness, Family, Social, Romance, Growth) and assign a score (1-5) based on their sentiment, along with a short note explaining why.
 3. Clean up the transcript into a polished, readable journal entry (fix grammar, remove fillers like "um", "ah").
 
 Return ONLY a JSON object with this structure:

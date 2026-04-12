@@ -41,16 +41,6 @@ const moodOptions = [
   { value: 5, label: 'Thriving', color: colors.sage[500] },
 ];
 
-/** Map 5-point mood scale to 1-10 for storage */
-function moodTo10(mood5: number): number {
-  return mood5 * 2;
-}
-
-/** Map model's 1-10 prediction to 1-5 display scale */
-function moodTo5(mood10: number): number {
-  return Math.max(1, Math.min(5, Math.round(mood10 / 2)));
-}
-
 /** Minimum feature confidence to enable predictive mode */
 const PREDICTIVE_CONFIDENCE_THRESHOLD = 0.3;
 
@@ -345,7 +335,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       addCheckin({
         id: `checkin-${Date.now()}`,
         date,
-        mood: moodTo10(mood),
+        mood,
         duration_type: isPredictiveMode ? DurationType.Quick : DurationType.Deep,
         journal_entry: reflection || undefined,
         dimension_scores: dimensionScores,
@@ -354,7 +344,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       // Also write to Dexie for badge system
       const dexieCheckIn = {
         date,
-        mood: moodTo10(mood),
+        mood,
         dimensionScores: Object.fromEntries(
           dimensionScores.map((ds) => [ds.dimension, ds.score]),
         ) as Partial<Record<Dimension, number>>,
@@ -368,7 +358,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
       analysisPipeline.runIncrementalAnalysis(dexieCheckIn as DBCheckIn).catch(() => {});
 
       appendConversationSummary(
-        `Submitted check-in with mood ${moodTo10(mood)}/10${ai_accepted ? ' (AI-predicted)' : ''}.`,
+        `Submitted check-in with mood ${mood}/5${ai_accepted ? ' (AI-predicted)' : ''}.`,
         'checkin',
       );
       setStep(completeStep);
@@ -383,7 +373,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
   // Mood step with optional ghost prediction
   // -----------------------------------------------------------------------
 
-  const predictedMood5 = prediction ? moodTo5(prediction.mood) : null;
+  const predictedMood5 = prediction ? Math.max(1, Math.min(5, Math.round(prediction.mood))) : null;
 
   // -----------------------------------------------------------------------
   // Render

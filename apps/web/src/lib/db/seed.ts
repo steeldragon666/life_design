@@ -28,16 +28,16 @@ export async function seedDevelopmentData(): Promise<{
     const progress = (30 - i) / 30; // 0 to 1 over the month
 
     // Dimension patterns
-    const fitness = clamp(Math.round(4 + progress * 3 + noise()), 1, 10);
-    const health = clamp(Math.round(4 + progress * 3 + noise()), 1, 10);
-    const career = clamp(Math.round(6 + noise() * 0.5), 1, 10);
-    const finance = clamp(Math.round(5 + progress * 1.5 + noise()), 1, 10);
+    const fitness = clamp(Math.round(2 + progress * 1.5 + noise() * 0.5), 1, 5);
+    const health = clamp(Math.round(2 + progress * 1.5 + noise() * 0.5), 1, 5);
+    const career = clamp(Math.round(3 + noise() * 0.3), 1, 5);
+    const finance = clamp(Math.round(2.5 + progress * 0.8 + noise() * 0.5), 1, 5);
     // Social: dip mid-month, then recovery
-    const socialBase = i > 20 ? 6 : i > 10 ? 3.5 : 6;
-    const social = clamp(Math.round(socialBase + noise()), 1, 10);
-    const romance = clamp(Math.round(social * 0.8 + noise()), 1, 10);
-    const family = clamp(Math.round(6 + noise()), 1, 10);
-    const growth = clamp(Math.round(5 + progress * 2 + noise()), 1, 10);
+    const socialBase = i > 20 ? 3 : i > 10 ? 2 : 3;
+    const social = clamp(Math.round(socialBase + noise() * 0.5), 1, 5);
+    const romance = clamp(Math.round(social * 0.8 + noise() * 0.3), 1, 5);
+    const family = clamp(Math.round(3 + noise() * 0.5), 1, 5);
+    const growth = clamp(Math.round(2.5 + progress * 1 + noise() * 0.5), 1, 5);
 
     const dimensionScores: Partial<Record<Dimension, number>> = {
       [Dimension.Career]: career,
@@ -52,7 +52,7 @@ export async function seedDevelopmentData(): Promise<{
 
     const dimValues = Object.values(dimensionScores) as number[];
     const avg = dimValues.reduce((a, b) => a + b, 0) / dimValues.length;
-    const mood = clamp(Math.round(avg + noise() * 0.5), 1, 10);
+    const mood = clamp(Math.round(avg + noise() * 0.3), 1, 5);
 
     const journals = [
       'Had a productive morning at the gym. Feeling energised.',
@@ -70,7 +70,7 @@ export async function seedDevelopmentData(): Promise<{
     checkIns.push({
       date: dateStr,
       mood,
-      energy: clamp(Math.round(mood * 0.9 + noise() * 0.3), 1, 10),
+      energy: clamp(Math.round(mood * 0.9 + noise() * 0.2), 1, 5),
       sleep: clamp(Math.round(6 + Math.random() * 3), 4, 10),
       journal: journals[i % journals.length] ?? undefined,
       dimensionScores,
@@ -123,8 +123,8 @@ export async function seedDevelopmentData(): Promise<{
         },
       ],
       dimensionImpacts: [
-        { dimension: Dimension.Fitness, impact: 8, explanation: 'Major fitness improvement' },
-        { dimension: Dimension.Health, impact: 6 },
+        { dimension: Dimension.Fitness, impact: 4, explanation: 'Major fitness improvement' },
+        { dimension: Dimension.Health, impact: 3 },
       ],
       createdAt: new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
@@ -161,7 +161,7 @@ export async function seedDevelopmentData(): Promise<{
         },
       ],
       dimensionImpacts: [
-        { dimension: Dimension.Finance, impact: 9, explanation: 'Financial security' },
+        { dimension: Dimension.Finance, impact: 5, explanation: 'Financial security' },
       ],
       createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000),
@@ -190,7 +190,7 @@ export async function seedDevelopmentData(): Promise<{
         },
       ],
       dimensionImpacts: [
-        { dimension: Dimension.Growth, impact: 7, explanation: 'Intellectual growth' },
+        { dimension: Dimension.Growth, impact: 4, explanation: 'Intellectual growth' },
       ],
       createdAt: new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),

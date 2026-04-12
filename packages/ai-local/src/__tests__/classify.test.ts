@@ -177,30 +177,30 @@ describe('detectMoodFromText', () => {
     vi.resetModules();
   });
 
-  it('empty text returns mood 5 with confidence 0', async () => {
+  it('empty text returns mood 3 with confidence 0', async () => {
     const { detectMoodFromText } = await import('../classify');
     const result = await detectMoodFromText('');
-    expect(result.estimatedMood).toBe(5);
+    expect(result.estimatedMood).toBe(3);
     expect(result.confidence).toBe(0);
   });
 
-  it('positive text returns mood > 5', async () => {
+  it('positive text returns mood > 3', async () => {
     const { detectMoodFromText } = await import('../classify');
     const result = await detectMoodFromText(
       'Amazing day! Happy, grateful, excited, wonderful, fantastic!',
     );
-    expect(result.estimatedMood).toBeGreaterThan(5);
+    expect(result.estimatedMood).toBeGreaterThan(3);
   });
 
-  it('negative text returns mood < 5', async () => {
+  it('negative text returns mood < 3', async () => {
     const { detectMoodFromText } = await import('../classify');
     const result = await detectMoodFromText(
       'Terrible, awful, sad, stressed, exhausted, depressed, miserable.',
     );
-    expect(result.estimatedMood).toBeLessThan(5);
+    expect(result.estimatedMood).toBeLessThan(3);
   });
 
-  it('mood is always in 1-10 range', async () => {
+  it('mood is always in 1-5 range', async () => {
     const { detectMoodFromText } = await import('../classify');
 
     const texts = [
@@ -213,7 +213,7 @@ describe('detectMoodFromText', () => {
     for (const text of texts) {
       const result = await detectMoodFromText(text);
       expect(result.estimatedMood).toBeGreaterThanOrEqual(1);
-      expect(result.estimatedMood).toBeLessThanOrEqual(10);
+      expect(result.estimatedMood).toBeLessThanOrEqual(5);
     }
   });
 
