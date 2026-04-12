@@ -17,9 +17,20 @@ export interface PairCorrelation {
 
 export type CorrelationMatrix = PairCorrelation[];
 
+export interface GrangerResult {
+  direction: 'x_causes_y' | 'y_causes_x' | 'bidirectional' | 'none';
+  fStatisticXY: number;
+  fStatisticYX: number;
+  pValueXY: number;
+  pValueYX: number;
+  assessment: 'suggestive' | 'moderate' | 'strong' | null;
+  lagUsed: number;
+}
+
 export interface SignificantPattern extends PairCorrelation {
   direction: 'positive' | 'negative';
   strength: 'moderate' | 'strong';
+  causalAssessment?: GrangerResult['assessment'];
 }
 
 export interface RankedInsight extends SignificantPattern {
@@ -314,6 +325,299 @@ export function generateInsightNarrative(pattern: SignificantPattern): string {
   const confidencePct = Math.round(pattern.confidence * 100);
 
   return `${pattern.keyA} and ${pattern.keyB} ${relation} (r=${pattern.correlation.toFixed(2)}, n=${pattern.sampleSize}). Confidence ${confidencePct}% (approx p=${pattern.pValue.toFixed(3)}). ${lagHint}`;
+}
+
+/**
+ * Solves ordinary least squares: β = (X'X)^(-1) X'y
+ * X is n×p, y is n×1. Returns β (p×1) or null if singular.
+ */
+function olsSolve(X: number[][], y: number[]): number[] | null {
+  const n = X.length;
+  const p = X[0].length;
+
+  // Compute X'X (p×p)
+  const XtX: number[][] = Array.from({ length: p }, () => new Array(p).fill(0));
+  for (let i = 0; i < p; i++) {
+    for (let j = i; j < p; j++) {
+      let s = 0;
+      for (let k = 0; k < n; k++) s += X[k][i] * X[k][j];
+      XtX[i][j] = s;
+      XtX[j][i] = s;
+    }
+  }
+
+  // Compute X'y (p×1)
+  const Xty: number[] = new Array(p).fill(0);
+  for (let i = 0; i < p; i++) {
+    let s = 0;
+    for (let k = 0; k < n; k++) s += X[k][i] * y[k];
+    Xty[i] = s;
+  }
+
+  // Solve via Gaussian elimination with partial pivoting on augmented [XtX | Xty]
+  const aug: number[][] = XtX.map((row, i) => [...row, Xty[i]]);
+
+  for (let col = 0; col < p; col++) {
+    // Partial pivot
+    let maxVal = Math.abs(aug[col][col]);
+    let maxRow = col;
+    for (let row = col + 1; row < p; row++) {
+      if (Math.abs(aug[row][col]) > maxVal) {
+        maxVal = Math.abs(aug[row][col]);
+        maxRow = row;
+      }
+    }
+    if (maxVal < 1e-12) return null; // singular
+    if (maxRow !== col) {
+      [aug[col], aug[maxRow]] = [aug[maxRow], aug[col]];
+    }
+
+    const pivot = aug[col][col];
+    for (let j = col; j <= p; j++) aug[col][j] /= pivot;
+
+    for (let row = 0; row < p; row++) {
+      if (row === col) continue;
+      const factor = aug[row][col];
+      for (let j = col; j <= p; j++) aug[row][j] -= factor * aug[col][j];
+    }
+  }
+
+  return aug.map((row) => row[p]);
+}
+
+/**
+ * Compute RSS (residual sum of squares) for OLS fit.
+ */
+function computeRSS(X: number[][], y: number[], beta: number[]): number {
+  let rss = 0;
+  for (let i = 0; i < y.length; i++) {
+    let predicted = 0;
+    for (let j = 0; j < beta.length; j++) predicted += X[i][j] * beta[j];
+    const residual = y[i] - predicted;
+    rss += residual * residual;
+  }
+  return rss;
+}
+
+/**
+ * Approximate the p-value of an F-statistic using the regularized incomplete beta function.
+ * P(F > f) = 1 - I_{d2/(d2+d1*f)}(d2/2, d1/2)
+ */
+function fDistPValue(f: number, d1: number, d2: number): number {
+  if (f <= 0 || d1 <= 0 || d2 <= 0) return 1;
+  const x = d2 / (d2 + d1 * f);
+  return regularizedBeta(x, d2 / 2, d1 / 2);
+}
+
+/**
+ * Regularized incomplete beta function I_x(a, b) using a continued fraction expansion.
+ */
+function regularizedBeta(x: number, a: number, b: number): number {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+
+  // Use the symmetry relation when x > (a+1)/(a+b+2)
+  if (x > (a + 1) / (a + b + 2)) {
+    return 1 - regularizedBeta(1 - x, b, a);
+  }
+
+  const lnBeta = lnGamma(a) + lnGamma(b) - lnGamma(a + b);
+  const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta) / a;
+
+  // Lentz's continued fraction
+  const maxIter = 200;
+  const eps = 1e-14;
+  let c = 1;
+  let d = 1 - (a + b) * x / (a + 1);
+  if (Math.abs(d) < eps) d = eps;
+  d = 1 / d;
+  let result = d;
+
+  for (let m = 1; m <= maxIter; m++) {
+    // Even step
+    let numerator = m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m));
+    d = 1 + numerator * d;
+    if (Math.abs(d) < eps) d = eps;
+    c = 1 + numerator / c;
+    if (Math.abs(c) < eps) c = eps;
+    d = 1 / d;
+    result *= d * c;
+
+    // Odd step
+    numerator = -((a + m) * (a + b + m) * x) / ((a + 2 * m) * (a + 2 * m + 1));
+    d = 1 + numerator * d;
+    if (Math.abs(d) < eps) d = eps;
+    c = 1 + numerator / c;
+    if (Math.abs(c) < eps) c = eps;
+    d = 1 / d;
+    const delta = d * c;
+    result *= delta;
+
+    if (Math.abs(delta - 1) < eps) break;
+  }
+
+  return clamp(front * result, 0, 1);
+}
+
+/**
+ * Log-gamma via Stirling/Lanczos approximation.
+ */
+function lnGamma(z: number): number {
+  if (z <= 0) return 0;
+  // Lanczos approximation (g=7)
+  const g = 7;
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+  ];
+
+  if (z < 0.5) {
+    return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  }
+
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) {
+    x += c[i] / (z + i);
+  }
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+function assessFromPValue(p: number): 'suggestive' | 'moderate' | 'strong' | null {
+  if (p < 0.01) return 'strong';
+  if (p < 0.05) return 'moderate';
+  if (p < 0.10) return 'suggestive';
+  return null;
+}
+
+/**
+ * Simplified Granger causality test.
+ *
+ * Tests whether lagged values of one series help predict the other,
+ * beyond what the series' own lagged values predict.
+ *
+ * Returns null if insufficient data (need at least maxLag + 5 observations).
+ */
+export function grangerCausality(
+  x: number[],
+  y: number[],
+  maxLag: number = 3,
+): GrangerResult | null {
+  const lag = Math.max(1, Math.floor(maxLag));
+
+  // Filter out rows where either x or y is NaN/non-finite
+  const validIndices: number[] = [];
+  const minLen = Math.min(x.length, y.length);
+  for (let i = 0; i < minLen; i++) {
+    if (Number.isFinite(x[i]) && Number.isFinite(y[i])) {
+      validIndices.push(i);
+    }
+  }
+
+  // Re-index to contiguous arrays after filtering
+  // We need contiguous data for lag analysis, so find contiguous runs
+  // and use the longest one, OR simply re-map to sequential indices
+  const xClean: number[] = validIndices.map((i) => x[i]);
+  const yClean: number[] = validIndices.map((i) => y[i]);
+
+  const n = xClean.length;
+  if (n < lag + 5) return null;
+
+  // Number of usable observations after creating lagged variables
+  const T = n - lag;
+
+  // Build design matrices for X→Y test
+  // Restricted: Y[t] = a0 + Σ(ai * Y[t-i]) for i=1..lag
+  // Unrestricted: Y[t] = a0 + Σ(ai * Y[t-i]) + Σ(bi * X[t-i]) for i=1..lag
+
+  const yTarget: number[] = [];
+  const xRestricted: number[][] = [];
+  const xUnrestricted: number[][] = [];
+
+  for (let t = lag; t < n; t++) {
+    yTarget.push(yClean[t]);
+
+    const restricted: number[] = [1]; // intercept
+    for (let i = 1; i <= lag; i++) restricted.push(yClean[t - i]);
+    xRestricted.push(restricted);
+
+    const unrestricted: number[] = [1]; // intercept
+    for (let i = 1; i <= lag; i++) unrestricted.push(yClean[t - i]);
+    for (let i = 1; i <= lag; i++) unrestricted.push(xClean[t - i]);
+    xUnrestricted.push(unrestricted);
+  }
+
+  // Also build for Y→X test
+  const xTarget: number[] = [];
+  const xRestrictedYX: number[][] = [];
+  const xUnrestrictedYX: number[][] = [];
+
+  for (let t = lag; t < n; t++) {
+    xTarget.push(xClean[t]);
+
+    const restricted: number[] = [1];
+    for (let i = 1; i <= lag; i++) restricted.push(xClean[t - i]);
+    xRestrictedYX.push(restricted);
+
+    const unrestricted: number[] = [1];
+    for (let i = 1; i <= lag; i++) unrestricted.push(xClean[t - i]);
+    for (let i = 1; i <= lag; i++) unrestricted.push(yClean[t - i]);
+    xUnrestrictedYX.push(unrestricted);
+  }
+
+  // Compute F-statistic for X→Y
+  const betaRestXY = olsSolve(xRestricted, yTarget);
+  const betaUnrestXY = olsSolve(xUnrestricted, yTarget);
+  if (!betaRestXY || !betaUnrestXY) return null;
+
+  const rssRestXY = computeRSS(xRestricted, yTarget, betaRestXY);
+  const rssUnrestXY = computeRSS(xUnrestricted, yTarget, betaUnrestXY);
+
+  const p = lag; // number of additional parameters
+  const dfResid = T - 2 * p - 1;
+  if (dfResid <= 0) return null;
+
+  const fXY = ((rssRestXY - rssUnrestXY) / p) / (rssUnrestXY / dfResid);
+
+  // Compute F-statistic for Y→X
+  const betaRestYX = olsSolve(xRestrictedYX, xTarget);
+  const betaUnrestYX = olsSolve(xUnrestrictedYX, xTarget);
+  if (!betaRestYX || !betaUnrestYX) return null;
+
+  const rssRestYX = computeRSS(xRestrictedYX, xTarget, betaRestYX);
+  const rssUnrestYX = computeRSS(xUnrestrictedYX, xTarget, betaUnrestYX);
+
+  const fYX = ((rssRestYX - rssUnrestYX) / p) / (rssUnrestYX / dfResid);
+
+  // Compute p-values
+  const pValueXY = fDistPValue(Math.max(0, fXY), p, dfResid);
+  const pValueYX = fDistPValue(Math.max(0, fYX), p, dfResid);
+
+  // Determine direction
+  const xyCausal = pValueXY < 0.10;
+  const yxCausal = pValueYX < 0.10;
+
+  let direction: GrangerResult['direction'];
+  if (xyCausal && yxCausal) direction = 'bidirectional';
+  else if (xyCausal) direction = 'x_causes_y';
+  else if (yxCausal) direction = 'y_causes_x';
+  else direction = 'none';
+
+  // Assessment based on the stronger signal
+  const minP = Math.min(pValueXY, pValueYX);
+  const assessment = (xyCausal || yxCausal) ? assessFromPValue(minP) : null;
+
+  return {
+    direction,
+    fStatisticXY: Math.max(0, fXY),
+    fStatisticYX: Math.max(0, fYX),
+    pValueXY: clamp(pValueXY, 0, 1),
+    pValueYX: clamp(pValueYX, 0, 1),
+    assessment,
+    lagUsed: lag,
+  };
 }
 
 function insightFingerprint(insight: SignificantPattern): string {

@@ -3,6 +3,7 @@ import {
   computeAllPairCorrelations,
   detectSignificantPatterns,
   generateInsightNarrative,
+  grangerCausality,
   laggedCorrelation,
   pearsonCorrelation,
   rankInsightsByNovelty,
@@ -106,5 +107,195 @@ describe('insight helpers', () => {
     const ranked = rankInsightsByNovelty(patterns, seen);
 
     expect(ranked[0].noveltyScore).toBeGreaterThanOrEqual(ranked[1].noveltyScore);
+  });
+});
+
+describe('grangerCausality', () => {
+  it('returns null for insufficient data', () => {
+    const x = [1, 2, 3, 4, 5];
+    const y = [2, 3, 4, 5, 6];
+    // maxLag=3 needs at least 3+5=8 observations
+    expect(grangerCausality(x, y, 3)).toBeNull();
+  });
+
+  it('detects X→Y causality when X leads Y', () => {
+    // X causes Y: Y[t] = 0.8 * X[t-1] + noise
+    const n = 50;
+    const x: number[] = [];
+    const y: number[] = [];
+
+    // Use a seeded-like deterministic sequence
+    let seed = 42;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1; // [-1, 1]
+    };
+
+    for (let i = 0; i < n; i++) {
+      x.push(pseudoRandom() * 5);
+    }
+    // Y depends on lagged X
+    y.push(pseudoRandom() * 0.1);
+    for (let i = 1; i < n; i++) {
+      y.push(0.8 * x[i - 1] + pseudoRandom() * 0.3);
+    }
+
+    const result = grangerCausality(x, y, 2);
+    expect(result).not.toBeNull();
+    expect(['x_causes_y', 'bidirectional']).toContain(result!.direction);
+    expect(result!.pValueXY).toBeLessThan(0.05);
+  });
+
+  it('detects Y→X causality when Y leads X', () => {
+    // Y causes X: X[t] = 0.8 * Y[t-1] + noise
+    const n = 50;
+    const y: number[] = [];
+    const x: number[] = [];
+
+    let seed = 99;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1;
+    };
+
+    for (let i = 0; i < n; i++) {
+      y.push(pseudoRandom() * 5);
+    }
+    x.push(pseudoRandom() * 0.1);
+    for (let i = 1; i < n; i++) {
+      x.push(0.8 * y[i - 1] + pseudoRandom() * 0.3);
+    }
+
+    const result = grangerCausality(x, y, 2);
+    expect(result).not.toBeNull();
+    expect(['y_causes_x', 'bidirectional']).toContain(result!.direction);
+    expect(result!.pValueYX).toBeLessThan(0.05);
+  });
+
+  it("returns 'none' when series are independent", () => {
+    const n = 30;
+    const x: number[] = [];
+    const y: number[] = [];
+
+    let seedA = 11;
+    let seedB = 77;
+    const prngA = () => {
+      seedA = (seedA * 1103515245 + 12345) & 0x7fffffff;
+      return (seedA / 0x7fffffff) * 2 - 1;
+    };
+    const prngB = () => {
+      seedB = (seedB * 1103515245 + 12345) & 0x7fffffff;
+      return (seedB / 0x7fffffff) * 2 - 1;
+    };
+
+    for (let i = 0; i < n; i++) {
+      x.push(prngA() * 10);
+      y.push(prngB() * 10);
+    }
+
+    const result = grangerCausality(x, y, 2);
+    expect(result).not.toBeNull();
+    expect(result!.direction).toBe('none');
+  });
+
+  it("returns 'bidirectional' when both directions are significant", () => {
+    // Both X and Y depend on each other's lagged values
+    const n = 60;
+    const x: number[] = [1, 2];
+    const y: number[] = [2, 1];
+
+    let seed = 55;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1;
+    };
+
+    for (let i = 2; i < n; i++) {
+      x.push(0.7 * y[i - 1] + pseudoRandom() * 0.2);
+      y.push(0.7 * x[i - 1] + pseudoRandom() * 0.2);
+    }
+
+    const result = grangerCausality(x, y, 1);
+    expect(result).not.toBeNull();
+    expect(result!.direction).toBe('bidirectional');
+    expect(result!.pValueXY).toBeLessThan(0.05);
+    expect(result!.pValueYX).toBeLessThan(0.05);
+  });
+
+  it('maps assessment correctly based on p-values', () => {
+    // Strong causality: very clear signal
+    const n = 80;
+    const x: number[] = [];
+    const y: number[] = [];
+
+    let seed = 123;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1;
+    };
+
+    for (let i = 0; i < n; i++) {
+      x.push(pseudoRandom() * 5);
+    }
+    y.push(0);
+    for (let i = 1; i < n; i++) {
+      y.push(0.95 * x[i - 1] + pseudoRandom() * 0.05);
+    }
+
+    const result = grangerCausality(x, y, 2);
+    expect(result).not.toBeNull();
+    // With such a strong signal, assessment should be 'strong'
+    expect(result!.assessment).toBe('strong');
+  });
+
+  it('lagUsed matches maxLag parameter', () => {
+    // Use enough data and non-degenerate series for both lag values
+    let seed = 200;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1;
+    };
+
+    const n = 40;
+    const x = Array.from({ length: n }, () => pseudoRandom() * 5);
+    const y = Array.from({ length: n }, () => pseudoRandom() * 5);
+
+    const result3 = grangerCausality(x, y, 3);
+    expect(result3).not.toBeNull();
+    expect(result3!.lagUsed).toBe(3);
+
+    const result5 = grangerCausality(x, y, 5);
+    expect(result5).not.toBeNull();
+    expect(result5!.lagUsed).toBe(5);
+  });
+
+  it('handles NaN values by filtering them out', () => {
+    const n = 30;
+    const x: number[] = [];
+    const y: number[] = [];
+
+    let seed = 42;
+    const pseudoRandom = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return (seed / 0x7fffffff) * 2 - 1;
+    };
+
+    for (let i = 0; i < n; i++) {
+      x.push(pseudoRandom() * 5);
+    }
+    y.push(0);
+    for (let i = 1; i < n; i++) {
+      y.push(0.8 * x[i - 1] + pseudoRandom() * 0.3);
+    }
+
+    // Insert some NaNs
+    x[5] = NaN;
+    y[10] = NaN;
+    x[15] = NaN;
+
+    const result = grangerCausality(x, y, 2);
+    // Should still work with enough valid data
+    expect(result).not.toBeNull();
+    expect(result!.fStatisticXY).toBeGreaterThan(0);
   });
 });
