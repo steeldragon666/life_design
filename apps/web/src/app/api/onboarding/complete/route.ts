@@ -105,11 +105,15 @@ export async function POST() {
     console.error('Failed to update onboarding session:', sessionUpdateError);
   }
 
-  // Update profiles.onboarding_status — critical for middleware redirect logic
+  // Update profiles.onboarding_status — critical for middleware redirect logic.
+  // Use upsert to handle the case where the profile row doesn't exist yet
+  // (the INSERT policy allows auth.uid() = id).
   const { error: profilesUpdateError } = await supabase
     .from('profiles')
-    .update({ onboarding_status: 'completed' })
-    .eq('id', user.id);
+    .upsert(
+      { id: user.id, onboarding_status: 'completed' },
+      { onConflict: 'id' },
+    );
 
   if (profilesUpdateError) {
     console.error('Failed to update profiles.onboarding_status:', profilesUpdateError);

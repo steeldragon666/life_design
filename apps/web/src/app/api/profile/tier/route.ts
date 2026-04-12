@@ -65,10 +65,14 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Use upsert to handle the case where the profile row doesn't exist yet.
+    // RLS allows INSERT when auth.uid() = id and UPDATE when auth.uid() = id.
     const { error } = await supabase
       .from('profiles')
-      .update({ opt_in_tier: body.tier })
-      .eq('id', user.id);
+      .upsert(
+        { id: user.id, opt_in_tier: body.tier },
+        { onConflict: 'id' },
+      );
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
