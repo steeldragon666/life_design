@@ -40,15 +40,6 @@ export const SPOTIFY_CONFIG: OAuthProvider = {
   scopes: ['user-read-recently-played', 'user-top-read', 'user-read-currently-playing'],
 };
 
-export const NOTION_CONFIG: OAuthProvider = {
-  name: 'notion',
-  authUrl: 'https://api.notion.com/v1/oauth/authorize',
-  tokenUrl: 'https://api.notion.com/v1/oauth/token',
-  clientId: process.env.NOTION_CLIENT_ID ?? '',
-  clientSecret: process.env.NOTION_CLIENT_SECRET ?? '',
-  scopes: [],  // Notion uses integration-level permissions, not scopes
-};
-
 export const OPENBANKING_CONFIG: OAuthProvider = {
   name: 'banking',
   authUrl: process.env.OPENBANKING_AUTH_URL ?? 'https://ob.example.com/authorize',
@@ -72,15 +63,6 @@ export const GOOGLE_SCOPES: Record<string, string[]> = {
   gmail: ['https://www.googleapis.com/auth/gmail.readonly'],
 };
 
-export const SLACK_CONFIG: OAuthProvider = {
-  name: 'slack',
-  authUrl: 'https://slack.com/oauth/v2/authorize',
-  tokenUrl: 'https://slack.com/api/oauth.v2.access',
-  clientId: process.env.SLACK_CLIENT_ID ?? '',
-  clientSecret: process.env.SLACK_CLIENT_SECRET ?? '',
-  scopes: ['channels:history', 'channels:read', 'users:read'],
-};
-
 export function buildAuthorizationUrl(
   provider: OAuthProvider,
   redirectUri: string,
@@ -101,8 +83,8 @@ export async function exchangeCodeForTokens(
   code: string,
   redirectUri?: string,
 ): Promise<{ access_token: string; refresh_token: string; expires_at: number }> {
-  // Notion and Spotify use Basic auth + form-encoded body
-  const useBasicAuth = ['notion', 'spotify'].includes(provider.name);
+  // Spotify uses Basic auth + form-encoded body
+  const useBasicAuth = provider.name === 'spotify';
 
   const headers: Record<string, string> = {};
   let body: string;
