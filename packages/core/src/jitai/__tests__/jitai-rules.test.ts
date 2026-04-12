@@ -12,6 +12,10 @@ function makeContext(overrides: Partial<JITAIContext> = {}): JITAIContext {
     lastCheckinHoursAgo: null,
     streakDays: 0,
     hrvStressLevel: null,
+    weatherMoodImpact: null,
+    sadRisk: false,
+    outdoorFriendly: null,
+    socialIsolationRisk: false,
     ...overrides,
   };
 }
@@ -227,6 +231,140 @@ describe('evaluateJITAIRules', () => {
 
     it('should not trigger Rule 4 when lastCheckinHoursAgo is null', () => {
       const ctx = makeContext({ calendarDensity: 'packed', lastCheckinHoursAgo: null });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('nudge');
+    });
+  });
+
+  describe('Rule 5: SAD risk -> light therapy suggestion', () => {
+    it('should suggest light therapy when SAD risk is true', () => {
+      const ctx = makeContext({ sadRisk: true });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('light_therapy');
+      expect(result.urgency).toBe('medium');
+      expect(result.content).not.toBeNull();
+      expect(result.content!.title).toBe('Low light alert');
+      expect(result.reasoning).toContain('SAD');
+    });
+
+    it('should not trigger when sadRisk is false', () => {
+      const ctx = makeContext({ sadRisk: false });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('light_therapy');
+    });
+  });
+
+  describe('Rule 6: Bad weather + low mood -> indoor activity suggestion', () => {
+    it('should suggest indoor activity when weather mood impact < -0.3 and mood <= 2', () => {
+      const ctx = makeContext({ weatherMoodImpact: -0.5, recentMood: 2 });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('activity_suggestion');
+      expect(result.urgency).toBe('low');
+      expect(result.content).not.toBeNull();
+      expect(result.reasoning).toContain('weather');
+    });
+
+    it('should trigger for very low mood and very bad weather', () => {
+      const ctx = makeContext({ weatherMoodImpact: -0.8, recentMood: 1 });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('activity_suggestion');
+    });
+
+    it('should not trigger when weatherMoodImpact is exactly -0.3 (boundary)', () => {
+      const ctx = makeContext({ weatherMoodImpact: -0.3, recentMood: 2 });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('activity_suggestion');
+    });
+
+    it('should not trigger when mood is 3 (above threshold)', () => {
+      const ctx = makeContext({ weatherMoodImpact: -0.5, recentMood: 3 });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('activity_suggestion');
+    });
+
+    it('should not trigger when weatherMoodImpact is null', () => {
+      const ctx = makeContext({ weatherMoodImpact: null, recentMood: 1 });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('activity_suggestion');
+    });
+
+    it('should not trigger when recentMood is null', () => {
+      const ctx = makeContext({ weatherMoodImpact: -0.5, recentMood: null });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('activity_suggestion');
+    });
+  });
+
+  describe('Rule 7: Social isolation risk -> social nudge', () => {
+    it('should nudge when social isolation risk is true', () => {
+      const ctx = makeContext({ socialIsolationRisk: true });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.shouldIntervene).toBe(true);
+      expect(result.interventionType).toBe('nudge');
+      expect(result.urgency).toBe('medium');
+      expect(result.content).not.toBeNull();
+      expect(result.content!.title).toBe('Stay connected');
+      expect(result.reasoning).toContain('isolation');
+    });
+
+    it('should not trigger when socialIsolationRisk is false', () => {
+      const ctx = makeContext({ socialIsolationRisk: false });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('nudge');
+    });
+  });
+
+  describe('Priority: higher rules take precedence over new rules', () => {
+    it('should return breathing exercise over SAD risk when both match', () => {
+      const ctx = makeContext({ hrvStressLevel: 'high', sadRisk: true });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('breathing_exercise');
+    });
+
+    it('should return Rule 3 activity suggestion over Rule 6 when both match', () => {
+      const ctx = makeContext({
+        recentMood: 1,
+        activityLevel: 'sedentary',
+        weatherMoodImpact: -0.5,
+      });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('activity_suggestion');
+      expect(result.reasoning).toContain('Low mood');
+    });
+
+    it('should return SAD risk (Rule 5) over social isolation (Rule 7) when both match', () => {
+      const ctx = makeContext({ sadRisk: true, socialIsolationRisk: true });
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).toBe('light_therapy');
+    });
+  });
+
+  describe('Edge cases: null values do not trigger new rules', () => {
+    it('should not trigger Rule 5 when sadRisk is false (default)', () => {
+      const ctx = makeContext();
+      const result = evaluateJITAIRules(ctx);
+
+      expect(result.interventionType).not.toBe('light_therapy');
+    });
+
+    it('should not trigger Rule 7 when socialIsolationRisk is false (default)', () => {
+      const ctx = makeContext();
       const result = evaluateJITAIRules(ctx);
 
       expect(result.interventionType).not.toBe('nudge');

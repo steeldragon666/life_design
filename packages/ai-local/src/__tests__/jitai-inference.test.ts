@@ -75,6 +75,10 @@ describe('jitai-inference', () => {
         lastCheckinHoursAgo: null,
         streakDays: 0,
         hrvStressLevel: null,
+        weatherMoodImpact: null,
+        sadRisk: false,
+        outdoorFriendly: null,
+        socialIsolationRisk: false,
       });
     });
 
@@ -100,6 +104,10 @@ describe('jitai-inference', () => {
         lastCheckinHoursAgo: 6,
         streakDays: 12,
         hrvStressLevel: 'low',
+        weatherMoodImpact: null,
+        sadRisk: false,
+        outdoorFriendly: null,
+        socialIsolationRisk: false,
       });
     });
 

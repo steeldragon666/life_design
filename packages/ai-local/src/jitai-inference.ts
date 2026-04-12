@@ -10,6 +10,11 @@ export interface LocalJITAIInput {
   activityLevel?: JITAIContext['activityLevel'];
   calendarDensity?: JITAIContext['calendarDensity'];
   hrvStressLevel?: JITAIContext['hrvStressLevel'];
+  /** Weather and social context */
+  weatherMoodImpact?: number | null;
+  sadRisk?: boolean;
+  outdoorFriendly?: boolean | null;
+  socialIsolationRisk?: boolean;
 }
 
 export function getTimeOfDay(): JITAIContext['timeOfDay'] {
@@ -37,6 +42,10 @@ export function runLocalJITAI(input: LocalJITAIInput): JITAIDecision {
     lastCheckinHoursAgo: input.lastCheckinHoursAgo ?? null,
     streakDays: input.streakDays ?? 0,
     hrvStressLevel: input.hrvStressLevel ?? null,
+    weatherMoodImpact: input.weatherMoodImpact ?? null,
+    sadRisk: input.sadRisk ?? false,
+    outdoorFriendly: input.outdoorFriendly ?? null,
+    socialIsolationRisk: input.socialIsolationRisk ?? false,
   };
 
   return evaluateJITAIRules(ctx);

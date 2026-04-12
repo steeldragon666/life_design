@@ -60,6 +60,48 @@ export function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
     };
   }
 
+  // Rule 5: SAD risk → light therapy suggestion
+  if (ctx.sadRisk === true) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'light_therapy',
+      urgency: 'medium',
+      content: {
+        title: 'Low light alert',
+        message: 'Seasonal light levels are low. Try getting outdoors or using a bright light to boost your mood.',
+      },
+      reasoning: 'SAD risk detected — light therapy or outdoor exposure recommended',
+    };
+  }
+
+  // Rule 6: Bad weather + low mood → indoor activity suggestion
+  if (ctx.weatherMoodImpact !== null && ctx.weatherMoodImpact < -0.3 && ctx.recentMood !== null && ctx.recentMood <= 2) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'activity_suggestion',
+      urgency: 'low',
+      content: {
+        title: 'Indoor day',
+        message: 'The weather may be affecting your mood. Try an indoor hobby or activity you enjoy.',
+      },
+      reasoning: 'Negative weather mood impact combined with low mood — indoor activity suggested',
+    };
+  }
+
+  // Rule 7: Social isolation risk → social nudge
+  if (ctx.socialIsolationRisk === true) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'nudge',
+      urgency: 'medium',
+      content: {
+        title: 'Stay connected',
+        message: 'It looks like you haven\'t connected with anyone recently. Consider reaching out to a friend or loved one.',
+      },
+      reasoning: 'Social isolation risk detected — encouraging social connection',
+    };
+  }
+
   return {
     shouldIntervene: false,
     interventionType: 'none',
