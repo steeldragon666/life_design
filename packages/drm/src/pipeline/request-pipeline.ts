@@ -25,11 +25,11 @@ import type {
   SafetyClassification,
   SemanticMemory,
   TherapeuticMemory,
-} from '../types.js';
-import { ModelTier, SafetyTier } from '../types.js';
-import { buildCrisisProtocol } from '../safety/escalation.js';
-import { retrieveAllMemoryLayers } from '../memory/retrieval.js';
-import { assembleContext, DEFAULT_TOKEN_BUDGETS } from '../engine/context-assembly.js';
+} from '../types';
+import { ModelTier, SafetyTier } from '../types';
+import { buildCrisisProtocol } from '../safety/escalation';
+import { retrieveAllMemoryLayers } from '../memory/retrieval';
+import { assembleContext, DEFAULT_TOKEN_BUDGETS } from '../engine/context-assembly';
 
 // ── Cosine Similarity ─────────────────────────────────────────────────────────
 

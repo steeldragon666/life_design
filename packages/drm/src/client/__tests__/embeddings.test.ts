@@ -2,7 +2,7 @@ import {
   generateEmbedding,
   cosineSimilarity,
   EMBEDDING_DIMENSIONS,
-} from '../embeddings.js';
+} from '../embeddings';
 
 describe('EMBEDDING_DIMENSIONS', () => {
   it('is 1536', () => {

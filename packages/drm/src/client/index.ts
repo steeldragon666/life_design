@@ -10,7 +10,7 @@ export {
   sendMessage,
   streamMessage,
   sendBatchMessage,
-} from './claude-client.js';
+} from './claude-client';
 
 export type {
   MessageParam,
@@ -18,19 +18,19 @@ export type {
   MessageResult,
   StreamMessageResult,
   BatchMessageResult,
-} from './claude-client.js';
+} from './claude-client';
 
 export {
   ModelTask,
   routeToModel,
   SONNET_MODEL,
   OPUS_MODEL,
-} from './model-router.js';
+} from './model-router';
 
-export type { ModelConfig } from './model-router.js';
+export type { ModelConfig } from './model-router';
 
 export {
   generateEmbedding,
   cosineSimilarity,
   EMBEDDING_DIMENSIONS,
-} from './embeddings.js';
+} from './embeddings';

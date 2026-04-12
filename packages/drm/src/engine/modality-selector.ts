@@ -7,7 +7,7 @@
  * can explain its approach internally and adapt its technique choice.
  */
 
-import { DRMPhase, TherapeuticModality } from '../types.js';
+import { DRMPhase, TherapeuticModality } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

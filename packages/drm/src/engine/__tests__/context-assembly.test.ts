@@ -3,9 +3,9 @@ import {
   assembleContext,
   DEFAULT_TOKEN_BUDGETS,
   ContextAssemblyParams,
-} from '../context-assembly.js';
-import { createDefaultCommunicationDNA } from '../communication-dna.js';
-import { DRMPhase, ModelTier } from '../../types.js';
+} from '../context-assembly';
+import { createDefaultCommunicationDNA } from '../communication-dna';
+import { DRMPhase, ModelTier } from '../../types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

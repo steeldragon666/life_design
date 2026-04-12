@@ -5,7 +5,7 @@
  * Each technique includes delivery guidance for the AI companion.
  */
 
-import { TherapeuticModality } from '../types.js';
+import { TherapeuticModality } from '../types';
 
 export interface TherapeuticTechnique {
   id: string;

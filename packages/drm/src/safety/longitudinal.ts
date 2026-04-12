@@ -8,8 +8,8 @@
  * negative emotional tone. All functions are pure with no side effects.
  */
 
-import { SafetyTier } from '../types.js';
-import type { LongitudinalRiskAssessment, TrendData } from '../types.js';
+import { SafetyTier } from '../types';
+import type { LongitudinalRiskAssessment, TrendData } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

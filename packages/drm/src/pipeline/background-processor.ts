@@ -16,10 +16,10 @@ import type {
   BackgroundTask,
   EpisodicMemory,
   SemanticMemory,
-} from '../types.js';
-import { MemoryDetailLevel } from '../types.js';
-import { OUTCOME_TRACKING_PROMPT, parseOutcomeTrackingResponse } from '../therapeutic/intervention-tracker.js';
-import { identifyConsolidationTargets } from '../memory/consolidation.js';
+} from '../types';
+import { MemoryDetailLevel } from '../types';
+import { OUTCOME_TRACKING_PROMPT, parseOutcomeTrackingResponse } from '../therapeutic/intervention-tracker';
+import { identifyConsolidationTargets } from '../memory/consolidation';
 
 // ── Prompt Constants ──────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { assessLongitudinalRisk } from '../longitudinal.js';
-import type { LongitudinalParams } from '../longitudinal.js';
+import { assessLongitudinalRisk } from '../longitudinal';
+import type { LongitudinalParams } from '../longitudinal';
 
 // Helper: create a Date N days ago from now
 function daysAgo(days: number): Date {

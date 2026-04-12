@@ -3,9 +3,9 @@ import {
   rankEpisodicMemories,
   shouldConsolidate,
   formatEpisodicForPrompt,
-} from '../episodic.js';
-import type { EpisodicMemory } from '../../types.js';
-import { MemoryDetailLevel } from '../../types.js';
+} from '../episodic';
+import type { EpisodicMemory } from '../../types';
+import { MemoryDetailLevel } from '../../types';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

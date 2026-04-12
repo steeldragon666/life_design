@@ -3,9 +3,9 @@ import {
   determinePhase,
   updateRelationalMetrics,
   addMilestone,
-} from '../relational.js';
-import { DRMPhase } from '../../types.js';
-import type { RelationalMemory, RelationalMilestone } from '../../types.js';
+} from '../relational';
+import { DRMPhase } from '../../types';
+import type { RelationalMemory, RelationalMilestone } from '../../types';
 
 describe('determinePhase', () => {
   function memoryWithSessions(count: number): RelationalMemory {

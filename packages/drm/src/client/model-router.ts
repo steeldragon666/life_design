@@ -6,7 +6,7 @@
  * requiring deep reasoning, synthesis, or clinical judgement.
  */
 
-import { ModelTier } from '../types.js';
+import { ModelTier } from '../types';
 
 // ── Task enum ────────────────────────────────────────────────────────────────
 

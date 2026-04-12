@@ -5,7 +5,7 @@
  * learn which techniques work best for each individual user and issue.
  */
 
-import { InterventionResponse } from '../types.js';
+import { InterventionResponse } from '../types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

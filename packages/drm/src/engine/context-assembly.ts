@@ -11,9 +11,9 @@ import type {
   CommunicationDNA,
   ConversationMessage,
   TokenBudget,
-} from '../types.js';
-import { DRMPhase, ModelTier } from '../types.js';
-import { formatCommunicationDNA } from './communication-dna.js';
+} from '../types';
+import { DRMPhase, ModelTier } from '../types';
+import { formatCommunicationDNA } from './communication-dna';
 
 // ── Token Budget ─────────────────────────────────────────────────────────────
 

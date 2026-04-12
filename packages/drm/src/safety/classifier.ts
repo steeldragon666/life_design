@@ -19,8 +19,8 @@
  * SDK dependency — it works with any transport that satisfies SafetySendFn.
  */
 
-import { SafetyTier } from '../types.js';
-import type { SafetyClassification } from '../types.js';
+import { SafetyTier } from '../types';
+import type { SafetyClassification } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

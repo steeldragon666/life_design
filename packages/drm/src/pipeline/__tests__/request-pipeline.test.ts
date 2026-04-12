@@ -1,11 +1,11 @@
-import { processMessage } from '../request-pipeline.js';
-import type { PipelineDependencies, ClaudeMessage, MemoryRetrievalResult } from '../request-pipeline.js';
+import { processMessage } from '../request-pipeline';
+import type { PipelineDependencies, ClaudeMessage, MemoryRetrievalResult } from '../request-pipeline';
 import type {
   CompanionRequest,
   SafetyClassification,
   BackgroundTask,
-} from '../../types.js';
-import { SafetyTier, ModelTier, DRMPhase } from '../../types.js';
+} from '../../types';
+import { SafetyTier, ModelTier, DRMPhase } from '../../types';
 
 // ── Fixture Factories ─────────────────────────────────────────────────────────
 

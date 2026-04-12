@@ -1,9 +1,9 @@
 import {
   detectCyclicalPatterns,
   detectAvoidancePatterns,
-} from '../pattern-intelligence.js';
-import type { EpisodicMemory } from '../../types.js';
-import { createEpisodicEntry } from '../../memory/episodic.js';
+} from '../pattern-intelligence';
+import type { EpisodicMemory } from '../../types';
+import { createEpisodicEntry } from '../../memory/episodic';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

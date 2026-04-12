@@ -14,7 +14,7 @@ import type {
   AvoidancePattern,
   GrowthTrajectory,
   EpisodicMemory,
-} from '../types.js';
+} from '../types';
 
 // ── Periodicity Constants ─────────────────────────────────────────────────────
 

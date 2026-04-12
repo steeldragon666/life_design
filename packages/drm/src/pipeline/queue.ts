@@ -15,7 +15,7 @@
 
 import { Queue, Worker } from 'bullmq';
 import type IORedis from 'ioredis';
-import type { BackgroundTask } from '../types.js';
+import type { BackgroundTask } from '../types';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 

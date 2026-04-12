@@ -10,21 +10,21 @@ export {
   assembleContext,
   estimateTokenCount,
   DEFAULT_TOKEN_BUDGETS,
-} from './context-assembly.js';
+} from './context-assembly';
 
-export type { ContextAssemblyParams } from './context-assembly.js';
+export type { ContextAssemblyParams } from './context-assembly';
 
 export {
   createDefaultCommunicationDNA,
   adaptCommunicationDNA,
   formatCommunicationDNA,
-} from './communication-dna.js';
+} from './communication-dna';
 
-export type { CommunicationFeedback } from './communication-dna.js';
+export type { CommunicationFeedback } from './communication-dna';
 
-export { selectModality } from './modality-selector.js';
+export { selectModality } from './modality-selector';
 
 export type {
   ModalitySelectionParams,
   ModalityRecommendation,
-} from './modality-selector.js';
+} from './modality-selector';

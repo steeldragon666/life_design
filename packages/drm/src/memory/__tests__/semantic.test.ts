@@ -2,9 +2,9 @@ import {
   createDefaultSemanticMemory,
   mergeSemanticUpdate,
   formatSemanticForPrompt,
-} from '../semantic.js';
-import type { SemanticMemory } from '../../types.js';
-import { TherapeuticModality } from '../../types.js';
+} from '../semantic';
+import type { SemanticMemory } from '../../types';
+import { TherapeuticModality } from '../../types';
 
 describe('createDefaultSemanticMemory', () => {
   it('returns a valid SemanticMemory shape', () => {

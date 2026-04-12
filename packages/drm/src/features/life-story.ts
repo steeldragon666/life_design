@@ -12,7 +12,7 @@ import type {
   GrowthArc,
   SemanticMemory,
   RelationalMilestone,
-} from '../types.js';
+} from '../types';
 
 // ── Prompt ───────────────────────────────────────────────────────────────────
 

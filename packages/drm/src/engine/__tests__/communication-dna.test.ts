@@ -1,8 +1,8 @@
 import {
   createDefaultCommunicationDNA,
   adaptCommunicationDNA,
-} from '../communication-dna.js';
-import { EmotionalRegister } from '../../types.js';
+} from '../communication-dna';
+import { EmotionalRegister } from '../../types';
 
 describe('createDefaultCommunicationDNA', () => {
   it('returns an object with all required fields', () => {

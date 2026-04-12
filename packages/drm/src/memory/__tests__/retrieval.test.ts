@@ -1,10 +1,10 @@
-import { retrieveAllMemoryLayers } from '../retrieval.js';
-import type { RetrieveAllMemoryLayersParams } from '../retrieval.js';
-import { createDefaultSemanticMemory } from '../semantic.js';
-import { createDefaultRelationalMemory } from '../relational.js';
-import { createDefaultTherapeuticMemory } from '../therapeutic.js';
-import { createEpisodicEntry } from '../episodic.js';
-import type { EpisodicMemory } from '../../types.js';
+import { retrieveAllMemoryLayers } from '../retrieval';
+import type { RetrieveAllMemoryLayersParams } from '../retrieval';
+import { createDefaultSemanticMemory } from '../semantic';
+import { createDefaultRelationalMemory } from '../relational';
+import { createDefaultTherapeuticMemory } from '../therapeutic';
+import { createEpisodicEntry } from '../episodic';
+import type { EpisodicMemory } from '../../types';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -9,14 +9,14 @@ export {
   buildLifeStoryContext,
   parseLifeStoryResponse,
   createDefaultLifeStory,
-} from './life-story.js';
+} from './life-story';
 
 export {
   GROWTH_NARRATIVE_PROMPT,
   buildGrowthNarrativeContext,
   parseGrowthNarrativeResponse,
   shouldGenerateNarrative,
-} from './growth-narrative.js';
+} from './growth-narrative';
 
 export {
   PATTERN_ANALYSIS_PROMPT,
@@ -25,12 +25,12 @@ export {
   detectCyclicalPatterns,
   detectAvoidancePatterns,
   formatPatternInsight,
-} from './pattern-intelligence.js';
+} from './pattern-intelligence';
 
-export type { MicroMomentContext } from './micro-moments.js';
+export type { MicroMomentContext } from './micro-moments';
 
 export {
   MICRO_MOMENT_PROMPT,
   buildMicroMomentMessage,
   determineMicroMoment,
-} from './micro-moments.js';
+} from './micro-moments';

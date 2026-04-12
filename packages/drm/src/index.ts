@@ -16,7 +16,7 @@
  */
 
 // ── Types (always re-exported) ─────────────────────────────────────────────
-export * from './types.js';
+export * from './types';
 
 // ── Client ─────────────────────────────────────────────────────────────────
 export {
@@ -24,33 +24,33 @@ export {
   sendMessage,
   streamMessage,
   sendBatchMessage,
-} from './client/index.js';
+} from './client/index';
 
 export {
   ModelTask,
   routeToModel,
-} from './client/model-router.js';
+} from './client/model-router';
 
 export {
   generateEmbedding,
   cosineSimilarity,
   EMBEDDING_DIMENSIONS,
-} from './client/embeddings.js';
+} from './client/embeddings';
 
 // ── Safety ─────────────────────────────────────────────────────────────────
 export {
   classifySafety,
   SAFETY_CLASSIFIER_PROMPT,
-} from './safety/classifier.js';
+} from './safety/classifier';
 
 export {
   assessLongitudinalRisk,
-} from './safety/longitudinal.js';
+} from './safety/longitudinal';
 
 export {
   buildCrisisProtocol,
   CRISIS_SYSTEM_PROMPT_OVERRIDE,
-} from './safety/escalation.js';
+} from './safety/escalation';
 
 // ── Memory ─────────────────────────────────────────────────────────────────
 export {
@@ -58,14 +58,14 @@ export {
   rankEpisodicMemories,
   formatEpisodicForPrompt,
   shouldConsolidate,
-} from './memory/episodic.js';
+} from './memory/episodic';
 
 export {
   createDefaultSemanticMemory,
   mergeSemanticUpdate,
   formatSemanticForPrompt,
   extractSemanticUpdatePrompt,
-} from './memory/semantic.js';
+} from './memory/semantic';
 
 export {
   createDefaultRelationalMemory,
@@ -73,7 +73,7 @@ export {
   determinePhase,
   addMilestone,
   formatRelationalForPrompt,
-} from './memory/relational.js';
+} from './memory/relational';
 
 export {
   createDefaultTherapeuticMemory,
@@ -81,35 +81,35 @@ export {
   getEffectiveInterventions,
   formatTherapeuticForPrompt,
   updateTimingIntelligence,
-} from './memory/therapeutic.js';
+} from './memory/therapeutic';
 
 export {
   retrieveAllMemoryLayers,
-} from './memory/retrieval.js';
+} from './memory/retrieval';
 
 export {
   identifyConsolidationTargets,
   buildConsolidationBatch,
   CONSOLIDATION_PROMPT,
   PATTERN_EXTRACTION_PROMPT,
-} from './memory/consolidation.js';
+} from './memory/consolidation';
 
 // ── Engine ─────────────────────────────────────────────────────────────────
 export {
   assembleContext,
   estimateTokenCount,
   DEFAULT_TOKEN_BUDGETS,
-} from './engine/context-assembly.js';
+} from './engine/context-assembly';
 
 export {
   createDefaultCommunicationDNA,
   adaptCommunicationDNA,
   formatCommunicationDNA,
-} from './engine/communication-dna.js';
+} from './engine/communication-dna';
 
 export {
   selectModality,
-} from './engine/modality-selector.js';
+} from './engine/modality-selector';
 
 // ── Therapeutic ────────────────────────────────────────────────────────────
 export {
@@ -117,13 +117,13 @@ export {
   getTechniquesForModality,
   getTechniqueById,
   matchTechniquesToState,
-} from './therapeutic/modalities.js';
+} from './therapeutic/modalities';
 
 export {
   OUTCOME_TRACKING_PROMPT,
   parseOutcomeTrackingResponse,
   computeRunningEffectiveness,
-} from './therapeutic/intervention-tracker.js';
+} from './therapeutic/intervention-tracker';
 
 export {
   PHQ9_NATURAL_ITEMS,
@@ -133,7 +133,7 @@ export {
   getNextAssessmentItem,
   recordAssessmentResponse,
   scoreCompletedAssessment,
-} from './therapeutic/assessment-embedding.js';
+} from './therapeutic/assessment-embedding';
 
 // ── Features ───────────────────────────────────────────────────────────────
 export {
@@ -141,38 +141,38 @@ export {
   parseLifeStoryResponse,
   createDefaultLifeStory,
   LIFE_STORY_PROMPT,
-} from './features/life-story.js';
+} from './features/life-story';
 
 export {
   buildGrowthNarrativeContext,
   parseGrowthNarrativeResponse,
   shouldGenerateNarrative,
   GROWTH_NARRATIVE_PROMPT,
-} from './features/growth-narrative.js';
+} from './features/growth-narrative';
 
 export {
   detectCyclicalPatterns,
   detectAvoidancePatterns,
   formatPatternInsight,
   PATTERN_ANALYSIS_PROMPT,
-} from './features/pattern-intelligence.js';
+} from './features/pattern-intelligence';
 
 export {
   determineMicroMoment,
   buildMicroMomentMessage,
   MICRO_MOMENT_PROMPT,
-} from './features/micro-moments.js';
+} from './features/micro-moments';
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
 export {
   processMessage,
-} from './pipeline/request-pipeline.js';
+} from './pipeline/request-pipeline';
 
 export {
   processBackgroundTask,
-} from './pipeline/background-processor.js';
+} from './pipeline/background-processor';
 
 export {
   createDRMQueue,
   createDRMWorker,
-} from './pipeline/queue.js';
+} from './pipeline/queue';

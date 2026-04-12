@@ -1,5 +1,5 @@
-import { buildCrisisProtocol, ALL_CRISIS_RESOURCES } from '../escalation.js';
-import { SafetyTier } from '../../types.js';
+import { buildCrisisProtocol, ALL_CRISIS_RESOURCES } from '../escalation';
+import { SafetyTier } from '../../types';
 
 describe('buildCrisisProtocol', () => {
   describe('Tier 1 (Immediate)', () => {

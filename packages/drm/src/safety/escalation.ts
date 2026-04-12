@@ -8,7 +8,7 @@
  * with the returned protocol (show resources, override the system prompt, etc.).
  */
 
-import { SafetyTier } from '../types.js';
+import { SafetyTier } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-import { determineMicroMoment } from '../micro-moments.js';
-import type { MicroMomentContext } from '../micro-moments.js';
+import { determineMicroMoment } from '../micro-moments';
+import type { MicroMomentContext } from '../micro-moments';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

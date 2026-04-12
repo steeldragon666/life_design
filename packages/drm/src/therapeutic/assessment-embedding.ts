@@ -9,7 +9,7 @@
  * clinical feel and improving honest responding.
  */
 
-import { NaturalAssessmentItem, AssessmentSession } from '../types.js';
+import { NaturalAssessmentItem, AssessmentSession } from '../types';
 
 // ── PHQ-9 Items ───────────────────────────────────────────────────────────────
 

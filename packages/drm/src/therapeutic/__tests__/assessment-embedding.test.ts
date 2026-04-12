@@ -3,8 +3,8 @@ import {
   GAD7_NATURAL_ITEMS,
   createAssessmentSession,
   scoreCompletedAssessment,
-} from '../assessment-embedding.js';
-import { recordAssessmentResponse, isAssessmentComplete } from '../assessment-embedding.js';
+} from '../assessment-embedding';
+import { recordAssessmentResponse, isAssessmentComplete } from '../assessment-embedding';
 
 describe('PHQ9_NATURAL_ITEMS', () => {
   it('has exactly 9 items', () => {

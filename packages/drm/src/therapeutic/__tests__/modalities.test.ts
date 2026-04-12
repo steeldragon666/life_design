@@ -2,8 +2,8 @@ import {
   THERAPEUTIC_TECHNIQUES,
   getTechniquesForModality,
   getTechniqueById,
-} from '../modalities.js';
-import { TherapeuticModality } from '../../types.js';
+} from '../modalities';
+import { TherapeuticModality } from '../../types';
 
 const ALL_MODALITIES = Object.values(TherapeuticModality);
 

@@ -1,5 +1,5 @@
-import { ModelTask, routeToModel, SONNET_MODEL, OPUS_MODEL } from '../model-router.js';
-import { ModelTier } from '../../types.js';
+import { ModelTask, routeToModel, SONNET_MODEL, OPUS_MODEL } from '../model-router';
+import { ModelTier } from '../../types';
 
 describe('routeToModel', () => {
   it('routes Conversation to Sonnet', () => {

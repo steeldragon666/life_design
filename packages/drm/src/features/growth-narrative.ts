@@ -10,7 +10,7 @@ import type {
   GrowthNarrative,
   RelationalMilestone,
   AssessmentTrend,
-} from '../types.js';
+} from '../types';
 
 // ── Prompt ───────────────────────────────────────────────────────────────────
 

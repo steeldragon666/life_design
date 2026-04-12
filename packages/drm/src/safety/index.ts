@@ -13,22 +13,22 @@
  *   Crisis protocols, resource libraries, and system-prompt overrides.
  */
 
-export { classifySafety } from './classifier.js';
-export type { SafetySendFn } from './classifier.js';
+export { classifySafety } from './classifier';
+export type { SafetySendFn } from './classifier';
 
 export {
   assessLongitudinalRisk,
   longitudinalAssessmentToTier,
-} from './longitudinal.js';
+} from './longitudinal';
 export type {
   LongitudinalParams,
   PHQ9DataPoint,
   EmotionalValencePoint,
-} from './longitudinal.js';
+} from './longitudinal';
 
 export {
   buildCrisisProtocol,
   ALL_CRISIS_RESOURCES,
   CRISIS_SYSTEM_PROMPT_OVERRIDE,
-} from './escalation.js';
-export type { CrisisResource, CrisisProtocol } from './escalation.js';
+} from './escalation';
+export type { CrisisResource, CrisisProtocol } from './escalation';

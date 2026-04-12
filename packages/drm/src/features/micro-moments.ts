@@ -6,7 +6,7 @@
  * intrusive. All functions are pure with no side effects.
  */
 
-import type { MicroMoment } from '../types.js';
+import type { MicroMoment } from '../types';
 
 // ── Context Type ─────────────────────────────────────────────────────────────
 

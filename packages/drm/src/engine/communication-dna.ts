@@ -7,8 +7,8 @@
  * are all tuned to the individual.
  */
 
-import type { CommunicationDNA } from '../types.js';
-import { EmotionalRegister } from '../types.js';
+import type { CommunicationDNA } from '../types';
+import { EmotionalRegister } from '../types';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
