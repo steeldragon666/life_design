@@ -341,7 +341,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
         dimension_scores: dimensionScores,
       });
 
-      // Also write to Dexie for badge system
+      // Also write to Dexie for local analysis pipeline
       const dexieCheckIn = {
         date,
         mood,

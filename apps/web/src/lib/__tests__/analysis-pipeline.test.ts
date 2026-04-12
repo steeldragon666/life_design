@@ -33,7 +33,6 @@ describe('AnalysisPipeline', () => {
 
     expect(result).toHaveProperty('newInsights');
     expect(result).toHaveProperty('newCorrelations');
-    expect(result).toHaveProperty('newBadges');
     expect(result).toHaveProperty('embeddingStored');
     expect(Array.isArray(result.newInsights)).toBe(true);
   });
@@ -41,8 +40,8 @@ describe('AnalysisPipeline', () => {
   it('runIncrementalAnalysis works with few check-ins (no correlations)', async () => {
     await db.checkIns.add({
       date: new Date().toISOString().slice(0, 10),
-      mood: 7,
-      dimensionScores: { [Dimension.Career]: 6 },
+      mood: 4,
+      dimensionScores: { [Dimension.Career]: 3 },
       tags: [],
       createdAt: new Date(),
     });
@@ -52,14 +51,12 @@ describe('AnalysisPipeline', () => {
 
     expect(result.newCorrelations).toBe(0);
     expect(result.embeddingStored).toBe(false);
-    expect(result.newBadges).toEqual([]);
   });
 
   it('getLatestAnalysis returns counts', async () => {
     const summary = await pipeline.getLatestAnalysis();
     expect(summary).toHaveProperty('insightCount');
     expect(summary).toHaveProperty('correlationCount');
-    expect(summary).toHaveProperty('badgeCount');
     expect(summary).toHaveProperty('lastAnalysisAt');
     expect(summary.insightCount).toBe(0);
   });

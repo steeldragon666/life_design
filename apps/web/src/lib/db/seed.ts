@@ -4,7 +4,6 @@ import { Dimension, GoalHorizon, GoalStatus } from '@life-design/core';
 export async function seedDevelopmentData(): Promise<{
   checkInCount: number;
   goalCount: number;
-  badgeCount: number;
   correlationCount: number;
 }> {
   // Clear existing data
@@ -12,7 +11,6 @@ export async function seedDevelopmentData(): Promise<{
     db.checkIns.clear(),
     db.goals.clear(),
     db.correlations.clear(),
-    db.badges.clear(),
     db.insights.clear(),
     db.nudges.clear(),
   ]);
@@ -245,30 +243,9 @@ export async function seedDevelopmentData(): Promise<{
 
   await db.correlations.bulkAdd(correlations);
 
-  // --- 3 badges ---
-  const badges = [
-    {
-      badgeId: 'streak-7',
-      earnedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-      context: 'seen',
-    },
-    {
-      badgeId: 'dim-health-mastery',
-      earnedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
-      context: 'health',
-    },
-    {
-      badgeId: 'balance-harmony',
-      earnedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000),
-    },
-  ];
-
-  await db.badges.bulkAdd(badges);
-
   return {
     checkInCount: checkIns.length,
     goalCount: goals.length,
-    badgeCount: badges.length,
     correlationCount: correlations.length,
   };
 }
