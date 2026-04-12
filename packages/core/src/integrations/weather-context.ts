@@ -1,11 +1,3 @@
-export interface WeatherTrend {
-  rollingAvgSunlightHours: number;
-  rollingAvgCloudCover: number;
-  trendDirection: 'improving' | 'stable' | 'worsening';
-  sustainedLowLightDays: number;  // consecutive trailing days with sunlight < 4h
-  sadRisk: boolean;               // trend-based SAD risk indicator
-}
-
 export interface WeatherData {
   temperature: number;           // Celsius
   humidity: number;              // 0-100%
@@ -24,6 +16,14 @@ export interface WeatherFeatures {
   sadRiskIndicator: boolean;     // Seasonal Affective Disorder risk
   outdoorFriendly: boolean;      // good conditions for outdoor activity
   moodImpactScore: number;       // -1 to 1 (negative = mood-dampening weather)
+}
+
+export interface WeatherTrend {
+  rollingAvgSunlightHours: number;
+  rollingAvgCloudCover: number;
+  trendDirection: 'improving' | 'stable' | 'worsening';
+  sustainedLowLightDays: number;  // consecutive trailing days with sunlight < 4h
+  sadRisk: boolean;               // trend-based SAD risk indicator
 }
 
 /**
@@ -89,9 +89,10 @@ export function extractWeatherFeatures(
 /**
  * Compute weather trend from a rolling window of daily data.
  *
- * SAD risk triggers when:
- * - Rolling average sunlight < 4h for 5+ consecutive trailing days
- * - Rolling average cloud cover > 70%
+ * SAD risk triggers when ALL of:
+ * - 5+ consecutive trailing days with sunlight < 4h
+ * - Rolling average sunlight (entire window) < 4h
+ * - Rolling average cloud cover (entire window) > 70%
  *
  * @param dailyData - Array of daily weather observations (oldest first)
  * @throws Error if dailyData is empty

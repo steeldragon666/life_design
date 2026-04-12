@@ -21,8 +21,11 @@ ALTER TABLE weather_daily_features ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own weather features"
   ON weather_daily_features FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Service role inserts weather features"
-  ON weather_daily_features FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can insert own weather features"
+  ON weather_daily_features FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Service role updates weather features"
-  ON weather_daily_features FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Users can update own weather features"
+  ON weather_daily_features FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);

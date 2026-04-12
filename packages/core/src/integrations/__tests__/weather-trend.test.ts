@@ -137,6 +137,12 @@ describe('computeWeatherTrend', () => {
       expect(trend.sadRisk).toBe(false);
     });
 
+    it('does not trigger at boundary: avg cloud cover exactly 70%', () => {
+      const data = days(5, { sunlightHours: 2, cloudCover: 70 });
+      const trend = computeWeatherTrend(data);
+      expect(trend.sadRisk).toBe(false);
+    });
+
     it('does not trigger when rolling avg sunlight >= 4h', () => {
       const data = days(7, { sunlightHours: 5, cloudCover: 85 });
       const trend = computeWeatherTrend(data);
