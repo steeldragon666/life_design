@@ -18,6 +18,8 @@ const PROTECTED_GUEST_PREFIXES = [
   '/achievements',
   '/orb',
   '/companion',
+  '/correlations',
+  '/dimensions',
 ];
 
 export function isAssetOrInternalPath(pathname: string): boolean {
