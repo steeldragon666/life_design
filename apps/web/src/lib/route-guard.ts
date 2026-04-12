@@ -17,6 +17,7 @@ const PROTECTED_GUEST_PREFIXES = [
   '/challenges',
   '/achievements',
   '/orb',
+  '/companion',
 ];
 
 export function isAssetOrInternalPath(pathname: string): boolean {

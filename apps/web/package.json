@@ -17,6 +17,7 @@
     "mobile:sync": "npx cap sync"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "@capacitor/android": "^8.2.0",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
@@ -25,6 +26,7 @@
     "@life-design/ai": "workspace:^",
     "@life-design/ai-local": "workspace:*",
     "@life-design/core": "workspace:*",
+    "@life-design/drm": "workspace:*",
     "@life-design/ui": "workspace:*",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
