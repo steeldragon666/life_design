@@ -2,29 +2,31 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { Home, Target, Sun, MessageCircle, Sparkles, Settings, MoreVertical, Leaf, BookOpen, Heart, type LucideIcon } from 'lucide-react';
+import { Leaf, User } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Lazy-load the floating Aria chat so it doesn't block initial render
+const FloatingAria = dynamic(() => import('@/components/aria/floating-aria'), {
+  ssr: false,
+});
 
 // ---------------------------------------------------------------------------
-// Nav config
+// Tab config — Variant C "Story" navigation
 // ---------------------------------------------------------------------------
 
-type NavItem = {
+type TabItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
 };
 
-const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/checkin', label: 'Check-in', icon: Sun },
-  { href: '/journal', label: 'Journal', icon: BookOpen },
-  { href: '/goals', label: 'Goals', icon: Target },
-  { href: '/insights', label: 'Insights', icon: Sparkles },
-  { href: '/companion', label: 'Aria', icon: Heart },
-  { href: '/mentor', label: 'Mentor', icon: MessageCircle },
-  { href: '/settings', label: 'Settings', icon: Settings },
+const tabs: TabItem[] = [
+  { href: '/dashboard', label: 'Today' },
+  { href: '/timeline', label: 'Timeline' },
+  { href: '/goals', label: 'Goals' },
+  { href: '/checkin', label: 'Check-in' },
+  { href: '/journal', label: 'Journal' },
+  { href: '/insights', label: 'Insights' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -39,16 +41,12 @@ export default function ProtectedLayout({
   const pathname = usePathname();
   const { isHydrated } = useGuest();
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
-
-  const mobileMainItems = navItems.slice(0, 5); // Home, Check-in, Journal, Goals, Insights
-  const mobileMoreItems = navItems.slice(5); // Mentor, Settings
-  const isMoreActive = mobileMoreItems.some(i => isActive(i.href));
-  const [moreOpen, setMoreOpen] = useState(false);
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-stone-50">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-warm-50 to-stone-50">
         <div className="max-w-md w-full text-center space-y-3 p-8 rounded-2xl bg-white border border-stone-200/60">
           <p className="text-sm text-stone-500">Preparing your space...</p>
           <div className="h-1.5 w-full bg-stone-100 rounded-full overflow-hidden">
@@ -60,100 +58,53 @@ export default function ProtectedLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[260px] border-r border-stone-200 bg-white/60 backdrop-blur-xl fixed h-full z-30">
-        <div className="p-6 pb-2">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
-              <Leaf size={20} className="text-white" />
-            </div>
-            <span className="font-serif text-xl text-stone-800">Opt In</span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 px-3 pt-6 space-y-1">
-          {navItems.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                ${isActive(item.href)
-                  ? 'bg-sage-100 text-sage-600 shadow-sm'
-                  : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
-                }`}
-            >
-              <item.icon size={20} className={isActive(item.href) ? 'text-sage-600' : 'text-stone-500'} />
-              {item.label}
+    <div className="min-h-screen bg-gradient-to-b from-warm-50 via-stone-50 to-stone-50">
+      {/* ── Top Bar ─────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-stone-200/60">
+        <div className="max-w-3xl mx-auto px-4">
+          {/* Logo row */}
+          <div className="flex items-center justify-between h-14">
+            <Link href="/dashboard" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sage-300 to-sage-400 flex items-center justify-center shadow-sm">
+                <Leaf size={16} className="text-white" />
+              </div>
+              <span className="font-serif text-lg text-stone-800">Opt In</span>
             </Link>
-          ))}
-        </nav>
 
-        <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-sage-50 to-sage-100 border border-sage-200/30">
-          <p className="text-xs text-sage-500 font-medium">Daily Intention</p>
-          <p className="text-[13px] text-stone-700 mt-1 font-serif italic text-lg leading-snug">&ldquo;Be present in every moment&rdquo;</p>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main id="main" className="flex-1 lg:ml-[260px] pb-24 lg:pb-8">
-        <div className="animate-fade-up">
-          {children}
-        </div>
-      </main>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/80 backdrop-blur-2xl border-t border-stone-200 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around py-2">
-          {mobileMainItems.map(item => (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all
-                ${isActive(item.href) ? 'text-sage-600' : 'text-stone-500'}`}
+              href="/settings"
+              className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition"
             >
-              <item.icon size={20} />
-              <span className="text-[11px] font-medium">{item.label}</span>
-              {isActive(item.href) && (
-                <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
-              )}
+              <User size={18} className="text-stone-600" />
             </Link>
-          ))}
+          </div>
 
-          {/* "More" button */}
-          <button
-            onClick={() => setMoreOpen(!moreOpen)}
-            className={`flex flex-col items-center gap-1 py-1.5 px-4 rounded-xl transition-all ${moreOpen || isMoreActive ? 'text-sage-600' : 'text-stone-500'}`}
-          >
-            <MoreVertical size={20} />
-            <span className="text-[11px] font-medium">More</span>
-            {isMoreActive && !moreOpen && (
-              <div className="w-1 h-1 rounded-full bg-sage-500 mt-0.5" />
-            )}
-          </button>
-        </div>
-      </nav>
-
-      {/* More drawer overlay */}
-      {moreOpen && (
-        <>
-          <div className="lg:hidden fixed inset-0 z-30 bg-black/20" onClick={() => setMoreOpen(false)} />
-          <div className="lg:hidden fixed bottom-[calc(60px+env(safe-area-inset-bottom))] inset-x-0 z-35 bg-white rounded-t-2xl border-t border-stone-200 shadow-xl p-4 space-y-1">
-            {mobileMoreItems.map(item => (
+          {/* Horizontal scrollable tab pills */}
+          <nav className="flex gap-1 overflow-x-auto scrollbar-hide pb-3 -mx-1 px-1">
+            {tabs.map((tab) => (
               <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMoreOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
-                  ${isActive(item.href) ? 'bg-sage-100 text-sage-600' : 'text-stone-500 hover:bg-stone-100'}`}
+                key={tab.href}
+                href={tab.href}
+                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                  isActive(tab.href)
+                    ? 'bg-sage-100 text-sage-700 shadow-sm'
+                    : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+                }`}
               >
-                <item.icon size={20} />
-                {item.label}
+                {tab.label}
               </Link>
             ))}
-          </div>
-        </>
-      )}
+          </nav>
+        </div>
+      </header>
+
+      {/* ── Main Content ────────────────────────────────────────────────── */}
+      <main id="main" className="max-w-3xl mx-auto pb-24">
+        <div className="animate-fade-up">{children}</div>
+      </main>
+
+      {/* ── Floating Aria Chat ──────────────────────────────────────────── */}
+      <FloatingAria />
     </div>
   );
 }

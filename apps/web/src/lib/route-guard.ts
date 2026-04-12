@@ -20,6 +20,7 @@ const PROTECTED_GUEST_PREFIXES = [
   '/companion',
   '/correlations',
   '/dimensions',
+  '/timeline',
 ];
 
 export function isAssetOrInternalPath(pathname: string): boolean {

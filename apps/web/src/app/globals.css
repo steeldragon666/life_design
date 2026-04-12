@@ -319,6 +319,15 @@ input[type="range"]:active::-webkit-slider-thumb {
   animation: confetti-fall linear forwards;
 }
 
+/* Hide scrollbar for horizontal scrollable tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Accessibility: reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
