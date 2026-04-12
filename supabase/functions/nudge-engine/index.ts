@@ -24,18 +24,22 @@ interface JITAIContext {
   lastCheckinHoursAgo: number | null;
   streakDays: number;
   hrvStressLevel: 'low' | 'moderate' | 'high' | null;
+  weatherMoodImpact: number | null;
+  sadRisk: boolean;
+  outdoorFriendly: boolean | null;
+  socialIsolationRisk: boolean;
 }
 
 interface JITAIDecision {
   shouldIntervene: boolean;
-  interventionType: 'nudge' | 'checkin_prompt' | 'breathing_exercise' | 'activity_suggestion' | 'none';
+  interventionType: 'nudge' | 'checkin_prompt' | 'breathing_exercise' | 'activity_suggestion' | 'light_therapy' | 'none';
   urgency: 'low' | 'medium' | 'high';
   content: { title: string; message: string; actionUrl?: string } | null;
   reasoning: string;
 }
 
 function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
-  if (ctx.hrvStressLevel === 'high' && ctx.timeOfDay === 'evening') {
+  if (ctx.hrvStressLevel === 'high') {
     return {
       shouldIntervene: true,
       interventionType: 'breathing_exercise',
@@ -45,7 +49,7 @@ function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
         message: 'Your stress levels are elevated. A 2-minute breathing exercise can help.',
         actionUrl: '/meditations',
       },
-      reasoning: 'High HRV stress detected in evening',
+      reasoning: 'High HRV stress detected',
     };
   }
   if (ctx.lastCheckinHoursAgo !== null && ctx.lastCheckinHoursAgo > 24 && ctx.timeOfDay === 'evening') {
@@ -84,6 +88,45 @@ function evaluateJITAIRules(ctx: JITAIContext): JITAIDecision {
         actionUrl: '/checkin',
       },
       reasoning: 'Packed calendar with no recent check-in',
+    };
+  }
+  // Rule 5: SAD risk
+  if (ctx.sadRisk === true) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'light_therapy',
+      urgency: 'medium',
+      content: {
+        title: 'Low light alert',
+        message: 'Short daylight hours can affect mood. Consider a light therapy session or stepping outside during peak sunlight.',
+      },
+      reasoning: 'SAD risk detected from weather/light data',
+    };
+  }
+  // Rule 6: Weather mood impact + low mood → indoor activity
+  if (ctx.weatherMoodImpact !== null && ctx.weatherMoodImpact < -0.3 && ctx.recentMood !== null && ctx.recentMood <= 2) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'activity_suggestion',
+      urgency: 'low',
+      content: {
+        title: 'Indoor day',
+        message: 'Weather may be dragging your mood down. An indoor activity like stretching or journaling can help lift your spirits.',
+      },
+      reasoning: 'Negative weather mood impact combined with low mood',
+    };
+  }
+  // Rule 7: Social isolation risk
+  if (ctx.socialIsolationRisk === true) {
+    return {
+      shouldIntervene: true,
+      interventionType: 'nudge',
+      urgency: 'medium',
+      content: {
+        title: 'Stay connected',
+        message: 'Your social activity has been lower than usual. Even a short call or message to someone can make a difference.',
+      },
+      reasoning: 'Social isolation risk detected from calendar density baseline',
     };
   }
   return { shouldIntervene: false, interventionType: 'none', urgency: 'low', content: null, reasoning: 'No intervention rules matched' };
@@ -193,6 +236,31 @@ Deno.serve(async () => {
       // Mood is already on 1-5 scale
       const normalisedMood = recentMood;
 
+      // Weather features (from weather_daily_features table)
+      const { data: weatherFeature } = await supabase
+        .from('weather_daily_features')
+        .select('mood_impact_score, sad_risk, outdoor_friendly')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+
+      // HRV stress (from hrv_daily_metrics table)
+      const { data: hrvMetric } = await supabase
+        .from('hrv_daily_metrics')
+        .select('stress_level')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+
+      // Social isolation (from social_density_baselines)
+      const { data: socialBaseline } = await supabase
+        .from('social_density_baselines')
+        .select('baseline_density')
+        .eq('user_id', userId)
+        .single();
+
       const jitaiCtx: JITAIContext = {
         timeOfDay: getTimeOfDay(),
         recentMood: normalisedMood,
@@ -201,7 +269,11 @@ Deno.serve(async () => {
         calendarDensity: null,      // not yet tracked server-side
         lastCheckinHoursAgo: daysSinceLastCheckin * 24,
         streakDays: streak,
-        hrvStressLevel: null,       // not yet tracked server-side
+        hrvStressLevel: hrvMetric?.stress_level ?? null,
+        weatherMoodImpact: weatherFeature?.mood_impact_score ?? null,
+        sadRisk: weatherFeature?.sad_risk ?? false,
+        outdoorFriendly: weatherFeature?.outdoor_friendly ?? null,
+        socialIsolationRisk: socialBaseline ? socialBaseline.baseline_density < 0.2 : false,
       };
 
       const jitaiDecision = evaluateJITAIRules(jitaiCtx);
