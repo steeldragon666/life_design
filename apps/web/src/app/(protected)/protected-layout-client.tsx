@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useGuest } from '@/lib/guest-context';
-import { Home, Target, Sun, MessageCircle, Sparkles, Settings, MoreVertical, Leaf, BookOpen, type LucideIcon } from 'lucide-react';
+import { Home, Target, Sun, MessageCircle, Sparkles, Settings, MoreVertical, Leaf, BookOpen, Heart, type LucideIcon } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Nav config
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { href: '/journal', label: 'Journal', icon: BookOpen },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/insights', label: 'Insights', icon: Sparkles },
+  { href: '/companion', label: 'Aria', icon: Heart },
   { href: '/mentor', label: 'Mentor', icon: MessageCircle },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

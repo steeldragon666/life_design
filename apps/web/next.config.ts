@@ -22,7 +22,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.supabase.co https://i.scdn.co https://lh3.googleusercontent.com https://maps.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://app.posthog.com https://generativelanguage.googleapis.com https://www.googleapis.com https://cdn.jsdelivr.net https://huggingface.co",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://app.posthog.com https://generativelanguage.googleapis.com https://www.googleapis.com https://cdn.jsdelivr.net https://huggingface.co https://api.anthropic.com",
       "frame-src https://js.stripe.com https://hooks.stripe.com",
       "media-src 'self' blob:",
       "worker-src 'self' blob:",
@@ -32,8 +32,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  transpilePackages: ['@life-design/core', '@life-design/ui', '@life-design/ai', '@life-design/ai-local'],
-  serverExternalPackages: ['@huggingface/transformers', 'onnxruntime-web', 'onnxruntime-node'],
+  transpilePackages: ['@life-design/core', '@life-design/ui', '@life-design/ai', '@life-design/ai-local', '@life-design/drm'],
+  serverExternalPackages: ['@huggingface/transformers', 'onnxruntime-web', 'onnxruntime-node', 'bullmq', 'ioredis', 'neo4j-driver'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'i.scdn.co' },
