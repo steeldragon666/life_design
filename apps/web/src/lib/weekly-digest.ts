@@ -92,7 +92,7 @@ function addDays(dateKey: string, offset: number): string {
 }
 
 function clampScore(value: number): number {
-  return Math.min(10, Math.max(1, value));
+  return Math.min(5, Math.max(1, value));
 }
 
 function average(values: number[]): number | null {
@@ -280,13 +280,13 @@ export function buildWeeklyDigestSeed(input: WeeklyDigestSeedInput): WeeklyDiges
 
   const insights: WeeklyDigestInsights = {
     dominantDimensions: dominant.map(
-      (entry) => `${prettifyDimensionLabel(entry.dimension)} (${entry.average.toFixed(1)}/10)`
+      (entry) => `${prettifyDimensionLabel(entry.dimension)} (${entry.average.toFixed(1)}/5)`
     ),
     risingDimensions: risingDimensions.map(
       (entry) =>
         `${prettifyDimensionLabel(entry.dimension)} improved by ${entry.delta.toFixed(1)} points (${entry.average.toFixed(
           1
-        )}/10)`
+        )}/5)`
     ),
     progressHighlights,
   };

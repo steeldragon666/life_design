@@ -8,7 +8,7 @@ import {
 import type { CreateCheckInInput } from '@/lib/services/checkin-service';
 
 function isValidScore(n: number): boolean {
-  return Number.isInteger(n) && n >= 1 && n <= 10;
+  return Number.isInteger(n) && n >= 1 && n <= 5;
 }
 
 export async function submitCheckIn(input: CreateCheckInInput) {
@@ -22,14 +22,14 @@ export async function submitCheckIn(input: CreateCheckInInput) {
   }
 
   if (!isValidScore(input.mood)) {
-    return { data: null, error: 'Mood must be an integer between 1 and 10' };
+    return { data: null, error: 'Mood must be an integer between 1 and 5' };
   }
 
   const invalidScores = input.scores.some((s) => !isValidScore(s.score));
   if (invalidScores) {
     return {
       data: null,
-      error: 'All dimension scores must be integers between 1 and 10',
+      error: 'All dimension scores must be integers between 1 and 5',
     };
   }
 

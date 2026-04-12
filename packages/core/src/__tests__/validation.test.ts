@@ -13,8 +13,8 @@ import {
 import { Dimension, DurationType, GoalHorizon, GoalTrackingType, ALL_DIMENSIONS } from '../enums';
 
 describe('validateScore', () => {
-  it('accepts scores 1 through 10', () => {
-    for (let i = 1; i <= 10; i++) {
+  it('accepts scores 1 through 5', () => {
+    for (let i = 1; i <= 5; i++) {
       expect(validateScore(i).valid).toBe(true);
     }
   });
@@ -25,10 +25,10 @@ describe('validateScore', () => {
     expect(result.error).toBeDefined();
   });
 
-  it('rejects score above 10', () => {
-    const result = validateScore(11);
+  it('rejects score above 5', () => {
+    const result = validateScore(6);
     expect(result.valid).toBe(false);
-    expect(result.error).toBeDefined();
+    expect(result.error).toContain('between 1 and 5');
   });
 
   it('rejects non-integer scores', () => {
@@ -44,8 +44,8 @@ describe('validateScore', () => {
 });
 
 describe('validateMood', () => {
-  it('accepts moods 1 through 10', () => {
-    for (let i = 1; i <= 10; i++) {
+  it('accepts moods 1 through 5', () => {
+    for (let i = 1; i <= 5; i++) {
       expect(validateMood(i).valid).toBe(true);
     }
   });
@@ -56,13 +56,13 @@ describe('validateMood', () => {
     expect(result.error).toBeDefined();
   });
 
-  it('rejects mood above 10', () => {
-    const result = validateMood(11);
+  it('rejects mood above 5', () => {
+    const result = validateMood(6);
     expect(result.valid).toBe(false);
   });
 
   it('rejects non-integer mood', () => {
-    const result = validateMood(7.3);
+    const result = validateMood(4.3);
     expect(result.valid).toBe(false);
   });
 });
@@ -95,7 +95,7 @@ describe('validateCheckIn', () => {
   const validCheckIn = {
     user_id: 'uuid-123',
     date: '2025-01-15',
-    mood: 7,
+    mood: 4,
     duration_type: DurationType.Quick,
   };
 
@@ -132,16 +132,16 @@ describe('validateDimensionScores', () => {
 
   it('accepts a subset of dimensions (quick mode)', () => {
     const scores = [
-      { dimension: Dimension.Health, score: 7 },
-      { dimension: Dimension.Career, score: 6 },
+      { dimension: Dimension.Health, score: 4 },
+      { dimension: Dimension.Career, score: 3 },
     ];
     expect(validateDimensionScores(scores).valid).toBe(true);
   });
 
   it('rejects duplicate dimensions', () => {
     const scores = [
-      { dimension: Dimension.Health, score: 7 },
-      { dimension: Dimension.Health, score: 8 },
+      { dimension: Dimension.Health, score: 4 },
+      { dimension: Dimension.Health, score: 5 },
     ];
     const result = validateDimensionScores(scores);
     expect(result.valid).toBe(false);
@@ -149,7 +149,7 @@ describe('validateDimensionScores', () => {
   });
 
   it('rejects invalid score in dimension scores', () => {
-    const scores = [{ dimension: Dimension.Health, score: 11 }];
+    const scores = [{ dimension: Dimension.Health, score: 6 }];
     const result = validateDimensionScores(scores);
     expect(result.valid).toBe(false);
   });

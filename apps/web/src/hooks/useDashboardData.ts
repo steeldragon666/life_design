@@ -106,8 +106,8 @@ function computeTrendCoefficient(values: number[]): number {
     denominator += (i - xMean) ** 2;
   }
   if (denominator === 0) return 0;
-  // Normalise slope to [-1, 1] range (divide by max possible score range 10)
-  return Math.max(-1, Math.min(1, numerator / denominator / 10));
+  // Normalise slope to [-1, 1] range (divide by max possible score range 4, i.e. 5 - 1)
+  return Math.max(-1, Math.min(1, numerator / denominator / 4));
 }
 
 // ---------------------------------------------------------------------------
@@ -465,7 +465,7 @@ export default function useDashboardData(): DashboardData {
           recentActivity.push({
             id: `checkin-${c.date}`,
             type: 'checkin',
-            description: `Daily check-in completed — mood ${c.mood}/10`,
+            description: `Daily check-in completed — mood ${c.mood}/5`,
             timestamp: c.created_at ?? c.date,
           });
         }

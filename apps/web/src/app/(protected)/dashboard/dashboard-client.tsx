@@ -418,7 +418,7 @@ export default function DashboardClient({
             {dimensionScores.map((dim) => {
               const style = getDimStyle(dim.dimension);
               const label = DIMENSION_LABELS[dim.dimension] ?? dim.dimension;
-              const score = Math.round(dim.score * 10); // Convert 0-10 to 0-100 for display
+              const score = Math.round(dim.score * 20); // Convert 1-5 to 0-100 for display
               return (
                 <div
                   key={dim.dimension}

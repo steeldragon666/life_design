@@ -34,13 +34,13 @@ function makeTrainingPair(
 ): TrainingPair {
   const defaultLabels: Partial<Record<Dimension, number>> = {};
   for (const dim of Object.values(Dimension)) {
-    defaultLabels[dim] = 5 + Math.random() * 3;
+    defaultLabels[dim] = 2 + Math.random() * 2;
   }
   return {
     date: '2026-03-01',
     features: makeFeatures(),
     labels: defaultLabels,
-    mood: 6,
+    mood: 3,
     ai_accepted: true,
     completeDimensions: true,
     ...overrides,
@@ -159,11 +159,11 @@ describe('LocalTrainer', () => {
         labels: (() => {
           const labels: Partial<Record<Dimension, number>> = {};
           for (const dim of Object.values(Dimension)) {
-            labels[dim] = 3 + (i / 20) * 5;
+            labels[dim] = 1 + (i / 20) * 4;
           }
           return labels;
         })(),
-        mood: 3 + (i / 20) * 5,
+        mood: 1 + (i / 20) * 4,
       }),
     );
     const result = await trainer.train(pairs);
@@ -208,9 +208,9 @@ describe('LocalTrainer', () => {
 
     for (const dim of Object.values(Dimension)) {
       expect(result.scores[dim]).toBeGreaterThanOrEqual(1);
-      expect(result.scores[dim]).toBeLessThanOrEqual(10);
+      expect(result.scores[dim]).toBeLessThanOrEqual(5);
     }
     expect(result.mood).toBeGreaterThanOrEqual(1);
-    expect(result.mood).toBeLessThanOrEqual(10);
+    expect(result.mood).toBeLessThanOrEqual(5);
   });
 });

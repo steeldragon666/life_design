@@ -132,7 +132,7 @@ export default function PrivacyPage() {
 
         <SubHeading>1.2 Daily check-in data</SubHeading>
         <ul className="list-disc pl-5 space-y-1 text-sm text-stone-400">
-          <li>Mood slider readings (numeric score, 1–10)</li>
+          <li>Mood slider readings (numeric score, 1–5)</li>
           <li>Free-text journal entries (encrypted at rest)</li>
           <li>Voice memos — processed on-device; only derived features (not raw audio) are stored</li>
           <li>Dimension ratings across 8 life areas</li>

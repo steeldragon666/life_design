@@ -78,7 +78,7 @@ export class DigestGenerator {
           dimension: dim,
           trend,
           avgScore: Math.round(avg * 10) / 10,
-          note: `${dim} has been ${trendLabel} this week (avg ${avg.toFixed(1)}/10)`,
+          note: `${dim} has been ${trendLabel} this week (avg ${avg.toFixed(1)}/5)`,
         };
       },
     );
@@ -94,7 +94,7 @@ export class DigestGenerator {
     );
     if (bestDim) {
       highlights.push(
-        `Your strongest area was ${bestDim.dimension} with an average of ${bestDim.avgScore}/10`,
+        `Your strongest area was ${bestDim.dimension} with an average of ${bestDim.avgScore}/5`,
       );
     }
     const improvingDims = dimensionSummaries.filter(ds => ds.trend === 'up');
@@ -105,13 +105,13 @@ export class DigestGenerator {
     }
 
     const moodLabel =
-      avgMood >= 8 ? 'great' : avgMood >= 6 ? 'good' : avgMood >= 4 ? 'moderate' : 'challenging';
+      avgMood >= 4.5 ? 'great' : avgMood >= 3.5 ? 'good' : avgMood >= 2.5 ? 'moderate' : 'challenging';
 
     return {
       id: `digest-${weekStartStr}`,
       weekStarting: weekStartStr,
       generatedAt: now.toISOString(),
-      summary: `This week you completed ${recentCheckIns.length} check-in${recentCheckIns.length === 1 ? '' : 's'} with an average mood of ${avgMood.toFixed(1)}/10. Overall, it was a ${moodLabel} week.`,
+      summary: `This week you completed ${recentCheckIns.length} check-in${recentCheckIns.length === 1 ? '' : 's'} with an average mood of ${avgMood.toFixed(1)}/5. Overall, it was a ${moodLabel} week.`,
       highlights,
       dimensionSummaries,
     };

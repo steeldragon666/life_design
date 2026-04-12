@@ -30,11 +30,11 @@ beforeEach(() => {
 describe('submitCheckIn', () => {
   const validInput = {
     date: '2025-06-15',
-    mood: 7,
+    mood: 4,
     durationType: DurationType.Quick,
     scores: [
-      { dimension: Dimension.Career, score: 8 },
-      { dimension: Dimension.Health, score: 6 },
+      { dimension: Dimension.Career, score: 4 },
+      { dimension: Dimension.Health, score: 3 },
     ],
   };
 
@@ -74,19 +74,19 @@ describe('submitCheckIn', () => {
     expect(mockCreateCheckIn).not.toHaveBeenCalled();
   });
 
-  it('validates mood score is between 1 and 10', async () => {
+  it('validates mood score is between 1 and 5', async () => {
     mockGetCheckInByDate.mockResolvedValue({ data: null, error: null });
 
     const result = await submitCheckIn({
       ...validInput,
-      mood: 11,
+      mood: 6,
     });
 
-    expect(result.error).toBe('Mood must be an integer between 1 and 10');
+    expect(result.error).toBe('Mood must be an integer between 1 and 5');
     expect(mockCreateCheckIn).not.toHaveBeenCalled();
   });
 
-  it('validates dimension scores are between 1 and 10', async () => {
+  it('validates dimension scores are between 1 and 5', async () => {
     mockGetCheckInByDate.mockResolvedValue({ data: null, error: null });
 
     const result = await submitCheckIn({
@@ -94,7 +94,7 @@ describe('submitCheckIn', () => {
       scores: [{ dimension: Dimension.Career, score: 0 }],
     });
 
-    expect(result.error).toBe('All dimension scores must be integers between 1 and 10');
+    expect(result.error).toBe('All dimension scores must be integers between 1 and 5');
     expect(mockCreateCheckIn).not.toHaveBeenCalled();
   });
 

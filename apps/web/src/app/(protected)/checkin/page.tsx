@@ -40,7 +40,7 @@ export default function CheckInPage() {
                 {existing.dimension_scores.map((ds) => (
                   <div key={ds.dimension} className="flex items-center gap-2">
                     <div className="w-6 h-1.5 rounded-full bg-stone-100 overflow-hidden">
-                      <div className="h-full rounded-full bg-sage-300" style={{ width: `${ds.score * 10}%` }} />
+                      <div className="h-full rounded-full bg-sage-300" style={{ width: `${ds.score * 20}%` }} />
                     </div>
                     <span className="text-[11px] text-stone-500 capitalize">{ds.dimension}</span>
                     <span className="text-[11px] font-mono text-sage-500 ml-auto">{ds.score}</span>

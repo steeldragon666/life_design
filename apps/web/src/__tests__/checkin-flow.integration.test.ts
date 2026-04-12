@@ -18,12 +18,12 @@ describe('Check-in flow integration', () => {
       const checkin = {
         user_id: 'user-1',
         date: today,
-        mood: 7,
+        mood: 4,
         duration_type: DurationType.Quick,
       };
       const scores = ALL_DIMENSIONS.map((dim) => ({
         dimension: dim,
-        score: 5,
+        score: 3,
       }));
 
       const checkinResult = validateCheckIn(checkin);
@@ -37,12 +37,12 @@ describe('Check-in flow integration', () => {
       const checkin = {
         user_id: 'user-1',
         date: today,
-        mood: 9,
+        mood: 5,
         duration_type: DurationType.Deep,
       };
       const scores = ALL_DIMENSIONS.map((dim) => ({
         dimension: dim,
-        score: Math.floor(Math.random() * 10) + 1,
+        score: Math.floor(Math.random() * 5) + 1,
         note: `Note for ${dim}`,
       }));
 
@@ -75,8 +75,8 @@ describe('Check-in flow integration', () => {
 
     it('rejects duplicate dimensions', () => {
       const scores = [
-        { dimension: Dimension.Career, score: 5 },
-        { dimension: Dimension.Career, score: 8 },
+        { dimension: Dimension.Career, score: 3 },
+        { dimension: Dimension.Career, score: 4 },
       ];
       const result = validateDimensionScores(scores);
       expect(result.valid).toBe(false);
@@ -86,24 +86,24 @@ describe('Check-in flow integration', () => {
   describe('scoring pipeline', () => {
     it('computes overall score from dimension scores', () => {
       const scores = [
-        { dimension: Dimension.Career, score: 8 },
-        { dimension: Dimension.Finance, score: 6 },
-        { dimension: Dimension.Health, score: 7 },
-        { dimension: Dimension.Fitness, score: 5 },
-        { dimension: Dimension.Family, score: 9 },
-        { dimension: Dimension.Social, score: 4 },
-        { dimension: Dimension.Romance, score: 6 },
-        { dimension: Dimension.Growth, score: 8 },
+        { dimension: Dimension.Career, score: 4 },
+        { dimension: Dimension.Finance, score: 3 },
+        { dimension: Dimension.Health, score: 4 },
+        { dimension: Dimension.Fitness, score: 3 },
+        { dimension: Dimension.Family, score: 5 },
+        { dimension: Dimension.Social, score: 2 },
+        { dimension: Dimension.Romance, score: 3 },
+        { dimension: Dimension.Growth, score: 4 },
       ];
 
       const overall = computeOverallScore(scores);
-      expect(overall).toBeCloseTo(6.625);
+      expect(overall).toBeCloseTo(3.5);
     });
 
     it('computes dimension average over multiple check-ins', () => {
-      const careerScores = [8, 7, 9, 6, 8];
+      const careerScores = [4, 3, 5, 3, 4];
       const avg = computeDimensionAverage(careerScores);
-      expect(avg).toBeCloseTo(7.6);
+      expect(avg).toBeCloseTo(3.8);
     });
 
     it('computes streak from consecutive check-in dates', () => {
@@ -130,11 +130,11 @@ describe('Check-in flow integration', () => {
       const formOutput = {
         user_id: 'user-1',
         date: today,
-        mood: 7,
+        mood: 4,
         durationType: DurationType.Quick,
         scores: ALL_DIMENSIONS.map((dim, i) => ({
           dimension: dim,
-          score: (i % 10) + 1,
+          score: (i % 5) + 1,
         })),
       };
 
@@ -152,7 +152,7 @@ describe('Check-in flow integration', () => {
 
       const overall = computeOverallScore(formOutput.scores);
       expect(overall).toBeGreaterThan(0);
-      expect(overall).toBeLessThanOrEqual(10);
+      expect(overall).toBeLessThanOrEqual(5);
     });
   });
 });

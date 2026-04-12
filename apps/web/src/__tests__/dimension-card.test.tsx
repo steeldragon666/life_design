@@ -15,10 +15,11 @@ describe('DimensionCard', () => {
     expect(screen.getByText(DIMENSION_LABELS[Dimension.Career])).toBeInTheDocument();
   });
 
-  it('renders score buttons 1 through 10', () => {
+  it('renders score buttons for 5 options', () => {
     render(<DimensionCard {...defaultProps} />);
-    for (let i = 1; i <= 10; i++) {
-      expect(screen.getByRole('button', { name: String(i) })).toBeInTheDocument();
+    const labels = ['Low', 'Okay', 'Steady', 'Good', 'Great'];
+    for (const label of labels) {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
   });
 
@@ -26,15 +27,15 @@ describe('DimensionCard', () => {
     const onScoreChange = vi.fn();
     render(<DimensionCard {...defaultProps} onScoreChange={onScoreChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '7' }));
-    expect(onScoreChange).toHaveBeenCalledWith(Dimension.Career, 7);
+    fireEvent.click(screen.getByRole('button', { name: 'Good' }));
+    expect(onScoreChange).toHaveBeenCalledWith(Dimension.Career, 4);
   });
 
   it('highlights the selected score button', () => {
-    render(<DimensionCard {...defaultProps} score={5} />);
+    render(<DimensionCard {...defaultProps} score={3} />);
 
-    const selectedBtn = screen.getByRole('button', { name: '5' });
-    expect(selectedBtn.style.backgroundColor).toBeTruthy();
+    const selectedBtn = screen.getByRole('button', { name: 'Steady' });
+    expect(selectedBtn.style.borderColor).toBeTruthy();
   });
 
   it('renders optional note textarea when showNote is true', () => {

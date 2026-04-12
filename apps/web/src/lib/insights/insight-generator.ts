@@ -110,7 +110,7 @@ export class InsightGenerator {
       id: `mood-trend-${Date.now()}`,
       type: 'trend',
       title: `Mood trending ${emoji}`,
-      body: `Your average mood over the last ${recent.length} check-ins is ${recentAvg.toFixed(1)}/10, ${direction} from ${olderAvg.toFixed(1)}/10 previously.`,
+      body: `Your average mood over the last ${recent.length} check-ins is ${recentAvg.toFixed(1)}/5, ${direction} from ${olderAvg.toFixed(1)}/5 previously.`,
       confidence: Math.min(0.9, 0.5 + checkIns.length * 0.02),
       generatedAt: new Date(),
       dismissed: false,
@@ -134,13 +134,13 @@ export class InsightGenerator {
 
     for (const [dim, { sum, count }] of Object.entries(dimTotals)) {
       const avg = sum / count;
-      if (avg <= 4 && count >= 3) {
+      if (avg <= 2 && count >= 3) {
         alerts.push({
           id: `dim-alert-${dim}-${Date.now()}`,
           type: 'alert',
           dimension: dim,
           title: `${dim.charAt(0).toUpperCase() + dim.slice(1)} needs attention`,
-          body: `Your ${dim} score has averaged ${avg.toFixed(1)}/10 over the last ${count} check-ins. Consider focusing on this area.`,
+          body: `Your ${dim} score has averaged ${avg.toFixed(1)}/5 over the last ${count} check-ins. Consider focusing on this area.`,
           confidence: Math.min(0.85, 0.5 + count * 0.05),
           generatedAt: new Date(),
           dismissed: false,

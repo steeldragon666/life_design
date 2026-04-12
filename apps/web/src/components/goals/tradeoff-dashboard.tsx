@@ -27,7 +27,7 @@ export default function TradeoffDashboard({
   const radarData = ALL_DIMENSIONS.map((dim) => {
     const current = currentScores[dim] ?? 5;
     const impact = impactMap.get(dim);
-    const projected = Math.max(1, Math.min(10, current + (impact?.impact ?? 0)));
+    const projected = Math.max(1, Math.min(5, current + (impact?.impact ?? 0)));
     return {
       dimension: DIMENSION_LABELS[dim],
       current,
@@ -47,7 +47,7 @@ export default function TradeoffDashboard({
           <RadarChart data={radarData}>
             <PolarGrid />
             <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 10 }} />
-            <PolarRadiusAxis domain={[0, 10]} tick={{ fontSize: 9 }} />
+            <PolarRadiusAxis domain={[0, 5]} tick={{ fontSize: 9 }} />
             <Radar
               name="Current"
               dataKey="current"
@@ -79,7 +79,7 @@ export default function TradeoffDashboard({
             );
             return (
               <p key={d.dimension} className="text-xs text-red-600 mt-1">
-                <strong>{d.dimension}</strong> projected to drop to {d.projected.toFixed(1)}/10
+                <strong>{d.dimension}</strong> projected to drop to {d.projected.toFixed(1)}/5
                 {impact ? ` — ${impact.explanation}` : ''}
               </p>
             );

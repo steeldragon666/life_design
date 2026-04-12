@@ -32,7 +32,7 @@ export interface VoiceSession {
 // ---------------------------------------------------------------------------
 
 /**
- * Matches patterns like "career is about a 7", "health: 8", "fitness 6 out of 10"
+ * Matches patterns like "career is about a 4", "health: 5", "fitness 3 out of 5"
  */
 const SCORE_PATTERNS = [
   // "career is about a 7" / "career is a 7" / "fitness maybe 5"

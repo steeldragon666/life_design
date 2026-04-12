@@ -95,7 +95,7 @@ export function buildSystemPrompt(
       '\n\nUser context:',
     ];
     if (context.recentMood !== undefined) {
-      contextLines.push(`- Recent mood: ${context.recentMood}/10`);
+      contextLines.push(`- Recent mood: ${context.recentMood}/5`);
     }
     if (context.topDimension) {
       contextLines.push(`- Strongest dimension: ${context.topDimension}`);

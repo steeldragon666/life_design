@@ -72,7 +72,7 @@ User profile:
 - Active projects: ${input.userProfile.projects.join(', ') || 'None listed'}
 
 Current dimension scores:
-${input.currentScores.map((s) => `- ${s.dimension}: ${s.average.toFixed(1)}/10 (trend: ${s.trend > 0 ? '+' : ''}${s.trend.toFixed(2)})`).join('\n')}
+${input.currentScores.map((s) => `- ${s.dimension}: ${s.average.toFixed(1)}/5 (trend: ${s.trend > 0 ? '+' : ''}${s.trend.toFixed(2)})`).join('\n')}
 
 User's rough plan:
 ${input.userPlan}`;

@@ -676,32 +676,26 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                       </div>
 
                       <div className="flex gap-2 mt-6">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
-                          const isSelected = scores[dim] === score;
-                          const isInRange =
-                            scores[dim] !== undefined && score <= scores[dim];
-                          return (
-                            <button
-                              key={score}
-                              onClick={() => handleDimensionScore(dim, score)}
-                              className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all
-                                ${
-                                  isSelected
-                                    ? 'bg-sage-500 text-white shadow-sm'
-                                    : isInRange
-                                      ? 'bg-sage-100 text-sage-500'
-                                      : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-                                }`}
-                            >
-                              {score}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="flex justify-between mt-2 px-1">
-                        <span className="text-[11px] text-stone-500">Struggling</span>
-                        <span className="text-[11px] text-stone-500">Thriving</span>
+                        {[
+                          { value: 1, emoji: '\u{1F61E}', label: 'Low' },
+                          { value: 2, emoji: '\u{1F642}', label: 'Okay' },
+                          { value: 3, emoji: '\u{1F60C}', label: 'Steady' },
+                          { value: 4, emoji: '\u{1F60A}', label: 'Good' },
+                          { value: 5, emoji: '\u{1F601}', label: 'Great' },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => handleDimensionScore(dim, option.value)}
+                            className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                              scores[dim] === option.value
+                                ? 'border-sage-500 bg-sage-50 text-stone-800'
+                                : 'border-stone-200 bg-white text-stone-500 hover:border-sage-200'
+                            }`}
+                          >
+                            <span className="text-lg">{option.emoji}</span>
+                            <span className="text-[10px]">{option.label}</span>
+                          </button>
+                        ))}
                       </div>
                     </Card>
                   </div>
@@ -792,7 +786,7 @@ export default function CheckInClient({ date }: CheckInClientProps) {
                     <div className="w-6 h-1.5 rounded-full bg-stone-100 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-sage-300"
-                        style={{ width: `${scores[dim] * 10}%` }}
+                        style={{ width: `${scores[dim] * 20}%` }}
                       />
                     </div>
                     <span className="text-[11px] text-stone-500">{DIMENSION_LABELS[dim]}</span>

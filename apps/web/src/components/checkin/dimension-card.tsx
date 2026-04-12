@@ -26,21 +26,28 @@ export default function DimensionCard({
     <Card className="space-y-3">
       <h3 className="font-medium text-sm text-stone-800">{DIMENSION_LABELS[dimension]}</h3>
 
-      <div className="flex gap-1 flex-wrap">
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { value: 1, emoji: '\u{1F61E}', label: 'Low' },
+          { value: 2, emoji: '\u{1F642}', label: 'Okay' },
+          { value: 3, emoji: '\u{1F60C}', label: 'Steady' },
+          { value: 4, emoji: '\u{1F60A}', label: 'Good' },
+          { value: 5, emoji: '\u{1F601}', label: 'Great' },
+        ].map((option) => (
           <button
-            key={n}
+            key={option.value}
             type="button"
-            aria-label={String(n)}
-            onClick={() => onScoreChange(dimension, n)}
-            className="w-8 h-8 rounded text-sm font-medium transition-all"
+            aria-label={option.label}
+            onClick={() => onScoreChange(dimension, option.value)}
+            className="flex-1 flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all"
             style={
-              n === score
-                ? { backgroundColor: palette.accent, color: 'var(--color-text-inverse)' }
-                : { backgroundColor: 'var(--color-stone-100)', color: 'var(--color-stone-600)' }
+              option.value === score
+                ? { borderColor: palette.accent, backgroundColor: 'var(--color-sage-50)', color: 'var(--color-stone-800)' }
+                : { borderColor: 'var(--color-stone-200)', backgroundColor: 'white', color: 'var(--color-stone-500)' }
             }
           >
-            {n}
+            <span className="text-lg">{option.emoji}</span>
+            <span className="text-[10px]">{option.label}</span>
           </button>
         ))}
       </div>

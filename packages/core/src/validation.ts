@@ -12,8 +12,8 @@ export function validateScore(score: number): ValidationResult {
   if (!Number.isInteger(score)) {
     return { valid: false, error: 'Score must be an integer' };
   }
-  if (score < 1 || score > 10) {
-    return { valid: false, error: 'Score must be between 1 and 10' };
+  if (score < 1 || score > 5) {
+    return { valid: false, error: 'Score must be between 1 and 5' };
   }
   return { valid: true };
 }

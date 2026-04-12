@@ -77,7 +77,7 @@ export default function WeeklyDigestView({ digest, onClose }: WeeklyDigestViewPr
                     </span>
                   </div>
                   <span className="text-sm font-mono text-sage-600">
-                    {ds.avgScore}/10
+                    {ds.avgScore}/5
                   </span>
                 </div>
               );
