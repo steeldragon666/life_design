@@ -5,3 +5,4 @@ export * from './scoring';
 export * from './psychometric-types';
 export * from './instruments';
 export * from './psychometric-scoring';
+export * from './clinical-screening';
