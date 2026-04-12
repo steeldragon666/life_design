@@ -1,3 +1,11 @@
+export interface WeatherTrend {
+  rollingAvgSunlightHours: number;
+  rollingAvgCloudCover: number;
+  trendDirection: 'improving' | 'stable' | 'worsening';
+  sustainedLowLightDays: number;  // consecutive trailing days with sunlight < 4h
+  sadRisk: boolean;               // trend-based SAD risk indicator
+}
+
 export interface WeatherData {
   temperature: number;           // Celsius
   humidity: number;              // 0-100%
@@ -75,5 +83,69 @@ export function extractWeatherFeatures(
     sadRiskIndicator,
     outdoorFriendly,
     moodImpactScore,
+  };
+}
+
+/**
+ * Compute weather trend from a rolling window of daily data.
+ *
+ * SAD risk triggers when:
+ * - Rolling average sunlight < 4h for 5+ consecutive trailing days
+ * - Rolling average cloud cover > 70%
+ *
+ * @param dailyData - Array of daily weather observations (oldest first)
+ * @throws Error if dailyData is empty
+ */
+export function computeWeatherTrend(dailyData: WeatherData[]): WeatherTrend {
+  if (dailyData.length === 0) {
+    throw new Error('dailyData must contain at least one entry');
+  }
+
+  const n = dailyData.length;
+
+  // Rolling averages
+  const rollingAvgSunlightHours =
+    Math.round((dailyData.reduce((s, d) => s + d.sunlightHours, 0) / n) * 100) / 100;
+  const rollingAvgCloudCover =
+    Math.round((dailyData.reduce((s, d) => s + d.cloudCover, 0) / n) * 100) / 100;
+
+  // Trend direction: compare first-half avg vs second-half avg sunlight
+  let trendDirection: WeatherTrend['trendDirection'] = 'stable';
+  if (n >= 2) {
+    const mid = Math.floor(n / 2);
+    const firstHalf = dailyData.slice(0, mid);
+    const secondHalf = dailyData.slice(mid);
+    const firstAvg = firstHalf.reduce((s, d) => s + d.sunlightHours, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((s, d) => s + d.sunlightHours, 0) / secondHalf.length;
+    const diff = secondAvg - firstAvg;
+    if (diff > 0.5) {
+      trendDirection = 'improving';
+    } else if (diff < -0.5) {
+      trendDirection = 'worsening';
+    }
+  }
+
+  // Sustained low-light days: count consecutive trailing days with sunlight < 4h
+  let sustainedLowLightDays = 0;
+  for (let i = n - 1; i >= 0; i--) {
+    if (dailyData[i].sunlightHours < 4) {
+      sustainedLowLightDays++;
+    } else {
+      break;
+    }
+  }
+
+  // SAD risk: sustained low light 5+ days AND high cloud cover average
+  const sadRisk =
+    sustainedLowLightDays >= 5 &&
+    rollingAvgSunlightHours < 4 &&
+    rollingAvgCloudCover > 70;
+
+  return {
+    rollingAvgSunlightHours,
+    rollingAvgCloudCover,
+    trendDirection,
+    sustainedLowLightDays,
+    sadRisk,
   };
 }
