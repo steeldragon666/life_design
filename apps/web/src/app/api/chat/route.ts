@@ -11,6 +11,7 @@ import {
   validateAndNormalizeChatPayload,
   ValidationError,
 } from '@/lib/chat-security';
+import { detectCrisisIndicators, buildCrisisResponse, CrisisLevel } from '@life-design/core';
 
 function buildCorrelationContext(
   insights?: SanitizedChatMetadata['correlationInsights']
@@ -66,6 +67,27 @@ async function persistConversationSummary(params: {
     });
   } catch {
     // Do not fail chat delivery when persistence layer is unavailable.
+  }
+}
+
+async function logCrisisEvent(params: {
+  userId: string;
+  level: string;
+  triggers: string[];
+  confidence: number;
+}) {
+  try {
+    const supabase = getServiceRoleClient();
+    if (!supabase) return;
+    await supabase.from('crisis_events').insert({
+      user_id: params.userId,
+      level: params.level,
+      triggers: params.triggers,
+      confidence: params.confidence,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Never fail the response due to logging issues
   }
 }
 
@@ -126,6 +148,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'userId mismatch' }, { status: 403 });
     }
     metadata.userId = user.id;
+
+    // --- Crisis detection: run BEFORE LLM processing ---
+    const crisisResult = detectCrisisIndicators(message);
+    if (crisisResult.matched) {
+      const crisisResponse = buildCrisisResponse(crisisResult.level);
+
+      // Log crisis event (non-blocking)
+      logCrisisEvent({
+        userId: user.id,
+        level: crisisResult.level,
+        triggers: crisisResult.triggers,
+        confidence: crisisResult.confidence,
+      }).catch(() => {});
+
+      // Return crisis response immediately — do NOT send to LLM
+      return NextResponse.json({
+        text: crisisResponse.message,
+        crisis: {
+          level: crisisResult.level,
+          resources: crisisResponse.resources,
+        },
+      });
+    }
 
     const wantsStream = metadata.stream === true;
 
