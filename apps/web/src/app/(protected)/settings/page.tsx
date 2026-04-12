@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGuest } from '@/lib/guest-context';
 import { Card, Button, Separator, Avatar } from '@life-design/ui';
+import { ClinicalScreeningForm } from '@/components/screening/clinical-screening-form';
+import { ScreeningResults } from '@/components/screening/screening-results';
+import type { ScreeningResult } from '@life-design/core';
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -68,6 +71,15 @@ function Divider() {
 // Main component
 // ---------------------------------------------------------------------------
 
+// Screening history row shape from the API
+interface ScreeningHistoryRow {
+  id: string;
+  instrument: string;
+  total: number;
+  severity: string;
+  administeredAt?: string;
+}
+
 export default function SettingsPage() {
   const { profile, clearGuestData } = useGuest();
 
@@ -76,6 +88,46 @@ export default function SettingsPage() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [storageUsed, setStorageUsed] = useState('—');
+
+  // Clinical screening state
+  const [activeScreening, setActiveScreening] = useState<'phq9' | 'gad7' | null>(null);
+  const [phq9Results, setPhq9Results] = useState<ScreeningHistoryRow[]>([]);
+  const [gad7Results, setGad7Results] = useState<ScreeningHistoryRow[]>([]);
+  const [screeningLoading, setScreeningLoading] = useState(true);
+
+  // Fetch screening history
+  const fetchScreenings = useCallback(async () => {
+    setScreeningLoading(true);
+    try {
+      const [phq9Res, gad7Res] = await Promise.all([
+        fetch('/api/screening?instrument=phq9'),
+        fetch('/api/screening?instrument=gad7'),
+      ]);
+      if (phq9Res.ok) {
+        const { data } = await phq9Res.json();
+        setPhq9Results(data ?? []);
+      }
+      if (gad7Res.ok) {
+        const { data } = await gad7Res.json();
+        setGad7Results(data ?? []);
+      }
+    } catch {
+      // Silently fail — guest users won't have API access
+    }
+    setScreeningLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchScreenings();
+  }, [fetchScreenings]);
+
+  const handleScreeningComplete = useCallback(
+    (_result: ScreeningResult) => {
+      setActiveScreening(null);
+      fetchScreenings();
+    },
+    [fetchScreenings],
+  );
 
   // Estimate local storage usage
   useEffect(() => {
@@ -161,6 +213,70 @@ export default function SettingsPage() {
               8:00 AM
             </button>
           </div>
+        </SectionCard>
+
+        <SectionCard title="Clinical Screening">
+          {activeScreening ? (
+            <div>
+              <ClinicalScreeningForm
+                instrument={activeScreening}
+                onComplete={handleScreeningComplete}
+              />
+              <button
+                type="button"
+                onClick={() => setActiveScreening(null)}
+                className="mt-4 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {/* PHQ-9 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-medium text-stone-800">PHQ-9 Depression</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Patient Health Questionnaire</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveScreening('phq9')}
+                    className="rounded-lg bg-sage-500 px-3 py-1.5 text-xs text-white hover:bg-sage-600 transition-colors"
+                  >
+                    Take Screening
+                  </button>
+                </div>
+                {screeningLoading ? (
+                  <p className="text-xs text-stone-400">Loading...</p>
+                ) : (
+                  <ScreeningResults results={phq9Results} />
+                )}
+              </div>
+
+              <Separator className="border-stone-100" />
+
+              {/* GAD-7 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-medium text-stone-800">GAD-7 Anxiety</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Generalised Anxiety Disorder scale</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveScreening('gad7')}
+                    className="rounded-lg bg-sage-500 px-3 py-1.5 text-xs text-white hover:bg-sage-600 transition-colors"
+                  >
+                    Take Screening
+                  </button>
+                </div>
+                {screeningLoading ? (
+                  <p className="text-xs text-stone-400">Loading...</p>
+                ) : (
+                  <ScreeningResults results={gad7Results} />
+                )}
+              </div>
+            </div>
+          )}
         </SectionCard>
 
         <SectionCard title="Data & Privacy">

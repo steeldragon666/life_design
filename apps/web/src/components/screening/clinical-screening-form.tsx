@@ -1,121 +1,224 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { PHQ9_ITEMS, GAD7_ITEMS } from '@life-design/core';
-import { scorePHQ9, scoreGAD7 } from '@life-design/core';
-import { ScreeningDisclaimer } from './screening-disclaimer';
+import {
+  PHQ9_QUESTIONS,
+  GAD7_QUESTIONS,
+  WHO5_QUESTIONS,
+  scorePHQ9Screening,
+  scoreGAD7Screening,
+  scoreWHO5,
+  CLINICAL_DISCLAIMER,
+  type ScreeningResult,
+  type ScreeningQuestion,
+} from '@life-design/core';
 
-const RESPONSE_OPTIONS = [
-  { value: 0, label: 'Not at all' },
-  { value: 1, label: 'Several days' },
-  { value: 2, label: 'More than half the days' },
-  { value: 3, label: 'Nearly every day' },
-] as const;
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
 
-type ClinicalScreeningFormProps =
-  | { instrument: 'phq9'; onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void; onCriticalFlag: () => void; className?: string }
-  | { instrument: 'gad7'; onComplete: (score: ReturnType<typeof scorePHQ9> | ReturnType<typeof scoreGAD7>) => void; onCriticalFlag?: never; className?: string };
+interface ClinicalScreeningFormProps {
+  instrument: 'phq9' | 'gad7' | 'who5';
+  onComplete: (result: ScreeningResult) => void;
+  className?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getQuestions(instrument: ClinicalScreeningFormProps['instrument']): ScreeningQuestion[] {
+  switch (instrument) {
+    case 'phq9':
+      return PHQ9_QUESTIONS;
+    case 'gad7':
+      return GAD7_QUESTIONS;
+    case 'who5':
+      return WHO5_QUESTIONS;
+  }
+}
+
+function score(instrument: ClinicalScreeningFormProps['instrument'], answers: number[]): ScreeningResult {
+  switch (instrument) {
+    case 'phq9':
+      return scorePHQ9Screening(answers);
+    case 'gad7':
+      return scoreGAD7Screening(answers);
+    case 'who5':
+      return scoreWHO5(answers);
+  }
+}
+
+const INSTRUMENT_LABELS: Record<string, string> = {
+  phq9: 'PHQ-9 Depression Screening',
+  gad7: 'GAD-7 Anxiety Screening',
+  who5: 'WHO-5 Wellbeing Index',
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function ClinicalScreeningForm({
   instrument,
   onComplete,
-  onCriticalFlag,
   className,
 }: ClinicalScreeningFormProps) {
-  const items = instrument === 'phq9' ? PHQ9_ITEMS : GAD7_ITEMS;
-  const [responses, setResponses] = useState<Record<string, number>>({});
+  const questions = getQuestions(instrument);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState<(number | null)[]>(
+    () => new Array(questions.length).fill(null),
+  );
+  const [submitting, setSubmitting] = useState(false);
 
-  const allAnswered = items.every((item) => responses[item.id] !== undefined);
+  const question = questions[currentStep];
+  const isLastStep = currentStep === questions.length - 1;
+  const currentAnswer = answers[currentStep];
 
-  const handleChange = useCallback(
-    (itemId: string, value: number) => {
-      setResponses((prev) => ({ ...prev, [itemId]: value }));
+  const handleSelect = useCallback(
+    (value: number) => {
+      setAnswers((prev) => {
+        const next = [...prev];
+        next[currentStep] = value;
+        return next;
+      });
+    },
+    [currentStep],
+  );
 
-      // CRITICAL: PHQ-9 item 9 = suicidal ideation — any non-zero triggers safety flag
-      // Match on item ID (not array index) to be resilient to data reordering
-      if (instrument === 'phq9' && itemId === 'phq9_9' && value > 0) {
-        onCriticalFlag?.();
+  const handleNext = useCallback(() => {
+    if (currentAnswer === null) return;
+    if (!isLastStep) {
+      setCurrentStep((s) => s + 1);
+    }
+  }, [currentAnswer, isLastStep]);
+
+  const handleBack = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep((s) => s - 1);
+    }
+  }, [currentStep]);
+
+  const handleSubmit = useCallback(async () => {
+    if (answers.some((a) => a === null)) return;
+    setSubmitting(true);
+
+    const numericAnswers = answers as number[];
+    const result = score(instrument, numericAnswers);
+
+    // Save to API (only phq9/gad7 — the DB table only supports those)
+    if (instrument === 'phq9' || instrument === 'gad7') {
+      try {
+        await fetch('/api/screening', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instrument, answers: numericAnswers }),
+        });
+      } catch {
+        // Non-blocking: still show result even if save fails
       }
-    },
-    [instrument, onCriticalFlag],
-  );
+    }
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!allAnswered) return;
-
-      const result = instrument === 'phq9' ? scorePHQ9(responses) : scoreGAD7(responses);
-      onComplete(result);
-    },
-    [allAnswered, instrument, responses, onComplete],
-  );
+    setSubmitting(false);
+    onComplete(result);
+  }, [answers, instrument, onComplete]);
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
-      <ScreeningDisclaimer />
+    <div className={className}>
+      {/* Header */}
+      <h3 className="text-lg font-medium text-stone-800 mb-2">
+        {INSTRUMENT_LABELS[instrument]}
+      </h3>
 
-      <div className="mt-6 space-y-8">
-        {items.map((item, index) => {
-          const questionId = `question-${item.id}`;
-          return (
-            <fieldset
-              key={item.id}
-              className="space-y-3"
-            >
-              <legend id={questionId} className="text-sm font-medium text-stone-800">
-                {index + 1}. {item.text}
-              </legend>
-
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {RESPONSE_OPTIONS.map((option) => {
-                  const inputId = `${item.id}-${option.value}`;
-                  const isSelected = responses[item.id] === option.value;
-                  return (
-                    <label
-                      key={option.value}
-                      htmlFor={inputId}
-                      className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors ${
-                        isSelected
-                          ? 'border-sage-600 bg-sage-50 text-sage-800'
-                          : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        id={inputId}
-                        name={item.id}
-                        value={option.value}
-                        checked={isSelected}
-                        onChange={() => handleChange(item.id, option.value)}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`inline-block h-4 w-4 shrink-0 rounded-full border-2 ${
-                          isSelected
-                            ? 'border-sage-600 bg-sage-600'
-                            : 'border-stone-300 bg-white'
-                        }`}
-                      />
-                      {option.label}
-                    </label>
-                  );
-                })}
-              </div>
-            </fieldset>
-          );
-        })}
+      {/* Disclaimer */}
+      <div className="rounded-xl bg-stone-50 border border-stone-200 p-3 text-xs text-stone-500 mb-6">
+        {CLINICAL_DISCLAIMER}
       </div>
 
-      <div className="mt-8">
+      {/* Progress */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs text-stone-400">
+          Question {currentStep + 1} of {questions.length}
+        </span>
+        <div className="flex gap-1">
+          {questions.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 w-4 rounded-full transition-colors ${
+                i < currentStep
+                  ? 'bg-sage-500'
+                  : i === currentStep
+                    ? 'bg-sage-400'
+                    : 'bg-stone-200'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Question */}
+      <div className="mb-6">
+        <p className="text-sm font-medium text-stone-800 mb-4">{question.text}</p>
+
+        <div className="space-y-2">
+          {question.options.map((option) => {
+            const isSelected = currentAnswer === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleSelect(option.value)}
+                className={`w-full text-left rounded-xl border px-4 py-3 text-sm transition-all ${
+                  isSelected
+                    ? 'border-sage-500 bg-sage-50 text-sage-800 shadow-sm'
+                    : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+                }`}
+              >
+                <span
+                  className={`inline-block mr-3 h-4 w-4 rounded-full border-2 align-middle ${
+                    isSelected
+                      ? 'border-sage-500 bg-sage-500'
+                      : 'border-stone-300 bg-white'
+                  }`}
+                />
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between">
         <button
-          type="submit"
-          disabled={!allAnswered}
-          className="rounded-lg bg-sage-700 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-800 disabled:cursor-not-allowed disabled:opacity-50"
+          type="button"
+          onClick={handleBack}
+          disabled={currentStep === 0}
+          className="text-sm text-stone-400 hover:text-stone-600 disabled:opacity-0 disabled:pointer-events-none transition-colors"
         >
-          Submit Screening
+          Back
         </button>
+
+        {isLastStep ? (
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={currentAnswer === null || submitting}
+            className="rounded-lg bg-sage-700 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? 'Submitting...' : 'Submit'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={currentAnswer === null}
+            className="rounded-lg bg-sage-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        )}
       </div>
-    </form>
+    </div>
   );
 }
