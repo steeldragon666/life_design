@@ -5,6 +5,7 @@ import { useGuest } from '@/lib/guest-context';
 import { Card, Button, Separator, Avatar } from '@life-design/ui';
 import { ClinicalScreeningForm } from '@/components/screening/clinical-screening-form';
 import { ScreeningResults } from '@/components/screening/screening-results';
+import { OptInTierSelectorWithState } from '@/components/settings/opt-in-tier-selector';
 import type { ScreeningResult } from '@life-design/core';
 
 // ---------------------------------------------------------------------------
@@ -280,6 +281,8 @@ export default function SettingsPage() {
         </SectionCard>
 
         <SectionCard title="Data & Privacy">
+          <OptInTierSelectorWithState />
+          <Divider />
           <ActionRow label="Export My Data" description="Download all your check-ins and goals" action="Export" />
           <Divider />
           <ActionRow

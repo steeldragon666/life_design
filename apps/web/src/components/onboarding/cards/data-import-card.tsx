@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Check, Shield } from 'lucide-react';
+import { OptInTier } from '@life-design/core';
+import { OptInTierSelector } from '@/components/settings/opt-in-tier-selector';
 
 interface DataImportCardProps {
   onNext: () => void;
@@ -15,6 +17,7 @@ const INTEGRATIONS = [
 
 export default function DataImportCard({ onNext }: DataImportCardProps) {
   const [connected, setConnected] = useState<string[]>([]);
+  const [selectedTier, setSelectedTier] = useState<OptInTier>(OptInTier.Basic);
 
   const handleConnect = (integration: typeof INTEGRATIONS[number]) => {
     // Open OAuth flow in popup
@@ -35,38 +38,64 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
     }, 500);
   };
 
+  const handleContinue = () => {
+    // Persist tier selection
+    fetch('/api/profile/tier', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier: selectedTier }),
+    }).catch(() => {});
+    onNext();
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-b from-stone-50 to-stone-100">
       <div className="max-w-lg w-full space-y-8">
         <div className="text-center">
-          <h2 className="font-serif text-3xl text-stone-900">Connect your apps</h2>
-          <p className="text-stone-500 mt-3">Connecting apps lets our AI find deeper patterns in your life. You can always add more later.</p>
+          <h2 className="font-serif text-3xl text-stone-900">Choose your data level</h2>
+          <p className="text-stone-500 mt-3">
+            Pick how much you want to share. More data means deeper, more personalised insights.
+          </p>
         </div>
 
-        <div className="space-y-3">
-          {INTEGRATIONS.map((integration) => {
-            const isConnected = connected.includes(integration.id);
-            return (
-              <button
-                key={integration.id}
-                onClick={() => !isConnected && handleConnect(integration)}
-                className={`p-4 rounded-xl border text-left transition-all ${
-                  isConnected
-                    ? 'bg-emerald-50 border-emerald-200'
-                    : 'bg-white border-stone-100 hover:border-stone-300 hover:shadow-sm'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{integration.icon}</span>
-                  <span className="font-medium text-sm text-stone-900">{integration.name}</span>
-                  {isConnected && (
-                    <Check size={14} className="text-emerald-600 ml-auto" strokeWidth={3} />
-                  )}
-                </div>
-                <p className="text-xs text-stone-500">{integration.description}</p>
-              </button>
-            );
-          })}
+        {/* Tier selection */}
+        <OptInTierSelector
+          currentTier={selectedTier}
+          onTierChange={setSelectedTier}
+          compact
+        />
+
+        {/* App connections */}
+        <div>
+          <h3 className="font-serif text-lg text-stone-900 mb-3">Connect your apps</h3>
+          <p className="text-stone-500 text-sm mb-4">
+            Optional — you can always add these later in Settings.
+          </p>
+          <div className="space-y-3">
+            {INTEGRATIONS.map((integration) => {
+              const isConnected = connected.includes(integration.id);
+              return (
+                <button
+                  key={integration.id}
+                  onClick={() => !isConnected && handleConnect(integration)}
+                  className={`w-full p-4 rounded-xl border text-left transition-all ${
+                    isConnected
+                      ? 'bg-emerald-50 border-emerald-200'
+                      : 'bg-white border-stone-100 hover:border-stone-300 hover:shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{integration.icon}</span>
+                    <span className="font-medium text-sm text-stone-900">{integration.name}</span>
+                    {isConnected && (
+                      <Check size={14} className="text-emerald-600 ml-auto" strokeWidth={3} />
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-500">{integration.description}</p>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-xl">
@@ -76,7 +105,7 @@ export default function DataImportCard({ onNext }: DataImportCardProps) {
 
         <div className="space-y-3">
           <button
-            onClick={onNext}
+            onClick={handleContinue}
             className="w-full py-4 rounded-2xl bg-stone-900 text-white font-medium text-lg hover:bg-stone-800 transition-colors"
           >
             {connected.length > 0 ? 'Continue' : 'Skip for now'}
