@@ -2,23 +2,27 @@ import { describe, it, expect } from 'vitest';
 import { QUESTIONS, SECTIONS, getQuestionsForSection, getTotalQuestionCount } from '../question-schema';
 
 describe('question-schema', () => {
-  it('has exactly 18 questions', () => {
-    expect(QUESTIONS).toHaveLength(18);
+  it('has exactly 79 questions', () => {
+    expect(QUESTIONS).toHaveLength(79);
   });
 
-  it('has 4 sections', () => {
-    expect(SECTIONS).toHaveLength(4);
+  it('has 8 sections', () => {
+    expect(SECTIONS).toHaveLength(8);
   });
 
   it('section question counts match', () => {
     expect(getQuestionsForSection('goal')).toHaveLength(3);
-    expect(getQuestionsForSection('habits')).toHaveLength(5);
-    expect(getQuestionsForSection('energy')).toHaveLength(4);
+    expect(getQuestionsForSection('wellbeing')).toHaveLength(15);
+    expect(getQuestionsForSection('baseline')).toHaveLength(20);
+    expect(getQuestionsForSection('personality')).toHaveLength(10);
+    expect(getQuestionsForSection('drive')).toHaveLength(8);
+    expect(getQuestionsForSection('satisfaction')).toHaveLength(5);
+    expect(getQuestionsForSection('needs')).toHaveLength(12);
     expect(getQuestionsForSection('style')).toHaveLength(6);
   });
 
-  it('total question count is 18', () => {
-    expect(getTotalQuestionCount()).toBe(18);
+  it('total question count is 79', () => {
+    expect(getTotalQuestionCount()).toBe(79);
   });
 
   it('every question has required fields', () => {
