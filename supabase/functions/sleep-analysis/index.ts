@@ -23,6 +23,21 @@ interface SleepMetrics {
   sleepQualityScore: number;
 }
 
+// ---------------------------------------------------------------------------
+// Sleep architecture types (mirrors packages/core/src/health/sleep-architecture.ts)
+// ---------------------------------------------------------------------------
+
+interface SleepArchitectureMetrics {
+  sleepEfficiency: number;
+  sleepLatency: number;
+  waso: number;
+  remPercent: number | null;
+  deepPercent: number | null;
+  lightPercent: number | null;
+  awakePercent: number | null;
+  qualityScore: number;
+}
+
 function computeSleepMetrics(samples: SleepSample[]): SleepMetrics {
   let deep = 0, rem = 0, light = 0, awake = 0, inBed = 0;
 
@@ -77,6 +92,126 @@ function computeSleepMetrics(samples: SleepSample[]): SleepMetrics {
     wakeAfterSleepOnset: Math.round(awake),
     sleepQualityScore: Math.round(quality * 10) / 10,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Sleep architecture analysis (inline port of packages/core logic for Deno)
+// ---------------------------------------------------------------------------
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Compute a composite 0-100 quality score from sleep architecture metrics.
+ * Mirrors computeSleepQualityScore in packages/core/src/health/sleep-architecture.ts.
+ */
+function computeArchitectureQualityScore(
+  metrics: SleepArchitectureMetrics,
+  totalMinutes?: number,
+): number {
+  const effScore = clamp((metrics.sleepEfficiency - 50) / (85 - 50), 0, 1);
+  const wasoScore = clamp(1 - metrics.waso / 60, 0, 1);
+  const latencyScore = clamp(1 - (metrics.sleepLatency - 10) / 30, 0, 1);
+
+  let durationScore = 1;
+  if (totalMinutes !== undefined) {
+    if (totalMinutes >= 420 && totalMinutes <= 540) {
+      durationScore = 1;
+    } else if (totalMinutes < 420) {
+      durationScore = clamp((totalMinutes - 180) / (420 - 180), 0, 1);
+    } else {
+      durationScore = clamp(1 - (totalMinutes - 540) / (660 - 540), 0, 1);
+    }
+  }
+
+  let deepScore = 0.5;
+  let remScore = 0.5;
+
+  if (metrics.deepPercent !== null) {
+    if (metrics.deepPercent >= 15 && metrics.deepPercent <= 25) deepScore = 1;
+    else if (metrics.deepPercent < 15) deepScore = clamp(metrics.deepPercent / 15, 0, 1);
+    else deepScore = clamp(1 - (metrics.deepPercent - 25) / 15, 0, 1);
+  }
+
+  if (metrics.remPercent !== null) {
+    if (metrics.remPercent >= 20 && metrics.remPercent <= 30) remScore = 1;
+    else if (metrics.remPercent < 20) remScore = clamp(metrics.remPercent / 20, 0, 1);
+    else remScore = clamp(1 - (metrics.remPercent - 30) / 15, 0, 1);
+  }
+
+  const hasStages = metrics.deepPercent !== null;
+  let score: number;
+  if (hasStages) {
+    score = effScore * 25 + deepScore * 20 + remScore * 20 + wasoScore * 15 + latencyScore * 10 + durationScore * 10;
+  } else {
+    score = effScore * 35 + wasoScore * 25 + latencyScore * 20 + durationScore * 20;
+  }
+  return round2(clamp(score, 0, 100));
+}
+
+/**
+ * Build SleepArchitectureMetrics from raw SleepSample data.
+ */
+function computeArchitectureMetrics(samples: SleepSample[]): SleepArchitectureMetrics {
+  let deep = 0, rem = 0, light = 0, awake = 0, inBed = 0;
+  let earliestInBed = Infinity, latestWake = -Infinity;
+
+  for (const s of samples) {
+    const start = new Date(s.startDate).getTime();
+    const end = new Date(s.endDate).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+    const dur = (end - start) / 60000;
+    if (dur <= 0) continue;
+
+    if (start < earliestInBed) earliestInBed = start;
+    if (end > latestWake) latestWake = end;
+
+    switch (s.value) {
+      case 'Deep': deep += dur; break;
+      case 'REM': rem += dur; break;
+      case 'Core':
+      case 'Asleep': light += dur; break;
+      case 'Awake': awake += dur; break;
+      case 'InBed': inBed += dur; break;
+    }
+  }
+
+  const totalSleep = deep + rem + light;
+  const totalStageTime = totalSleep + awake;
+  const totalInBed = inBed > 0 ? inBed : totalStageTime;
+  const efficiency = totalInBed > 0 ? (totalSleep / totalInBed) * 100 : 0;
+  const latency = Math.max(0, totalInBed - totalStageTime);
+
+  const hasStages = deep > 0 || rem > 0;
+  let remPercent: number | null = null;
+  let deepPercent: number | null = null;
+  let lightPercent: number | null = null;
+  let awakePercent: number | null = null;
+
+  if (hasStages && totalStageTime > 0) {
+    remPercent = round2((rem / totalStageTime) * 100);
+    deepPercent = round2((deep / totalStageTime) * 100);
+    lightPercent = round2((light / totalStageTime) * 100);
+    awakePercent = round2((awake / totalStageTime) * 100);
+  }
+
+  const arch: SleepArchitectureMetrics = {
+    sleepEfficiency: round2(clamp(efficiency, 0, 100)),
+    sleepLatency: round2(latency),
+    waso: round2(awake),
+    remPercent,
+    deepPercent,
+    lightPercent,
+    awakePercent,
+    qualityScore: 0,
+  };
+  arch.qualityScore = computeArchitectureQualityScore(arch, totalSleep);
+  return arch;
 }
 
 Deno.serve(async (req) => {
@@ -139,6 +274,7 @@ Deno.serve(async (req) => {
     }
 
     const metrics = computeSleepMetrics(samples);
+    const architecture = computeArchitectureMetrics(samples);
 
     const { error } = await serviceClient.from('sleep_analysis').upsert({
       user_id,
@@ -152,7 +288,19 @@ Deno.serve(async (req) => {
       sleep_efficiency: metrics.sleepEfficiency,
       wake_after_sleep_onset: metrics.wakeAfterSleepOnset,
       sleep_quality_score: metrics.sleepQualityScore,
-      raw_data: { samples },
+      raw_data: {
+        samples,
+        architecture: {
+          quality_score_0_100: architecture.qualityScore,
+          rem_percent: architecture.remPercent,
+          deep_percent: architecture.deepPercent,
+          light_percent: architecture.lightPercent,
+          awake_percent: architecture.awakePercent,
+          sleep_efficiency: architecture.sleepEfficiency,
+          sleep_latency: architecture.sleepLatency,
+          waso: architecture.waso,
+        },
+      },
     }, { onConflict: 'user_id,date' });
 
     if (error) {
@@ -162,7 +310,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ success: true, metrics }), {
+    return new Response(JSON.stringify({ success: true, metrics, architecture }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
