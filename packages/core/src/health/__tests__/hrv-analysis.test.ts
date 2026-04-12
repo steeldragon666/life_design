@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeHRVMetrics, type RRInterval } from '../hrv-analysis';
+import {
+  computeHRVMetrics,
+  computeFrequencyDomainMetrics,
+  computeHRVTrend,
+  type RRInterval,
+  type HRVTrendPoint,
+} from '../hrv-analysis';
 
 describe('computeHRVMetrics', () => {
   it('returns null for fewer than 2 intervals', () => {
@@ -151,5 +157,173 @@ describe('computeHRVMetrics', () => {
     expect(result.meanHR).toBe(75);
     expect(result.stressLevel).toBe('high');
     expect(result.stressScore).toBe(100);
+  });
+});
+
+describe('computeFrequencyDomainMetrics', () => {
+  it('returns null with fewer than 60 intervals', () => {
+    const intervals: RRInterval[] = Array.from({ length: 59 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 800 + (i % 2 === 0 ? 10 : -10),
+    }));
+    expect(computeFrequencyDomainMetrics(intervals)).toBeNull();
+  });
+
+  it('computes valid metrics with exactly 60 intervals', () => {
+    const intervals: RRInterval[] = Array.from({ length: 60 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 800 + (i % 2 === 0 ? 10 : -10),
+    }));
+    const result = computeFrequencyDomainMetrics(intervals);
+    expect(result).not.toBeNull();
+    expect(result!.lfPower).toBeGreaterThanOrEqual(0);
+    expect(result!.hfPower).toBeGreaterThanOrEqual(0);
+    expect(result!.lfHfRatio).toBeGreaterThanOrEqual(0);
+    expect(result!.totalPower).toBeGreaterThanOrEqual(0);
+  });
+
+  it('LF/HF ratio is always >= 0', () => {
+    // Identical intervals → SDNN=0, RMSSD=0, ratio should clamp to 0
+    const intervals: RRInterval[] = Array.from({ length: 100 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 800,
+    }));
+    const result = computeFrequencyDomainMetrics(intervals);
+    expect(result).not.toBeNull();
+    expect(result!.lfHfRatio).toBeGreaterThanOrEqual(0);
+  });
+
+  it('computes totalPower as lfPower + hfPower', () => {
+    const intervals: RRInterval[] = Array.from({ length: 100 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 800 + Math.sin(i * 0.5) * 30,
+    }));
+    const result = computeFrequencyDomainMetrics(intervals)!;
+    expect(result.totalPower).toBeCloseTo(result.lfPower + result.hfPower, 5);
+  });
+
+  it('returns higher LF/HF ratio when SDNN >> RMSSD', () => {
+    // Slowly drifting values → high SDNN, low RMSSD → high LF/HF
+    const intervals: RRInterval[] = Array.from({ length: 100 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 700 + i * 2, // linearly increasing → high SDNN, small successive diffs
+    }));
+    const result = computeFrequencyDomainMetrics(intervals)!;
+    expect(result.lfHfRatio).toBeGreaterThan(1);
+  });
+});
+
+describe('computeHRVTrend', () => {
+  const makePoint = (
+    date: string,
+    rmssd: number,
+    sdnn: number,
+    stressScore: number,
+    stressLevel: 'low' | 'moderate' | 'high',
+  ): HRVTrendPoint => ({ date, rmssd, sdnn, stressScore, stressLevel });
+
+  it('detects improving trend (stress decreasing over time)', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 25, 30, 70, 'high'),
+      makePoint('2026-04-02', 30, 35, 60, 'moderate'),
+      makePoint('2026-04-03', 35, 40, 55, 'moderate'),
+      makePoint('2026-04-04', 45, 50, 40, 'moderate'),
+      makePoint('2026-04-05', 55, 60, 30, 'low'),
+      makePoint('2026-04-06', 60, 65, 25, 'low'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.trendDirection).toBe('improving');
+  });
+
+  it('detects worsening trend (stress increasing over time)', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 60, 65, 25, 'low'),
+      makePoint('2026-04-02', 55, 60, 30, 'low'),
+      makePoint('2026-04-03', 45, 50, 40, 'moderate'),
+      makePoint('2026-04-04', 35, 40, 55, 'moderate'),
+      makePoint('2026-04-05', 30, 35, 60, 'moderate'),
+      makePoint('2026-04-06', 25, 30, 70, 'high'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.trendDirection).toBe('worsening');
+  });
+
+  it('detects stable trend when stress stays similar', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 40, 45, 50, 'moderate'),
+      makePoint('2026-04-02', 42, 47, 48, 'moderate'),
+      makePoint('2026-04-03', 39, 44, 51, 'moderate'),
+      makePoint('2026-04-04', 41, 46, 49, 'moderate'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.trendDirection).toBe('stable');
+  });
+
+  it('computes correct average stress score', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 40, 45, 50, 'moderate'),
+      makePoint('2026-04-02', 42, 47, 60, 'moderate'),
+      makePoint('2026-04-03', 39, 44, 40, 'moderate'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.averageStressScore).toBe(50);
+  });
+
+  it('computes baselineRMSSD from last 7 entries', () => {
+    const points: HRVTrendPoint[] = Array.from({ length: 10 }, (_, i) =>
+      makePoint(`2026-04-${String(i + 1).padStart(2, '0')}`, 30 + i * 2, 40, 50, 'moderate'),
+    );
+    // Last 7 entries: rmssd = 36, 38, 40, 42, 44, 46, 48 → mean = 42
+    const result = computeHRVTrend(points);
+    expect(result.baselineRMSSD).toBeCloseTo(42, 1);
+  });
+
+  it('computes baselineRMSSD from all entries when fewer than 7', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 30, 40, 50, 'moderate'),
+      makePoint('2026-04-02', 40, 45, 45, 'moderate'),
+      makePoint('2026-04-03', 50, 55, 40, 'moderate'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.baselineRMSSD).toBe(40);
+  });
+
+  it('requires minimum 3 data points', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 30, 40, 50, 'moderate'),
+      makePoint('2026-04-02', 40, 45, 45, 'moderate'),
+    ];
+    expect(() => computeHRVTrend(points)).toThrow();
+  });
+
+  it('returns all points in the result', () => {
+    const points: HRVTrendPoint[] = [
+      makePoint('2026-04-01', 30, 40, 50, 'moderate'),
+      makePoint('2026-04-02', 40, 45, 45, 'moderate'),
+      makePoint('2026-04-03', 50, 55, 40, 'moderate'),
+    ];
+    const result = computeHRVTrend(points);
+    expect(result.points).toEqual(points);
+  });
+});
+
+describe('HRVMetrics frequencyDomain field', () => {
+  it('includes frequencyDomain when enough intervals are provided', () => {
+    const intervals: RRInterval[] = Array.from({ length: 100 }, (_, i) => ({
+      timestamp: i * 1000,
+      value: 800 + (i % 2 === 0 ? 15 : -15),
+    }));
+    const result = computeHRVMetrics(intervals)!;
+    expect(result.frequencyDomain).toBeDefined();
+    expect(result.frequencyDomain!.lfHfRatio).toBeGreaterThanOrEqual(0);
+  });
+
+  it('does not include frequencyDomain when fewer than 60 intervals', () => {
+    const intervals: RRInterval[] = [
+      { timestamp: 0, value: 800 },
+      { timestamp: 1000, value: 810 },
+    ];
+    const result = computeHRVMetrics(intervals)!;
+    expect(result.frequencyDomain).toBeUndefined();
   });
 });
