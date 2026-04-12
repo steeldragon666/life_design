@@ -15,7 +15,6 @@ import { MentorType, getGranularContext } from '@life-design/core';
 import { buildWeatherContext } from '@/lib/integrations/weather';
 import { buildSpotifyContext } from '@/lib/integrations/spotify';
 import { buildHealthContext } from '@/lib/integrations/apple-health';
-import { buildNotionContext } from '@/lib/integrations/notion';
 import { buildBankingContext } from '@/lib/integrations/banking';
 
 export async function sendMessage(
@@ -127,7 +126,6 @@ export async function sendMessage(
   const integrationPromises: Promise<string | null>[] = [
     buildSpotifyContext(user.id),
     buildHealthContext(user.id),
-    buildNotionContext(user.id),
     buildBankingContext(user.id),
   ];
 
