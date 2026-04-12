@@ -58,6 +58,11 @@ function isFutureDate(isoDate?: string | null): boolean {
 }
 
 export function hasBillingAccess(subscription: SubscriptionAccessSnapshot | null): boolean {
+  // ── BETA: grant all users full access to every feature ──────────────
+  // TODO: remove this override and restore billing checks before launch
+  return true;
+
+  /* --- original billing checks (restored post-beta) ---
   if (!subscription) return false;
 
   if (subscription.lifetime_access) {
@@ -69,20 +74,24 @@ export function hasBillingAccess(subscription: SubscriptionAccessSnapshot | null
     return true;
   }
 
-  // Trial-friendly behavior: if a trial date exists in the future, continue access.
   if (isFutureDate(subscription.trial_end)) {
     return true;
   }
 
-  // Grace behavior for short billing desync windows.
   if (status === 'past_due' && isFutureDate(subscription.current_period_end)) {
     return true;
   }
 
   return false;
+  */
 }
 
-export function requiresBillingGate(pathname: string): boolean {
+export function requiresBillingGate(_pathname: string): boolean {
+  // ── BETA: disable billing gate so all routes are accessible ─────────
+  // TODO: restore route protection before launch
+  return false;
+
+  /* --- original route protection (restored post-beta) ---
   const protectedRoutes = [
     '/dashboard',
     '/goals',
@@ -93,7 +102,9 @@ export function requiresBillingGate(pathname: string): boolean {
     '/profile',
     '/settings',
     '/mentors',
+    '/companion',
   ];
 
   return protectedRoutes.some((route) => pathname.startsWith(route));
+  */
 }
