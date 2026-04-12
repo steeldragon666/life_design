@@ -1,5 +1,13 @@
+/**
+ * GET /api/integrations/spotify/callback
+ *
+ * Handles Spotify OAuth2 callback: validates CSRF state, exchanges code for
+ * tokens, and persists encrypted tokens to the database.
+ */
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { SPOTIFY_CONFIG } from '@/lib/integrations/oauth';
+import { storeTokens } from '@life-design/core';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -12,24 +20,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=spotify_denied`);
   }
 
-  // Validate CSRF state
+  // ── CSRF state validation ────────────────────────────────────────────────
   const state = searchParams.get('state');
   const expectedState = request.cookies.get('oauth_state_spotify')?.value;
   if (!state || !expectedState || state !== expectedState) {
     return NextResponse.redirect(`${appUrl}/settings?error=spotify_invalid_state`);
   }
 
+  // ── Auth check ───────────────────────────────────────────────────────────
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(`${appUrl}/login?from=/settings`);
+  }
+
   try {
     const redirectUri = `${appUrl}/api/integrations/spotify/callback`;
-    
-    // Spotify uses Basic auth
-    const auth = Buffer.from(`${SPOTIFY_CONFIG.clientId}:${SPOTIFY_CONFIG.clientSecret}`).toString('base64');
-    
-    const response = await fetch('https://accounts.spotify.com/api/token', {
+
+    // Spotify uses Basic auth for token exchange
+    const auth = Buffer.from(
+      `${SPOTIFY_CONFIG.clientId}:${SPOTIFY_CONFIG.clientSecret}`,
+    ).toString('base64');
+
+    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${auth}`,
+        Authorization: `Basic ${auth}`,
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
@@ -38,34 +58,34 @@ export async function GET(request: NextRequest) {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Token exchange failed: ${response.statusText}`);
+    if (!tokenResponse.ok) {
+      throw new Error(`Token exchange failed: ${tokenResponse.statusText}`);
     }
 
-    const tokens = await response.json();
+    const tokens = await tokenResponse.json();
 
     if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
-      throw new Error('spotify returned no access token');
+      throw new Error('Spotify returned no access token');
     }
 
-    const tokenPayload = {
-      provider: 'spotify',
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: Date.now() + (tokens.expires_in * 1000),
-    };
-    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
-    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=spotify`);
-    redirectResponse.cookies.set('life-design-oauth-spotify', encodedToken, {
-      httpOnly: true,
-      secure: request.nextUrl.protocol === 'https:',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 5,
-    });
+    // ── Persist encrypted tokens to Supabase ───────────────────────────────
+    const expiresAtSeconds = Math.floor(Date.now() / 1000) + (tokens.expires_in ?? 3600);
+
+    const serviceSupabase = createServiceRoleClient();
+    await storeTokens(
+      serviceSupabase,
+      { provider: 'spotify', userId: user.id },
+      {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt: expiresAtSeconds,
+      },
+    );
+
+    const response = NextResponse.redirect(`${appUrl}/settings?connected=spotify`);
     // Clear the CSRF state cookie
-    redirectResponse.cookies.set('oauth_state_spotify', '', { path: '/', maxAge: 0 });
-    return redirectResponse;
+    response.cookies.set('oauth_state_spotify', '', { path: '/', maxAge: 0 });
+    return response;
   } catch (err) {
     console.error('Spotify callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=spotify_failed`);

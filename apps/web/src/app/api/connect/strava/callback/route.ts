@@ -41,7 +41,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // ── CSRF state validation ──────────────────────────────────────────────────
-  const storedState = request.cookies.get('strava_oauth_state')?.value;
+  const storedState = request.cookies.get('oauth_state_strava')?.value;
   if (!storedState || storedState !== state) {
     console.warn(`Strava callback: CSRF state mismatch for user ${user.id}`);
     return NextResponse.redirect(`${redirectBase}?error=state_mismatch`);
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Clear the state cookie now that it has been consumed.
     const response = NextResponse.redirect(`${redirectBase}?connected=strava`);
-    response.cookies.delete('strava_oauth_state');
+    response.cookies.delete('oauth_state_strava');
     return response;
   } catch (err) {
     console.error('Strava OAuth callback error:', err);

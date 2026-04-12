@@ -41,7 +41,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // ── CSRF state validation ──────────────────────────────────────────────────
-  const storedState = request.cookies.get('google_oauth_state')?.value;
+  const storedState = request.cookies.get('oauth_state_google')?.value;
   if (!storedState || storedState !== state) {
     console.warn(`Google callback: CSRF state mismatch for user ${user.id}`);
     return NextResponse.redirect(`${redirectBase}?error=state_mismatch`);
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     );
 
     const response = NextResponse.redirect(`${redirectBase}?connected=google_calendar`);
-    response.cookies.delete('google_oauth_state');
+    response.cookies.delete('oauth_state_google');
     return response;
   } catch (err) {
     console.error('Google OAuth callback error:', err);

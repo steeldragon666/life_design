@@ -1,5 +1,12 @@
+/**
+ * GET /api/integrations/strava/callback
+ *
+ * Handles Strava OAuth2 callback: validates CSRF state, exchanges code for
+ * tokens, and persists encrypted tokens to the database.
+ */
 import { NextRequest, NextResponse } from 'next/server';
-import { STRAVA_CONFIG } from '@/lib/integrations/oauth';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { exchangeStravaCode, storeTokens } from '@life-design/core';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -12,54 +19,43 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings?error=strava_denied`);
   }
 
-  // Validate CSRF state
+  // ── CSRF state validation ────────────────────────────────────────────────
   const state = searchParams.get('state');
   const expectedState = request.cookies.get('oauth_state_strava')?.value;
   if (!state || !expectedState || state !== expectedState) {
     return NextResponse.redirect(`${appUrl}/settings?error=strava_invalid_state`);
   }
 
+  // ── Auth check ───────────────────────────────────────────────────────────
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(`${appUrl}/login?from=/settings`);
+  }
+
   try {
-    const response = await fetch('https://www.strava.com/oauth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: STRAVA_CONFIG.clientId,
-        client_secret: STRAVA_CONFIG.clientSecret,
-        code,
-        grant_type: 'authorization_code',
-      }),
-    });
+    // ── Token exchange via @life-design/core ────────────────────────────────
+    const tokens = await exchangeStravaCode(code);
 
-    if (!response.ok) {
-      throw new Error(`Token exchange failed: ${response.statusText}`);
-    }
+    // ── Persist encrypted tokens to Supabase ───────────────────────────────
+    const serviceSupabase = createServiceRoleClient();
+    await storeTokens(
+      serviceSupabase,
+      { provider: 'strava', userId: user.id },
+      {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+      },
+    );
 
-    const tokens = await response.json();
-
-    if (typeof tokens.access_token !== 'string' || !tokens.access_token) {
-      throw new Error('strava returned no access token');
-    }
-
-    const tokenPayload = {
-      provider: 'strava',
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: tokens.expires_at * 1000,
-      athlete: tokens.athlete,
-    };
-    const encodedToken = Buffer.from(JSON.stringify(tokenPayload), 'utf8').toString('base64url');
-    const redirectResponse = NextResponse.redirect(`${appUrl}/settings?connected=strava`);
-    redirectResponse.cookies.set('life-design-oauth-strava', encodedToken, {
-      httpOnly: true,
-      secure: request.nextUrl.protocol === 'https:',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 5,
-    });
+    const response = NextResponse.redirect(`${appUrl}/settings?connected=strava`);
     // Clear the CSRF state cookie
-    redirectResponse.cookies.set('oauth_state_strava', '', { path: '/', maxAge: 0 });
-    return redirectResponse;
+    response.cookies.set('oauth_state_strava', '', { path: '/', maxAge: 0 });
+    return response;
   } catch (err) {
     console.error('Strava callback error:', err);
     return NextResponse.redirect(`${appUrl}/settings?error=strava_failed`);
