@@ -54,34 +54,26 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // For authenticated users accessing protected routes, check onboarding status.
-  // We check both `profiles.onboarding_status` AND `onboarding_sessions.status`
-  // because the profile update can silently fail (missing row, RLS, etc.).
-  if (isGuestProtected && pathname !== '/onboarding') {
-    const [{ data: profile }, { data: session }] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('onboarding_status')
-        .eq('id', user.id)
-        .maybeSingle(),
-      supabase
-        .from('onboarding_sessions')
-        .select('status')
-        .eq('user_id', user.id)
-        .maybeSingle(),
-    ]);
-
-    const profileCompleted = profile?.onboarding_status === 'completed';
-    const sessionCompleted = session?.status === 'completed';
-
-    // Only redirect to onboarding if NEITHER source says completed
-    if (!profileCompleted && !sessionCompleted) {
-      // If we have a profile or session at all, redirect to onboarding
-      if (profile || session) {
-        return NextResponse.redirect(new URL('/onboarding', request.url));
-      }
-    }
-  }
+  // ── BETA: skip onboarding redirect so all routes are accessible ──────
+  // TODO: restore onboarding gate before launch
+  //
+  // Original logic checked profiles.onboarding_status AND
+  // onboarding_sessions.status — redirect to /onboarding if neither
+  // source says 'completed'. Disabled during beta because it creates
+  // redirect loops when the profile row is missing or the status
+  // column wasn't properly set during onboarding completion.
+  //
+  // if (isGuestProtected && pathname !== '/onboarding') {
+  //   const [{ data: profile }, { data: session }] = await Promise.all([
+  //     supabase.from('profiles').select('onboarding_status').eq('id', user.id).maybeSingle(),
+  //     supabase.from('onboarding_sessions').select('status').eq('user_id', user.id).maybeSingle(),
+  //   ]);
+  //   const profileCompleted = profile?.onboarding_status === 'completed';
+  //   const sessionCompleted = session?.status === 'completed';
+  //   if (!profileCompleted && !sessionCompleted && (profile || session)) {
+  //     return NextResponse.redirect(new URL('/onboarding', request.url));
+  //   }
+  // }
 
   if (!requiresBilling) {
     return response;
