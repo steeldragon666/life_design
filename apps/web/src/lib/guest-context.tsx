@@ -327,8 +327,14 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isHydrated) return;
-    const isOnboarded = Boolean(profile?.onboarded);
-    document.cookie = `${GUEST_ONBOARDED_COOKIE}=${isOnboarded ? '1' : '0'}; Path=/; Max-Age=2592000; SameSite=Lax`;
+    // Only UPGRADE the cookie to '1' when profile confirms onboarded.
+    // Never downgrade to '0' — the cookie was set by handleComplete()
+    // synchronously and must not be overwritten during hydration when
+    // the profile hasn't loaded from localStorage yet. Clearing the
+    // cookie is handled explicitly by clearGuestData().
+    if (profile?.onboarded) {
+      document.cookie = `${GUEST_ONBOARDED_COOKIE}=1; Path=/; Max-Age=2592000; SameSite=Lax`;
+    }
   }, [profile?.onboarded, isHydrated]);
 
   const setProfile = (newProfile: GuestProfile) => {

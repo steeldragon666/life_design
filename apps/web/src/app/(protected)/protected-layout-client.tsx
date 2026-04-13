@@ -44,6 +44,9 @@ export default function ProtectedLayout({
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
 
+  // Full-screen pages that should NOT render the navigation chrome
+  const isFullScreenPage = pathname === '/onboarding' || pathname.startsWith('/onboarding/');
+
   if (!isHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-warm-50 to-stone-50">
@@ -55,6 +58,11 @@ export default function ProtectedLayout({
         </div>
       </div>
     );
+  }
+
+  // Onboarding is a full-screen experience — no nav, no Aria, no chrome
+  if (isFullScreenPage) {
+    return <>{children}</>;
   }
 
   return (

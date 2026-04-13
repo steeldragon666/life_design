@@ -19,7 +19,7 @@ declare const self: ServiceWorkerGlobalScope;
 // Config
 // ---------------------------------------------------------------------------
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 // Cache names kept as "life-design-*" intentionally — renaming would invalidate
 // all existing caches and force full re-downloads for active users.
 const STATIC_CACHE = `life-design-static-${CACHE_VERSION}`;
@@ -136,7 +136,10 @@ async function cacheFirst(request: Request): Promise<Response> {
 async function networkFirst(request: Request): Promise<Response> {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    // Only cache API responses, NOT HTML pages — stale HTML causes
+    // redirect loops and prevents design updates from reaching users.
+    const isPageRequest = request.headers.get('accept')?.includes('text/html');
+    if (networkResponse.ok && !isPageRequest) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
