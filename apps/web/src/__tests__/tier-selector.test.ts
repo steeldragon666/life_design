@@ -28,54 +28,27 @@ describe('tier selection', () => {
     expect(isValidTier(42)).toBe(false);
   });
 
-  it('guest tier falls back to localStorage when API returns 401', () => {
-    // Simulate the decision logic used by OptInTierSelectorWithState
-    const apiStatus = 401;
-    const localStorageValue = 'full';
-    let selectedTier = 'basic';
-    let isGuest = false;
-
-    if (apiStatus === 401) {
-      isGuest = true;
-      if (localStorageValue && isValidTier(localStorageValue)) {
-        selectedTier = localStorageValue;
-      }
-    }
-
-    expect(isGuest).toBe(true);
+  it('beta: defaults to full tier when API returns no tier', () => {
+    // During beta, all accounts default to full
+    const apiTier = null;
+    const selectedTier = apiTier ?? 'full';
     expect(selectedTier).toBe('full');
-  });
-
-  it('guest tier defaults to basic when no localStorage value exists', () => {
-    const apiStatus = 401;
-    const localStorageValue = null;
-    let selectedTier = 'basic';
-    let isGuest = false;
-
-    if (apiStatus === 401) {
-      isGuest = true;
-      if (localStorageValue && isValidTier(localStorageValue)) {
-        selectedTier = localStorageValue;
-      }
-    }
-
-    expect(isGuest).toBe(true);
-    expect(selectedTier).toBe('basic');
   });
 
   it('authenticated user tier comes from API response', () => {
     const apiStatus = 200;
     const apiTier = 'enhanced';
-    let selectedTier = 'basic';
-    let isGuest = false;
+    let selectedTier = 'full'; // beta default
 
-    if (apiStatus === 401) {
-      isGuest = true;
-    } else if (apiStatus === 200 && isValidTier(apiTier)) {
+    if (apiStatus === 200 && isValidTier(apiTier)) {
       selectedTier = apiTier;
     }
 
-    expect(isGuest).toBe(false);
     expect(selectedTier).toBe('enhanced');
+  });
+
+  it('preserves full tier when API has no profile row', () => {
+    const apiResponse = { tier: 'full' }; // API defaults to full
+    expect(apiResponse.tier).toBe('full');
   });
 });

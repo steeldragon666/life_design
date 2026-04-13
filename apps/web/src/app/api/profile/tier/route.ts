@@ -30,7 +30,8 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ tier: data?.opt_in_tier ?? 'basic' });
+    // Beta: default all accounts to full tier
+    return NextResponse.json({ tier: data?.opt_in_tier ?? 'full' });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Unknown error' },
