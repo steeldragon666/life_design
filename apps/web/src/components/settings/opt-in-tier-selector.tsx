@@ -208,21 +208,42 @@ export function OptInTierSelector({
 // Self-contained wrapper that manages its own state via the API
 // ---------------------------------------------------------------------------
 
+const GUEST_TIER_STORAGE_KEY = 'opt-in-guest-tier';
+
 export function OptInTierSelectorWithState() {
   const [tier, setTier] = useState<OptInTier>(OptInTier.Basic);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
-  // Fetch current tier on mount
+  // Fetch current tier on mount — try API first, fall back to localStorage
   useEffect(() => {
     fetch('/api/profile/tier')
-      .then((r) => (r.ok ? r.json() : null))
+      .then((r) => {
+        if (r.status === 401) {
+          // Guest user — read from localStorage
+          setIsGuest(true);
+          const saved = localStorage.getItem(GUEST_TIER_STORAGE_KEY);
+          if (saved && Object.values(OptInTier).includes(saved as OptInTier)) {
+            setTier(saved as OptInTier);
+          }
+          return null;
+        }
+        return r.ok ? r.json() : null;
+      })
       .then((data) => {
         if (data?.tier && Object.values(OptInTier).includes(data.tier)) {
           setTier(data.tier as OptInTier);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Network error — try localStorage
+        setIsGuest(true);
+        const saved = localStorage.getItem(GUEST_TIER_STORAGE_KEY);
+        if (saved && Object.values(OptInTier).includes(saved as OptInTier)) {
+          setTier(saved as OptInTier);
+        }
+      })
       .finally(() => setLoaded(true));
   }, []);
 
@@ -230,13 +251,29 @@ export function OptInTierSelectorWithState() {
     const prev = tier;
     setTier(newTier);
     setSaving(true);
+
+    if (isGuest) {
+      // Guest mode: persist to localStorage immediately
+      localStorage.setItem(GUEST_TIER_STORAGE_KEY, newTier);
+      setSaving(false);
+      return;
+    }
+
     try {
       const res = await fetch('/api/profile/tier', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: newTier }),
       });
-      if (!res.ok) setTier(prev);
+      if (!res.ok) {
+        if (res.status === 401) {
+          // Session expired — fall back to localStorage
+          setIsGuest(true);
+          localStorage.setItem(GUEST_TIER_STORAGE_KEY, newTier);
+        } else {
+          setTier(prev);
+        }
+      }
     } catch {
       setTier(prev);
     } finally {
