@@ -59,9 +59,10 @@ export default async function PopulationInsightsPage() {
     .from('profiles')
     .select('opt_in_tier')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  const userTier = (profile?.opt_in_tier as OptInTier) ?? OptInTier.Basic;
+  // Beta: all accounts default to Full tier
+  const userTier = (profile?.opt_in_tier as OptInTier) ?? OptInTier.Full;
   const hasAccess = isFeatureAvailable(userTier, OptInTier.Full);
 
   if (!hasAccess) {

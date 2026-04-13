@@ -27,10 +27,11 @@ export default async function InsightsPage() {
       .from('profiles')
       .select('opt_in_tier')
       .eq('id', user.id)
-      .single(),
+      .maybeSingle(),
   ]);
 
-  const userTier = (profile?.opt_in_tier as OptInTier) ?? OptInTier.Basic;
+  // Beta: all accounts default to Full tier
+  const userTier = (profile?.opt_in_tier as OptInTier) ?? OptInTier.Full;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">

@@ -17,7 +17,8 @@ const INTEGRATIONS = [
 
 export default function DataImportCard({ onNext }: DataImportCardProps) {
   const [connected, setConnected] = useState<string[]>([]);
-  const [selectedTier, setSelectedTier] = useState<OptInTier>(OptInTier.Basic);
+  // Beta: default all accounts to Full tier
+  const [selectedTier, setSelectedTier] = useState<OptInTier>(OptInTier.Full);
 
   const handleConnect = (integration: typeof INTEGRATIONS[number]) => {
     // Open OAuth flow in popup
